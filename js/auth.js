@@ -12,38 +12,33 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 // Création d'un compte Parent
-async function creerCompteParent(nom, email, motDePasse) {
+async function creerCompteParent(nom, telephone, email, motDePasse) {
 
   try {
 
-    // Création du compte Firebase
-    const userCredential =
-      await createUserWithEmailAndPassword(
-        auth,
-        email,
-        motDePasse
-      );
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
 
     const user = userCredential.user;
 
-    // Enregistrement dans Firestore
     await setDoc(doc(db, "parents", user.uid), {
-
       uid: user.uid,
       nom: nom,
+      telephone: telephone,
       email: email,
       role: "parent",
       dateCreation: new Date().toISOString()
-
     });
 
     alert("Compte créé avec succès !");
 
   } catch (error) {
-
     alert(error.message);
-
   }
 
 }
+  
 export { creerCompteParent };
