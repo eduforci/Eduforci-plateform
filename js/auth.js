@@ -7,13 +7,6 @@ import {
   updateDoc,
   increment
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-import {
-  doc,
-  setDoc,identifiant: identifiant,
-  getDoc,
-  updateDoc,
-  increment
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 async function genererIdentifiant(type, prefixe) {
 
   const compteurRef = doc(db, "compteurs", type);
@@ -41,16 +34,10 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
       email,
       motDePasse
     );
-
-    const user = userCredential.user;
-    const identifiant = await genererIdentifiant(
-  "enseignants",
-  "ENS"
 );
     const identifiant = await genererIdentifiant(
   "parents",
   "PAR"
-);
 );
     await setDoc(doc(db, "parents", user.uid), {
 
@@ -116,10 +103,14 @@ async function creerCompteEnseignant(
     );
 
     const user = userCredential.user;
-
+const identifiant = await genererIdentifiant(
+  "enseignants",
+  "ENS"
+);
     await setDoc(doc(db, "enseignants", user.uid), {
 
       uid: user.uid,
+      identifiant: identifiant,
       nom: nom,
       telephone: telephone,
       email: email,
