@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Résultats de recherche | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+}
+
+header{
+
+background:#153A73;
+
+padding:18px 40px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+header img{
+
+height:60px;
+
+}
+
+.container{
+
+max-width:1200px;
+
+margin:40px auto;
+
+padding:20px;
+
+}
+
+.search-info{
+
+background:white;
+
+padding:25px;
+
+border-radius:20px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+margin-bottom:30px;
+
+}
+
+.search-info h2{
+
+color:#153A73;
+
+margin-bottom:10px;
+
+}
+
+.search-info p{
+
+color:#666;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+
+gap:25px;
+
+}
+
+.card{
+
+background:white;
+
+padding:25px;
+
+border-radius:20px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+text-align:center;
+
+transition:.3s;
+
+}
+
+.card:hover{
+
+transform:translateY(-8px);
+
+}
+
+.teacher-photo{
+
+width:120px;
+
+height:120px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+border:4px solid #0B63F6;
+
+margin-bottom:15px;
+
+}
+
+.badge{
+
+display:inline-block;
+
+background:#28a745;
+
+color:white;
+
+padding:6px 14px;
+
+border-radius:20px;
+
+margin:10px 0;
+
+font-size:14px;
+
+}
+
+button{
+
+width:100%;
+
+padding:14px;
+
+margin-top:15px;
+
+background:#0B63F6;
+
+color:white;
+
+border:none;
+
+border-radius:10px;
+
+cursor:pointer;
+
+font-size:16px;
+
+font-weight:600;
+
+}
+
+button:hover{
+
+background:#084ec7;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+</header>
+
+<div class="container">
+  <div class="search-info">
+
+<h2>Résultats de votre recherche</h2>
+
+<p>
+
+📚 Matière : <strong>Anglais</strong> |
+🎓 Niveau : <strong>Lycée</strong> |
+📍 Ville : <strong>Abidjan</strong>
+
+</p>
+
+<br>
+
+<button onclick="location.href='recherche.html'">
+
+🔄 Modifier la recherche
+
+</button>
+
+</div>
+
+<div class="grid">
+
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>Mr Ouattara</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Anglais</p>
+
+<p><strong>📍 Ville :</strong> Abidjan</p>
+
+<p><strong>💰 Tarif :</strong> 7 500 FCFA / heure</p>
+
+<p><strong>⭐ Note :</strong> 4.9 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+
+Voir le profil
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>Mme Koné</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Anglais</p>
+
+<p><strong>📍 Ville :</strong> Abidjan</p>
+
+<p><strong>💰 Tarif :</strong> 8 000 FCFA / heure</p>
+
+<p><strong>⭐ Note :</strong> 4.8 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+
+Voir le profil
+
+</button>
+
+</div>
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>M. Kouassi</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Anglais</p>
+
+<p><strong>📍 Ville :</strong> Abidjan</p>
+
+<p><strong>💰 Tarif :</strong> 6 500 FCFA / heure</p>
+
+<p><strong>⭐ Note :</strong> 4.7 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+
+Voir le profil
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>Mme Diallo</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Anglais</p>
+
+<p><strong>📍 Ville :</strong> Abidjan</p>
+
+<p><strong>💰 Tarif :</strong> 7 000 FCFA / heure</p>
+
+<p><strong>⭐ Note :</strong> 4.9 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+
+Voir le profil
+
+</button>
+
+</div>
+
+</div>
+
+<br><br>
+
+<div style="display:flex;justify-content:space-between;align-items:center;background:white;padding:20px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,.08);">
+
+<p><strong>4 enseignants trouvés</strong></p>
+
+<div>
+
+<button style="width:auto;padding:12px 20px;margin-right:10px;">
+⬅ Précédent
+</button>
+
+<button style="width:auto;padding:12px 20px;">
+Suivant ➡
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
