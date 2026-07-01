@@ -62,7 +62,58 @@ async function connexionParent(email, motDePasse) {
   }
 
 }
+// Création d'un compte Enseignant
+async function creerCompteEnseignant(
+  nom,
+  telephone,
+  email,
+  ville,
+  matiere,
+  niveau,
+  experience,
+  diplome,
+  presentation,
+  motDePasse
+) {
+
+  try {
+
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    const user = userCredential.user;
+
+    await setDoc(doc(db, "enseignants", user.uid), {
+
+      uid: user.uid,
+      nom: nom,
+      telephone: telephone,
+      email: email,
+      ville: ville,
+      matiere: matiere,
+      niveau: niveau,
+      experience: experience,
+      diplome: diplome,
+      presentation: presentation,
+      role: "enseignant",
+      dateCreation: new Date().toISOString()
+
+    });
+
+    alert("Compte Enseignant créé avec succès !");
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
 export {
   creerCompteParent,
+  creerCompteEnseignant,
   connexionParent
 };
