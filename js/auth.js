@@ -104,7 +104,7 @@ async function creerCompteEnseignant(
     });
 
     alert("Compte Enseignant créé avec succès !");
-
+window.location.href = "dashboard-enseignant.html";
   } catch (error) {
 
     alert(error.message);
