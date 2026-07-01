@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tableau de bord Établissement | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:260px;
+height:100vh;
+background:#153A73;
+color:white;
+padding:30px 20px;
+position:fixed;
+top:0;
+left:0;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+text-decoration:none;
+color:white;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.main{
+margin-left:260px;
+padding:35px;
+width:100%;
+}
+
+.welcome{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:18px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.card h2{
+font-size:32px;
+color:#0B63F6;
+margin-bottom:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+  <div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="#">🏠 Tableau de bord</a>
+
+<a href="#">📢 Publier une offre</a>
+
+<a href="#">👨‍🏫 Rechercher un enseignant</a>
+
+<a href="#">📩 Candidatures reçues</a>
+
+<a href="#">💬 Messages</a>
+
+<a href="#">🏫 Mon établissement</a>
+
+<a href="#">⚙️ Paramètres</a>
+
+<a href="index.html">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1>Bienvenue, Collège La Grâce 👋</h1>
+
+<p>
+
+Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouvez les meilleurs profils pour votre établissement.
+
+</p>
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+
+<h2>4</h2>
+
+<p>Offres publiées</p>
+
+</div>
+
+<div class="card">
+
+<h2>18</h2>
+
+<p>Candidatures reçues</p>
+
+</div>
+
+<div class="card">
+
+<h2>6</h2>
+
+<p>Messages</p>
+
+</div>
+
+<div class="card">
+
+<h2>12</h2>
+
+<p>Enseignants recrutés</p>
+
+</div>
+
+</div>
+<br><br>
+
+<div class="welcome">
+
+<h2>📢 Mes offres publiées</h2>
+
+<br>
+
+<table style="width:100%;border-collapse:collapse;">
+
+<tr style="background:#0B63F6;color:white;">
+
+<th style="padding:15px;">Poste</th>
+
+<th>Niveau</th>
+
+<th>Ville</th>
+
+<th>Statut</th>
+
+</tr>
+
+<tr>
+
+<td style="padding:15px;">Professeur de Mathématiques</td>
+
+<td>Collège</td>
+
+<td>Abidjan</td>
+
+<td style="color:green;"><b>Active</b></td>
+
+</tr>
+
+<tr style="background:#f7f7f7;">
+
+<td style="padding:15px;">Professeur d'Anglais</td>
+
+<td>Lycée</td>
+
+<td>Bouaké</td>
+
+<td style="color:orange;"><b>En cours</b></td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="welcome">
+
+<h2>👨‍🏫 Dernières candidatures</h2>
+
+<br>
+
+<div class="cards">
+
+<div class="card">
+
+<h2>👨‍🏫</h2>
+
+<p><strong>Mr Ouattara</strong></p>
+
+<p>Anglais</p>
+
+<p>⭐ 4.9 / 5</p>
+
+<button>Voir le profil</button>
+
+</div>
+
+<div class="card">
+
+<h2>👩‍🏫</h2>
+
+<p><strong>Mme Traoré</strong></p>
+
+<p>Mathématiques</p>
+
+<p>⭐ 4.8 / 5</p>
+
+<button>Voir le profil</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
