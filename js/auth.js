@@ -5,12 +5,30 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-
 import {
   doc,
-  setDoc,
-  getDoc
+  setDoc,identifiant: identifiant,
+  getDoc,
+  updateDoc,
+  increment
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+async function genererIdentifiant(type, prefixe) {
+
+  const compteurRef = doc(db, "compteurs", type);
+
+  const compteurSnap = await getDoc(compteurRef);
+
+  const numero = compteurSnap.data().dernierNumero + 1;
+
+  await updateDoc(compteurRef, {
+    dernierNumero: increment(1)
+  });
+
+  const annee = new Date().getFullYear();
+
+  return `${prefixe}-${annee}-${String(numero).padStart(6, "0")}`;
+
+}
 // Création d'un compte Parent
 async function creerCompteParent(nom, telephone, email, motDePasse) {
 
@@ -23,7 +41,14 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
     );
 
     const user = userCredential.user;
-
+    const identifiant = await genererIdentifiant(
+  "parents",
+  "PAR"
+);
+const identifiant = await genererIdentifiant(
+  "enseignants",
+  "ENS"
+);
     await setDoc(doc(db, "parents", user.uid), {
       uid: user.uid,
       nom: nom,
