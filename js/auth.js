@@ -1,10 +1,12 @@
 import { auth, db } from "./firebase.js";
 
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  increment
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import {
   doc,
   setDoc,identifiant: identifiant,
@@ -42,21 +44,25 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
 
     const user = userCredential.user;
     const identifiant = await genererIdentifiant(
-  "parents",
-  "PAR"
-);
-const identifiant = await genererIdentifiant(
   "enseignants",
   "ENS"
 );
+    const identifiant = await genererIdentifiant(
+  "parents",
+  "PAR"
+);
+);
     await setDoc(doc(db, "parents", user.uid), {
-      uid: user.uid,
-      nom: nom,
-      telephone: telephone,
-      email: email,
-      role: "parent",
-      dateCreation: new Date().toISOString()
-    });
+
+  uid: user.uid,
+  identifiant: identifiant,
+  nom: nom,
+  telephone: telephone,
+  email: email,
+  role: "parent",
+  dateCreation: new Date().toISOString()
+
+});
 
     alert("Compte créé avec succès !");
 
