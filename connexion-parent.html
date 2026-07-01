@@ -156,7 +156,7 @@ color:#0B63F6;
 
 <input type="password" id="password" placeholder="Mot de passe" required>
 
-<button type>="submit" id="btnConnexion"> Se connecter</button>
+<button type="submit" id="btnConnexion"> Se connecter</button>
 
 <div class="links">
 
@@ -167,38 +167,7 @@ color:#0B63F6;
 </div>
 
 </form>
-<script type="module">
-
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { auth } from "./js/firebase.js";
-
-const form = document.getElementById("formConnexion");
-
-form.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-
-        await signInWithEmailAndPassword(auth, email, password);
-
-        alert("Connexion réussie !");
-
-        window.location.href = "dashboard-parent.html";
-
-    } catch (error) {
-
-        alert(error.message);
-
-    }
-
-});
-
-</script>
-    <script type="module">
+  <script type="module">
 
 import { connexionParent } from "./js/auth.js";
 
