@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Recherche de professeurs | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+}
+
+header{
+
+background:#153A73;
+
+padding:18px 40px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+header img{
+
+height:60px;
+
+}
+
+.container{
+
+max-width:1200px;
+
+margin:40px auto;
+
+padding:20px;
+
+}
+
+.search-box{
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:20px;
+
+}
+
+select,
+button{
+
+padding:15px;
+
+border-radius:10px;
+
+font-size:16px;
+
+}
+
+select{
+
+border:1px solid #ddd;
+
+}
+
+button{
+
+background:#0B63F6;
+
+color:white;
+
+border:none;
+
+cursor:pointer;
+
+font-weight:600;
+
+}
+
+button:hover{
+
+background:#084ec7;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+</header>
+
+<div class="container">
+<h1 style="margin-bottom:25px;color:#153A73;">
+🔍 Rechercher un professeur
+</h1>
+
+<div class="search-box">
+
+<select>
+<option>Matière</option>
+<option>Mathématiques</option>
+<option>Anglais</option>
+<option>Français</option>
+<option>Physique-Chimie</option>
+<option>SVT</option>
+<option>Histoire-Géographie</option>
+</select>
+
+<select>
+<option>Niveau</option>
+<option>Primaire</option>
+<option>Collège</option>
+<option>Lycée</option>
+<option>Université</option>
+</select>
+
+<select>
+<option>Ville</option>
+<option>Abidjan</option>
+<option>Bouaké</option>
+<option>Yamoussoukro</option>
+<option>San Pedro</option>
+<option>Korhogo</option>
+<option>Daloa</option>
+</select>
+
+<button>
+🔍 Rechercher
+</button>
+
+</div>
+
+<br><br>
+
+<h2 style="color:#153A73;">
+Résultats de la recherche
+</h2>
+
+<br>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;">
+
+<div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
+
+<img src="images/professeur.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
+
+<h3 style="margin:15px 0;">Mr Ouattara</h3>
+
+<p>📚 Anglais</p>
+
+<p>📍 Abidjan</p>
+
+<p>⭐ 4.9 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+Voir le profil
+</button>
+
+</div>
+
+<div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
+
+<img src="images/professeur.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
+
+<h3 style="margin:15px 0;">Mme Traoré</h3>
+
+<p>📚 Mathématiques</p>
+
+<p>📍 Bouaké</p>
+
+<p>⭐ 4.8 / 5</p>
+
+<button>
+Voir le profil
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
