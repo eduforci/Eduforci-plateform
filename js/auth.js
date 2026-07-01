@@ -40,5 +40,29 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
   }
 
 }
-  
-export { creerCompteParent };
+  // Connexion Parent
+async function connexionParent(email, motDePasse) {
+
+  try {
+
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    alert("Connexion réussie !");
+
+    window.location.href = "dashboard-parent.html";
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+export {
+  creerCompteParent,
+  connexionParent
+};
