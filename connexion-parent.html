@@ -198,6 +198,24 @@ form.addEventListener("submit", async (e) => {
 });
 
 </script>
+    <script type="module">
+
+import { connexionParent } from "./js/auth.js";
+
+const form = document.getElementById("formConnexion");
+
+form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    await connexionParent(email, password);
+
+});
+
+</script>
 </body>
 
 </html>
