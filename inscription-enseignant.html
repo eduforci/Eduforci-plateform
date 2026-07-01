@@ -180,6 +180,48 @@ Créer mon compte Enseignant
 </div>
 
 </form>
+<script type="module">
 
+import { creerCompteEnseignant } from "./js/auth.js";
+
+const form = document.getElementById("formEnseignant");
+
+form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const nom = document.getElementById("nom").value;
+    const telephone = document.getElementById("telephone").value;
+    const email = document.getElementById("email").value;
+    const ville = document.getElementById("ville").value;
+    const matiere = document.getElementById("matiere").value;
+    const niveau = document.getElementById("niveau").value;
+    const experience = document.getElementById("experience").value;
+    const diplome = document.getElementById("diplome").value;
+    const presentation = document.getElementById("presentation").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alert("Les mots de passe ne correspondent pas.");
+        return;
+    }
+
+    await creerCompteEnseignant(
+        nom,
+        telephone,
+        email,
+        ville,
+        matiere,
+        niveau,
+        experience,
+        diplome,
+        presentation,
+        password
+    );
+
+});
+
+</script>
 </body>
 </html>
