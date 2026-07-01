@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Paramètres Administrateur | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#153A73;
+color:white;
+position:fixed;
+left:0;
+top:0;
+padding:30px 20px;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+text-decoration:none;
+color:white;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.main{
+margin-left:270px;
+padding:35px;
+width:100%;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.card h2{
+color:#153A73;
+margin-bottom:25px;
+}
+
+label{
+display:block;
+margin-top:18px;
+margin-bottom:8px;
+font-weight:600;
+}
+
+input,
+textarea,
+select{
+width:100%;
+padding:14px;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:15px;
+}
+
+button{
+margin-top:30px;
+padding:15px 30px;
+background:#0B63F6;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+font-weight:600;
+}
+
+button:hover{
+background:#084ec7;
+}
+
+</style>
+
+</head>
+
+<body>
+  <div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="#">👨‍🏫 Enseignants</a>
+
+<a href="#">👨‍👩‍👧 Parents</a>
+
+<a href="#">🏫 Établissements</a>
+
+<a href="#">📅 Réservations</a>
+
+<a href="#">⚙️ Paramètres</a>
+
+<a href="index.html">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="card">
+
+<h2>⚙️ Paramètres généraux</h2>
+
+<label>Nom de la plateforme</label>
+
+<input type="text" value="EDUFORCI">
+
+<label>Téléphone officiel</label>
+
+<input type="text" value="+225 07 47 32 73 09">
+
+<label>Adresse e-mail</label>
+
+<input type="email" placeholder="contact@eduforci.ci">
+
+<label>Adresse</label>
+
+<textarea placeholder="Adresse du siège d'EDUFORCI"></textarea>
+
+<label>Compte WhatsApp</label>
+
+<input type="text" placeholder="+225 XX XX XX XX XX">
+
+<label>Facebook</label>
+
+<input type="text" placeholder="https://facebook.com/eduforci">
+
+<label>Commission EDUFORCI (%)</label>
+
+<input type="number" value="0">
+
+<label>Autoriser les nouvelles inscriptions</label>
+
+<select>
+
+<option>Oui</option>
+
+<option>Non</option>
+
+</select>
+
+<label>Autoriser les nouvelles réservations</label>
+
+<select>
+
+<option>Oui</option>
+
+<option>Non</option>
+
+</select>
+
+<button>
+
+💾 Enregistrer les paramètres
+
+</button>
+
+</div>
+<br><br>
+
+<div class="card">
+
+<h2>📜 Journal d'administration</h2>
+
+<table style="width:100%;border-collapse:collapse;margin-top:20px;">
+
+<tr style="background:#153A73;color:white;">
+
+<th style="padding:15px;">Date</th>
+
+<th>Action</th>
+
+<th>Référence</th>
+
+</tr>
+
+<tr>
+
+<td style="padding:15px;">01/07/2026 - 09:15</td>
+
+<td>Validation d'un enseignant</td>
+
+<td>ENS-000154</td>
+
+</tr>
+
+<tr style="background:#f8f9fc;">
+
+<td style="padding:15px;">01/07/2026 - 09:42</td>
+
+<td>Confirmation d'une réservation</td>
+
+<td>RES-000213</td>
+
+</tr>
+
+<tr>
+
+<td style="padding:15px;">01/07/2026 - 10:10</td>
+
+<td>Validation d'un établissement</td>
+
+<td>ETB-000021</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br><br>
+
+<div class="card">
+
+<h2>👨‍💼 Gestion des administrateurs</h2>
+
+<p>Nombre d'administrateurs : <strong>1</strong></p>
+
+<p>Administrateur principal : <strong>Coach</strong></p>
+
+<button>➕ Ajouter un administrateur</button>
+
+<button style="margin-left:10px;background:#28a745;">
+🔑 Modifier mon mot de passe
+</button>
+
+</div>
+
+<br><br>
+
+<div class="card">
+
+<h2>💾 Sauvegarde</h2>
+
+<p>
+
+Effectuez une sauvegarde des données de la plateforme ou restaurez une sauvegarde précédente.
+
+</p>
+
+<button>📥 Télécharger une sauvegarde</button>
+
+<button style="margin-left:10px;background:#6c757d;">
+📤 Restaurer une sauvegarde
+</button>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
