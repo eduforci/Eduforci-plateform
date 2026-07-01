@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nos enseignants | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+}
+
+header{
+
+background:#153A73;
+
+padding:18px 40px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+header img{
+
+height:60px;
+
+}
+
+.container{
+
+max-width:1200px;
+
+margin:40px auto;
+
+padding:20px;
+
+}
+
+.title{
+
+text-align:center;
+
+margin-bottom:40px;
+
+}
+
+.title h1{
+
+color:#153A73;
+
+margin-bottom:10px;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+
+gap:30px;
+
+}
+
+.card{
+
+background:white;
+
+border-radius:20px;
+
+padding:25px;
+
+text-align:center;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+transition:.3s;
+
+}
+
+.card:hover{
+
+transform:translateY(-8px);
+
+}
+
+.teacher-photo{
+
+width:130px;
+
+height:130px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+border:5px solid #0B63F6;
+
+margin-bottom:15px;
+
+}
+
+.badge{
+
+display:inline-block;
+
+background:#28a745;
+
+color:white;
+
+padding:6px 14px;
+
+border-radius:20px;
+
+font-size:14px;
+
+margin:10px 0;
+
+}
+
+button{
+
+width:100%;
+
+padding:14px;
+
+margin-top:15px;
+
+background:#0B63F6;
+
+color:white;
+
+border:none;
+
+border-radius:10px;
+
+font-size:16px;
+
+font-weight:600;
+
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#084ec7;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+</header>
+
+<div class="container">
+
+<div class="title">
+
+<h1>Nos enseignants</h1>
+
+<p>
+Choisissez le professeur qui correspond le mieux à vos besoins.
+</p>
+
+</div>
+<div class="grid">
+
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>Mr Ouattara</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Anglais</p>
+
+<p><strong>📍 Ville :</strong> Abidjan</p>
+
+<p><strong>💰 Tarif :</strong> 7 500 FCFA / heure</p>
+
+<p><strong>🏠 Cours :</strong> À domicile & En ligne</p>
+
+<p><strong>⭐ Note :</strong> 4.9 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+Voir le profil
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>Mme Traoré</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Mathématiques</p>
+
+<p><strong>📍 Ville :</strong> Bouaké</p>
+
+<p><strong>💰 Tarif :</strong> 8 000 FCFA / heure</p>
+
+<p><strong>🏠 Cours :</strong> À domicile</p>
+
+<p><strong>⭐ Note :</strong> 4.8 / 5</p>
+
+<button>
+Voir le profil
+</button>
+
+</div>
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>M. Kouassi</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Physique-Chimie</p>
+
+<p><strong>📍 Ville :</strong> Yamoussoukro</p>
+
+<p><strong>💰 Tarif :</strong> 6 500 FCFA / heure</p>
+
+<p><strong>🏠 Cours :</strong> En ligne</p>
+
+<p><strong>🟢 Statut :</strong> Disponible</p>
+
+<p><strong>⭐ Note :</strong> 4.7 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+Voir le profil
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
+
+<h2>Mme Diallo</h2>
+
+<span class="badge">✔ Profil vérifié</span>
+
+<p><strong>📚 Matière :</strong> Français</p>
+
+<p><strong>📍 Ville :</strong> San Pedro</p>
+
+<p><strong>💰 Tarif :</strong> 7 000 FCFA / heure</p>
+
+<p><strong>🏠 Cours :</strong> À domicile</p>
+
+<p><strong>🔴 Statut :</strong> Occupée</p>
+
+<p><strong>⭐ Note :</strong> 4.9 / 5</p>
+
+<button onclick="location.href='profil-enseignant.html'">
+Voir le profil
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
