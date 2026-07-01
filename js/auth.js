@@ -1,12 +1,10 @@
 import { auth, db } from "./firebase.js";
 
 import {
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  increment
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 async function genererIdentifiant(type, prefixe) {
 
   const compteurRef = doc(db, "compteurs", type);
@@ -34,7 +32,7 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
       email,
       motDePasse
     );
-);
+    const user = userCredential.user;
     const identifiant = await genererIdentifiant(
   "parents",
   "PAR"
