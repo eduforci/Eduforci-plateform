@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tableau de bord Enseignant | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+
+width:260px;
+
+height:100vh;
+
+background:#153A73;
+
+color:white;
+
+padding:30px 20px;
+
+position:fixed;
+
+left:0;
+
+top:0;
+
+}
+
+.sidebar img{
+
+height:65px;
+
+display:block;
+
+margin:auto;
+
+margin-bottom:25px;
+
+}
+
+.sidebar a{
+
+display:block;
+
+color:white;
+
+text-decoration:none;
+
+padding:14px;
+
+margin-bottom:8px;
+
+border-radius:10px;
+
+transition:.3s;
+
+}
+
+.sidebar a:hover{
+
+background:#0B63F6;
+
+}
+
+.main{
+
+margin-left:260px;
+
+padding:35px;
+
+width:100%;
+
+}
+
+.welcome{
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+margin-bottom:30px;
+
+}
+
+.cards{
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:20px;
+
+}
+
+.card{
+
+background:white;
+
+padding:25px;
+
+border-radius:18px;
+
+text-align:center;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+}
+
+.card h2{
+
+color:#0B63F6;
+
+font-size:32px;
+
+margin-bottom:10px;
+
+}
+
+.card p{
+
+color:#666;
+
+}
+
+</style>
+
+</head>
+
+<body>
+  <div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="#">🏠 Tableau de bord</a>
+
+<a href="#">👤 Mon profil</a>
+
+<a href="#">📚 Mes matières</a>
+
+<a href="#">📅 Mes disponibilités</a>
+
+<a href="#">📨 Mes demandes</a>
+
+<a href="#">💬 Messages</a>
+
+<a href="#">⭐ Avis</a>
+
+<a href="#">⚙️ Paramètres</a>
+
+<a href="index.html">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1>Bonjour, Mr Ouattara 👋</h1>
+
+<p>
+Bienvenue sur votre espace enseignant EDUFORCI.
+Vous pouvez gérer votre profil, consulter vos demandes de cours et suivre votre activité.
+</p>
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+
+<h2>12</h2>
+
+<p>Élèves suivis</p>
+
+</div>
+
+<div class="card">
+
+<h2>5</h2>
+
+<p>Nouvelles demandes</p>
+
+</div>
+
+<div class="card">
+
+<h2>4.9★</h2>
+
+<p>Note moyenne</p>
+
+</div>
+
+<div class="card">
+
+<h2>95%</h2>
+
+<p>Taux de satisfaction</p>
+
+</div>
+
+</div>
+<br><br>
+
+<div class="welcome">
+
+<h2>📨 Mes dernières demandes</h2>
+
+<br>
+
+<table style="width:100%;border-collapse:collapse;">
+
+<tr style="background:#0B63F6;color:white;">
+
+<th style="padding:15px;">Élève</th>
+
+<th>Matière</th>
+
+<th>Ville</th>
+
+<th>Statut</th>
+
+</tr>
+
+<tr>
+
+<td style="padding:15px;">Awa Koné</td>
+
+<td>Mathématiques</td>
+
+<td>Abidjan</td>
+
+<td style="color:green;"><b>Nouvelle</b></td>
+
+</tr>
+
+<tr style="background:#f7f7f7;">
+
+<td style="padding:15px;">Yao Kouassi</td>
+
+<td>Anglais</td>
+
+<td>Bouaké</td>
+
+<td style="color:orange;"><b>En attente</b></td>
+
+</tr>
+
+<tr>
+
+<td style="padding:15px;">Fatou Traoré</td>
+
+<td>Français</td>
+
+<td>Yamoussoukro</td>
+
+<td style="color:blue;"><b>Acceptée</b></td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="welcome">
+
+<h2>📅 Mon planning</h2>
+
+<br>
+
+<p>✔ Lundi : 16h00 - 18h00</p>
+
+<p>✔ Mardi : 14h00 - 16h00</p>
+
+<p>✔ Mercredi : Disponible</p>
+
+<p>✔ Jeudi : 08h00 - 10h00</p>
+
+<p>✔ Vendredi : 15h00 - 18h00</p>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
