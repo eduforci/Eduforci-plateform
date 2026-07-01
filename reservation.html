@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Réserver un professeur | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+}
+
+header{
+
+background:#153A73;
+
+padding:18px 40px;
+
+display:flex;
+
+align-items:center;
+
+}
+
+header img{
+
+height:60px;
+
+}
+
+.container{
+
+max-width:1100px;
+
+margin:40px auto;
+
+padding:20px;
+
+display:grid;
+
+grid-template-columns:350px 1fr;
+
+gap:30px;
+
+}
+
+.card{
+
+background:white;
+
+padding:25px;
+
+border-radius:20px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+}
+
+.photo{
+
+width:170px;
+
+height:170px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+display:block;
+
+margin:auto;
+
+border:5px solid #0B63F6;
+
+margin-bottom:20px;
+
+}
+
+label{
+
+display:block;
+
+margin:15px 0 8px;
+
+font-weight:600;
+
+color:#153A73;
+
+}
+
+input,
+select,
+textarea{
+
+width:100%;
+
+padding:14px;
+
+border:1px solid #ddd;
+
+border-radius:10px;
+
+font-size:15px;
+
+}
+
+textarea{
+
+resize:vertical;
+
+min-height:120px;
+
+}
+
+button{
+
+width:100%;
+
+padding:15px;
+
+margin-top:25px;
+
+background:#0B63F6;
+
+color:white;
+
+border:none;
+
+border-radius:10px;
+
+font-size:17px;
+
+font-weight:600;
+
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#084ec7;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<img src="images/logo.png">
+
+</header>
+
+<div class="container">
+  <div class="card" style="text-align:center;">
+
+<img src="images/professeur.jpg" class="photo" alt="Professeur">
+
+<h2>Mr Ouattara</h2>
+
+<p><strong>ID :</strong> ENS-000245</p>
+
+<p>📚 Anglais</p>
+
+<p>📍 Abidjan</p>
+
+<p>⭐ 4.9 / 5</p>
+
+<p>💰 7 500 FCFA / heure</p>
+
+<p style="color:green;"><strong>🟢 Disponible</strong></p>
+
+</div>
+
+<div class="card">
+
+<h2 style="color:#153A73;">Réserver un cours</h2>
+
+<p style="margin:10px 0;color:#666;">
+Référence de réservation :
+<strong>RES-000001</strong>
+<br>
+<small>(Le numéro sera généré automatiquement plus tard.)</small>
+</p>
+
+<label>Date du cours</label>
+<input type="date">
+
+<label>Heure du cours</label>
+<input type="time">
+
+<label>Mode du cours</label>
+
+<select>
+
+<option>À domicile</option>
+
+<option>En ligne</option>
+
+</select>
+
+<label>Adresse (si cours à domicile)</label>
+
+<input type="text" placeholder="Ex : Cocody Angré, Rue 12">
+
+<label>Message au professeur</label>
+
+<textarea placeholder="Décrivez votre besoin..."></textarea>
+<div style="margin-top:30px;padding:20px;background:#f8f9fc;border-radius:15px;border-left:5px solid #0B63F6;">
+
+<h3 style="color:#153A73;">📋 Récapitulatif de la réservation</h3>
+
+<br>
+
+<p><strong>👨‍🏫 Professeur :</strong> Mr Ouattara</p>
+
+<p><strong>🆔 ID Enseignant :</strong> ENS-000245</p>
+
+<p><strong>🆔 Réservation :</strong> RES-000001</p>
+
+<p><strong>💰 Tarif :</strong> 7 500 FCFA / heure</p>
+
+<p><strong>📌 Statut :</strong>
+<span style="color:orange;font-weight:bold;">En attente de confirmation</span>
+</p>
+
+</div>
+
+<button>
+
+✅ Confirmer la réservation
+
+</button>
+
+<p style="text-align:center;margin-top:20px;color:#666;font-size:14px;">
+
+En cliquant sur <strong>Confirmer la réservation</strong>, votre demande sera envoyée à l'enseignant. Vous recevrez une notification dès qu'il acceptera ou refusera votre demande.
+
+</p>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
