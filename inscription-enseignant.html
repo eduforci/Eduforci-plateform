@@ -111,30 +111,27 @@ color:#0B63F6;
 </head>
 
 <body>
-
-<div class="form-box">
-
+<form class="form-box" id="formEnseignant">
 <img src="images/logo.png" class="logo" alt="Logo EDUFORCI">
 
 <h2>Inscription Enseignant</h2>
 
 <label>Nom et prénom</label>
-<input type="text">
+<input type="text" id="nom" required>
 
 <label>Téléphone</label>
-<input type="tel">
-
+<input type="tel" id="telephone" required>
+  
 <label>Adresse e-mail</label>
-<input type="email">
-
+<input type="email" id="email" required>
+  
 <label>Ville</label>
-<input type="text">
-
+<input type="text" id="ville" required>
+  
 <label>Matière enseignée</label>
-<input type="text" placeholder="Ex : Mathématiques, Anglais...">
-
+<input type="text" id="matiere" placeholder="Ex : Mathématiques, Anglais..." required>
 <label>Niveau enseigné</label>
-<select>
+<select id="niveau" required>
 <option>Choisir...</option>
 <option>Primaire</option>
 <option>Collège</option>
@@ -143,14 +140,13 @@ color:#0B63F6;
 </select>
 
 <label>Années d'expérience</label>
-<input type="number">
+<input type="number" id="experience" required>
 
 <label>Diplôme le plus élevé</label>
-<input type="text">
-
+<input type="text" id="diplome" required>
+  
 <label>Présentation</label>
-<textarea placeholder="Présentez-vous en quelques lignes..."></textarea>
-
+<textarea id="presentation" placeholder="Présentez-vous en quelques lignes..." required></textarea>
 <label>Mode d'enseignement</label>
 
 <div class="checkbox-group">
@@ -168,20 +164,22 @@ color:#0B63F6;
 <input type="file">
 
 <label>Mot de passe</label>
-<input type="password">
-
+<input type="password" id="confirmPassword" required>
+  
 <label>Confirmer le mot de passe</label>
 <input type="password">
 
-<button>Créer mon compte Enseignant</button>
-
+<button type="submit" id="btnInscription">
+Créer mon compte Enseignant
+</button>
+  
 <div class="links">
 
 <a href="connexion-enseignant.html">J'ai déjà un compte</a>
 
 </div>
 
-</div>
+</form>
 
 </body>
 </html>
