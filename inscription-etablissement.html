@@ -159,6 +159,48 @@ Créer le compte Établissement
 </div>
 
 </form>
+<script type="module">
 
+import { creerCompteEtablissement } from "./js/auth.js";
+
+const form = document.getElementById("formEtablissement");
+
+form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const nom = document.getElementById("nom").value;
+    const responsable = document.getElementById("responsable").value;
+    const telephone = document.getElementById("telephone").value;
+    const email = document.getElementById("email").value;
+    const ville = document.getElementById("ville").value;
+    const adresse = document.getElementById("adresse").value;
+    const type = document.getElementById("type").value;
+    const niveaux = document.getElementById("niveaux").value;
+    const description = document.getElementById("description").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alert("Les mots de passe ne correspondent pas.");
+        return;
+    }
+
+    await creerCompteEtablissement(
+        nom,
+        responsable,
+        telephone,
+        email,
+        ville,
+        adresse,
+        type,
+        niveaux,
+        description,
+        password
+    );
+
+});
+
+</script>
 </body>
 </html>
