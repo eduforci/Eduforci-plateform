@@ -14,7 +14,7 @@ increment
 async function genererIdentifiant(type, prefixe) {
 
   const compteurRef = doc(db, "compteurs", type);
-
+console.log("Lecture du document :", compteurRef.path);
   const compteurSnap = await getDoc(compteurRef);
 
 if (!compteurSnap.exists()) {
