@@ -13,25 +13,38 @@ increment
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 async function genererIdentifiant(type, prefixe) {
 
+  alert("Étape 1 : Début");
+
   const compteurRef = doc(db, "compteurs", type);
-console.log("Lecture du document :", compteurRef.path);
+
+  alert("Étape 2 : Référence créée");
+
   const compteurSnap = await getDoc(compteurRef);
 
-alert(
-  "Projet : " + db.app.options.projectId +
-  "\nExiste : " + compteurSnap.exists() +
-  "\nChemin : " + compteurRef.path
-);
+  alert("Étape 3 : Document lu");
 
-if (!compteurSnap.exists()) {
-  throw new Error("Document compteur introuvable : " + type);
-}
+  alert("Existe : " + compteurSnap.exists());
 
-const numero = compteurSnap.data().dernierNumero + 1;
+  if (!compteurSnap.exists()) {
+    alert("Document introuvable : compteurs/" + type);
+    throw new Error("Document compteur introuvable : " + type);
+  }
+
+  alert("Étape 4 : Lecture des données");
+
+  const data = compteurSnap.data();
+
+  alert(JSON.stringify(data));
+
+  const numero = data.dernierNumero + 1;
+
+  alert("Étape 5 : Numéro = " + numero);
 
   await updateDoc(compteurRef, {
     dernierNumero: increment(1)
   });
+
+  alert("Étape 6 : Compteur mis à jour");
 
   const annee = new Date().getFullYear();
 
