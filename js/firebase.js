@@ -1,8 +1,6 @@
 // Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 // Configuration Firebase
@@ -15,13 +13,15 @@ const firebaseConfig = {
   appId: "1:579205481786:web:092b397daa505716bd7c03"
 };
 
-// Initialisation
-console.log("Projet Firebase :", app.options.projectId);
+// Initialisation (doit être fait AVANT toute utilisation de "app")
 const app = initializeApp(firebaseConfig);
 
 // Services Firebase
 const auth = getAuth(app);
 const db = getFirestore(app);
-console.log(firebaseConfig.projectId);
+
+// Log une fois que tout est prêt
+console.log("Projet Firebase :", app.options.projectId);
+
 // Export
 export { auth, db };
