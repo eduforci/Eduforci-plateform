@@ -177,13 +177,15 @@ color:#666;
 <div class="main">
 
 <div class="welcome">
-<h1>Bonjour, <span id="nomEnseignant"></span> 👋</h1>
-  
-<p>
-Bienvenue sur votre espace enseignant EDUFORCI.
-Vous pouvez gérer votre profil, consulter vos demandes de cours et suivre votre activité.
-</p>
 
+<h1>Bonjour, <span id="nomEnseignant"></span> 👋</h1>
+
+<p><b>Identifiant :</b> <span id="identifiant"></span></p>
+<p><b>Email :</b> <span id="email"></span></p>
+<p><b>Ville :</b> <span id="ville"></span></p>
+<p><b>Matière :</b> <span id="matiere"></span></p>
+<p><b>Niveau :</b> <span id="niveau"></span></p>
+<p><b>Expérience :</b> <span id="experience"></span> an(s)</p>
 </div>
 
 <div class="cards">
@@ -321,8 +323,18 @@ onAuthStateChanged(auth, async (user) => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-        document.getElementById("nomEnseignant").textContent = docSnap.data().nom;
-    }
+
+    const data = docSnap.data();
+
+    document.getElementById("nomEnseignant").textContent = data.nom;
+    document.getElementById("identifiant").textContent = data.identifiant;
+    document.getElementById("email").textContent = data.email;
+    document.getElementById("ville").textContent = data.ville;
+    document.getElementById("matiere").textContent = data.matiere;
+    document.getElementById("niveau").textContent = data.niveau;
+    document.getElementById("experience").textContent = data.experience;
+
+}
 
 });
 document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
