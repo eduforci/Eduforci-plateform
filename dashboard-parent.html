@@ -154,7 +154,7 @@ margin-bottom:10px;
 
 <a href="recherche.html">🔍 Trouver un professeur</a>
 
-<a href="#">❤️ Mes favoris</a>
+<a href="favoris.html">❤️ Mes favoris</a>
 
 <a href="mes-reservations.html">📅 Mes réservations</a>
 
@@ -188,7 +188,7 @@ Retrouvez vos professeurs, vos réservations et vos messages en un seul endroit.
 
 <div class="card">
 
-<h2>8</h2>
+<h2 id="nbFavoris">8</h2>
 
 <p>Professeurs favoris</p>
 
@@ -365,6 +365,14 @@ onAuthStateChanged(auth, async (user) => {
         const qMsg = query(collection(db, "messages"), where("parentId", "==", user.uid));
         const snapMsg = await getDocs(qMsg);
         document.getElementById("nbMessages").innerHTML = snapMsg.size;
+    } catch (error) {
+        console.log(error.message);
+    }
+
+    try {
+        const qFav = query(collection(db, "favoris"), where("parentId", "==", user.uid));
+        const snapFav = await getDocs(qFav);
+        document.getElementById("nbFavoris").innerHTML = snapFav.size;
     } catch (error) {
         console.log(error.message);
     }
