@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mes favoris | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:260px;
+height:100vh;
+background:#153A73;
+color:white;
+padding:30px 20px;
+position:fixed;
+top:0;
+left:0;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+text-decoration:none;
+color:white;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:260px;
+padding:35px;
+width:100%;
+}
+
+.welcome{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:18px;
+text-align:center;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.card button{
+width:100%;
+padding:12px;
+margin-top:12px;
+border:none;
+border-radius:10px;
+font-size:14px;
+font-weight:600;
+cursor:pointer;
+}
+
+.btn-profil{
+background:#0B63F6;
+color:white;
+}
+
+.btn-profil:hover{
+background:#084ec7;
+}
+
+.btn-retirer{
+background:white;
+color:#e74c3c;
+border:2px solid #e74c3c !important;
+}
+
+.vide{
+text-align:center;
+padding:40px 20px;
+color:#666;
+}
+
+.vide a{
+color:#0B63F6;
+font-weight:600;
+text-decoration:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="dashboard-parent.html">🏠 Tableau de bord</a>
+
+<a href="recherche.html">🔍 Trouver un professeur</a>
+
+<a href="favoris.html" class="active">❤️ Mes favoris</a>
+
+<a href="mes-reservations.html">📅 Mes réservations</a>
+
+<a href="messages.html">💬 Messages</a>
+
+<a href="#">⭐ Mes avis</a>
+
+<a href="#">⚙️ Paramètres</a>
+
+<a href="index.html">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1>❤️ Mes favoris</h1>
+
+<p>Retrouvez ici les professeurs que vous avez ajoutés à vos favoris.</p>
+
+</div>
+
+<div class="welcome">
+
+<div class="cards" id="listeFavoris"></div>
+
+<div id="messageVide" class="vide" style="display:none;">
+
+Vous n'avez pas encore de professeur favori. <br><br>
+
+<a href="recherche.html">Trouver un professeur →</a>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let uidActuel = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-parent.html";
+        return;
+    }
+
+    uidActuel = user.uid;
+    await chargerFavoris();
+
+});
+
+async function chargerFavoris() {
+
+    const liste = document.getElementById("listeFavoris");
+    const messageVide = document.getElementById("messageVide");
+    liste.innerHTML = "";
+
+    try {
+
+        const q = query(collection(db, "favoris"), where("parentId", "==", uidActuel));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            messageVide.style.display = "block";
+            return;
+        }
+
+        messageVide.style.display = "none";
+
+        snap.forEach((docSnap) => {
+
+            const f = docSnap.data();
+
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `
+                <h2>👨‍🏫</h2>
+                <p><strong>${f.enseignantNom || "Enseignant"}</strong></p>
+                <p>${f.matiere || ""}</p>
+                <button class="btn-profil" onclick="location.href='profil-enseignant.html'">Voir le profil</button>
+                <button class="btn-retirer" data-id="${docSnap.id}">Retirer des favoris</button>
+            `;
+            liste.appendChild(div);
+
+        });
+
+        document.querySelectorAll(".btn-retirer").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                await deleteDoc(doc(db, "favoris", btn.dataset.id));
+                await chargerFavoris();
+            });
+        });
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>
