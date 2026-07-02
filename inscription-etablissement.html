@@ -125,17 +125,17 @@ color:#0B63F6;
 <input type="text" id="ville" required>
 
 <label>Adresse</label>
-<input type="text" id"adresse" required>
+<input type="text" id="adresse" required>
 
 <label>Type d'établissement</label>
 <select>
 <option>Choisir...</option>
 <option>Public</option>
 <option>Privé</option>
-</select>
+</select id="type" required>
 
 <label>Niveaux enseignés</label>
-<input type="text" id="niveaux" required">
+<input type="text" id="niveaux" required>
 
 <label>Description</label>
 <textarea id="description"></textarea>
@@ -144,7 +144,7 @@ color:#0B63F6;
 <input type="file">
 
 <label>Mot de passe</label>
-<input type="password" id"password" required>
+<input type="password" id="password" required>
 
 <label>Confirmer le mot de passe</label>
 <input type="password" id="confirmPassword" required>
@@ -163,7 +163,7 @@ Créer le compte Établissement
 
 import { creerCompteEtablissement } from "./js/auth.js";
 
-const form = document.getElementById("formEtablissement");
+const type= document.getElementById("type"). value;
 
 form.addEventListener("submit", async (e) => {
 
@@ -199,7 +199,7 @@ form.addEventListener("submit", async (e) => {
         password
     );
 
-}
+});
 
 </script>
 </body>
