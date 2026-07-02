@@ -131,8 +131,6 @@ async function creerCompteEnseignant(
   } catch (error) {
     alert(error.message);
   }
-}
-
 export {
   creerCompteParent,
   creerCompteEnseignant,
