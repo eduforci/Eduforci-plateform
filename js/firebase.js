@@ -16,6 +16,7 @@ const firebaseConfig = {
 };
 
 // Initialisation
+console.log("Projet Firebase :", app.options.projectId);
 const app = initializeApp(firebaseConfig);
 
 // Services Firebase
