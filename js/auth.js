@@ -1,10 +1,16 @@
 import { auth, db } from "./firebase.js";
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+  doc,
+getDoc,
+setDoc,
+updateDoc,
+increment
+} } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 async function genererIdentifiant(type, prefixe) {
 
   const compteurRef = doc(db, "compteurs", type);
