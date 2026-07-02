@@ -5,7 +5,12 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-
+import {
+  doc,
+  setDoc,
+  getDoc,
+  runTransaction
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 // ==============================
 // GÉNÉRATION D'IDENTIFIANTS
 // ==============================
