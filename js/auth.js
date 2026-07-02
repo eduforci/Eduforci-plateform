@@ -14,15 +14,16 @@ increment
 async function genererIdentifiant(type, prefixe) {
 
   alert("Étape 1 : Début");
+  alert("Projet utilisé : " + db.app.options.projectId);
 
   const compteurRef = doc(db, "compteurs", type);
 
   alert("Étape 2 : Référence créée");
+  alert("Chemin exact lu : " + compteurRef.path);
 
   const compteurSnap = await getDoc(compteurRef);
 
   alert("Étape 3 : Document lu");
-
   alert("Existe : " + compteurSnap.exists());
 
   if (!compteurSnap.exists()) {
@@ -51,6 +52,7 @@ async function genererIdentifiant(type, prefixe) {
   return `${prefixe}-${annee}-${String(numero).padStart(6, "0")}`;
 
 }
+
 // Création d'un compte Parent
 async function creerCompteParent(nom, telephone, email, motDePasse) {
 
