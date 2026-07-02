@@ -123,11 +123,11 @@ async function creerCompteEnseignant(
 
     alert("Compte Enseignant créé avec succès !");
     window.location.href = "dashboard-enseignant.html";
-
-  } catch (error) {
-    alert("Code : " + error.code + "\n\nMessage : " + error.message);
-
-}
+catch (error) {
+    alert(
+        "Code : " + error.code +
+        "\n\nMessage : " + error.message
+    );
 }
 // Connexion Enseignant
 async function connexionEnseignant(email, motDePasse) {
