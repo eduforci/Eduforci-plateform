@@ -7,7 +7,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Tableau de bord Parent | EDUFORCI</title>
+<title>Connexion Parent | EDUFORCI</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -23,121 +23,120 @@ font-family:Poppins,sans-serif;
 }
 
 body{
-background:#f4f7fb;
-display:flex;
-}
 
-.sidebar{
+background:linear-gradient(rgba(8,34,88,.85),rgba(8,34,88,.85)),url("images/hero.jpg");
 
-width:260px;
+background-size:cover;
+
+background-position:center;
 
 height:100vh;
 
-background:#153A73;
+display:flex;
 
-color:white;
+justify-content:center;
 
-padding:30px 20px;
-
-position:fixed;
-
-top:0;
-
-left:0;
+align-items:center;
 
 }
 
-.sidebar img{
+.form-box{
 
-height:65px;
+background:#fff;
+
+width:380px;
+
+padding:40px;
+
+border-radius:20px;
+
+box-shadow:0 15px 40px rgba(0,0,0,.2);
+
+}
+
+.logo{
 
 display:block;
 
 margin:auto;
 
+height:70px;
+
+margin-bottom:20px;
+
+}
+
+h2{
+
+text-align:center;
+
+color:#0B63F6;
+
 margin-bottom:25px;
 
 }
 
-.sidebar a{
-
-display:block;
-
-padding:14px;
-
-margin-bottom:10px;
-
-border-radius:10px;
-
-text-decoration:none;
-
-color:white;
-
-transition:.3s;
-
-}
-
-.sidebar a:hover{
-
-background:#0B63F6;
-
-}
-
-.main{
-
-margin-left:260px;
-
-padding:35px;
+input{
 
 width:100%;
 
-}
+padding:15px;
 
-.welcome{
+margin-bottom:15px;
 
-background:white;
+border:1px solid #ddd;
 
-padding:30px;
+border-radius:10px;
 
-border-radius:20px;
-
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-
-margin-bottom:30px;
+font-size:15px;
 
 }
 
-.cards{
+button{
 
-display:grid;
+width:100%;
 
-grid-template-columns:repeat(4,1fr);
+padding:15px;
 
-gap:20px;
+background:#0B63F6;
+
+color:#fff;
+
+border:none;
+
+border-radius:10px;
+
+font-size:16px;
+
+font-weight:600;
+
+cursor:pointer;
 
 }
 
-.card{
+button:hover{
 
-background:white;
+background:#084ec7;
 
-padding:25px;
+}
 
-border-radius:18px;
+.links{
+
+margin-top:20px;
 
 text-align:center;
 
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-
 }
 
-.card h2{
+.links a{
 
-font-size:32px;
+display:block;
+
+margin:8px 0;
+
+text-decoration:none;
 
 color:#0B63F6;
-
-margin-bottom:10px;
 
 }
 
@@ -146,244 +145,42 @@ margin-bottom:10px;
 </head>
 
 <body>
-  <div class="sidebar">
 
-<img src="images/logo.png" alt="EDUFORCI">
+<form class="form-box" id="formConnexion">
 
-<a href="dashboard-parent.html">🏠 Tableau de bord</a>
+<img src="images/logo.png" class="logo">
 
-<a href="recherche.html">🔍 Trouver un professeur</a>
+<h2>Connexion Parent</h2>
 
-<a href="favoris.html">❤️ Mes favoris</a>
+<input type="email" id="email" placeholder="Adresse e-mail" required>
 
-<a href="mes-reservations.html">📅 Mes réservations</a>
+<input type="password" id="password" placeholder="Mot de passe" required>
 
-<a href="messages.html">💬 Messages</a>
+<button type="submit" id="btnConnexion"> Se connecter</button>
 
-<a href="avis.html">⭐ Mes avis</a>
+<div class="links">
 
-<a href="#">⚙️ Paramètres</a>
+<a href="#">Mot de passe oublié ?</a>
 
-<a href="index.html">🚪 Déconnexion</a>
-
-</div>
-
-<div class="main">
-
-<div class="welcome">
-
-<h1 id="nomParent">Bonjour 👋</h1>
-
-<p>
-
-Bienvenue sur votre espace Parent EDUFORCI.
-
-Retrouvez vos professeurs, vos réservations et vos messages en un seul endroit.
-
-</p>
+<a href="inscription-parent.html">Créer un compte Parent</a>
 
 </div>
 
-<div class="cards">
+</form>
+  <script type="module">
 
-<div class="card">
+import { connexionParent } from "./js/auth.js";
 
-<h2 id="nbFavoris">8</h2>
+const form = document.getElementById("formConnexion");
 
-<p>Professeurs favoris</p>
+form.addEventListener("submit", async (e) => {
 
-</div>
+    e.preventDefault();
 
-<div class="card">
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
-<h2 id="nbReservations">3</h2>
-
-<p>Cours réservés</p>
-
-</div>
-
-<div class="card">
-
-<h2 id="nbMessages">5</h2>
-
-<p>Messages</p>
-
-</div>
-
-<div class="card">
-
-<h2 id="nbAvis">2</h2>
-
-<p>Avis publiés</p>
-
-</div>
-
-</div>
-  <br><br>
-
-<div class="welcome">
-
-<h2>📅 Mes prochains cours</h2>
-
-<br>
-
-<table style="width:100%;border-collapse:collapse;">
-
-<tr style="background:#0B63F6;color:white;">
-
-<th style="padding:15px;">Date</th>
-
-<th>Heure</th>
-
-<th>Professeur</th>
-
-<th>Matière</th>
-
-<th>Statut</th>
-
-</tr>
-
-<tr>
-
-<td style="padding:15px;">05/07/2026</td>
-
-<td>16h00</td>
-
-<td>Mr Ouattara</td>
-
-<td>Anglais</td>
-
-<td style="color:green;"><b>Confirmé</b></td>
-
-</tr>
-
-<tr style="background:#f7f7f7;">
-
-<td style="padding:15px;">08/07/2026</td>
-
-<td>10h00</td>
-
-<td>Mme Koné</td>
-
-<td>Mathématiques</td>
-
-<td style="color:orange;"><b>En attente</b></td>
-
-</tr>
-
-</table>
-
-</div>
-
-<br>
-
-<div class="welcome">
-
-<h2>👨‍🏫 Professeurs recommandés</h2>
-
-<br>
-
-<div class="cards">
-
-<div class="card">
-
-<h2>👨‍🏫</h2>
-
-<p><strong>Mr Ouattara</strong></p>
-
-<p>Anglais</p>
-
-<p>⭐ 4.9 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-
-Voir le profil
-
-</button>
-
-</div>
-
-<div class="card">
-
-<h2>👩‍🏫</h2>
-
-<p><strong>Mme Traoré</strong></p>
-
-<p>Mathématiques</p>
-
-<p>⭐ 4.8 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-
-Voir le profil
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-<script type="module">
-
-import { auth, db } from "./js/firebase.js";
-
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-
-import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-
-onAuthStateChanged(auth, async (user) => {
-
-    if (!user) {
-        window.location.href = "connexion-parent.html";
-        return;
-    }
-
-    const docRef = doc(db, "parents", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-
-        const parent = docSnap.data();
-
-        document.getElementById("nomParent").innerHTML =
-            "Bonjour, " + parent.nom + " 👋";
-
-    }
-
-    try {
-        const q = query(collection(db, "reservations"), where("parentId", "==", user.uid));
-        const snap = await getDocs(q);
-        document.getElementById("nbReservations").innerHTML = snap.size;
-    } catch (error) {
-        console.log(error.message);
-    }
-
-    try {
-        const qMsg = query(collection(db, "messages"), where("parentId", "==", user.uid));
-        const snapMsg = await getDocs(qMsg);
-        document.getElementById("nbMessages").innerHTML = snapMsg.size;
-    } catch (error) {
-        console.log(error.message);
-    }
-
-    try {
-        const qFav = query(collection(db, "favoris"), where("parentId", "==", user.uid));
-        const snapFav = await getDocs(qFav);
-        document.getElementById("nbFavoris").innerHTML = snapFav.size;
-    } catch (error) {
-        console.log(error.message);
-    }
-
-    try {
-        const qAvis = query(collection(db, "avis"), where("parentId", "==", user.uid));
-        const snapAvis = await getDocs(qAvis);
-        document.getElementById("nbAvis").innerHTML = snapAvis.size;
-    } catch (error) {
-        console.log(error.message);
-    }
+    await connexionParent(email, password);
 
 });
 
