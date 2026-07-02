@@ -17,7 +17,11 @@ async function genererIdentifiant(type, prefixe) {
 
   const compteurSnap = await getDoc(compteurRef);
 
-  const numero = compteurSnap.data().dernierNumero + 1;
+if (!compteurSnap.exists()) {
+  throw new Error("Document compteur introuvable : " + type);
+}
+
+const numero = compteurSnap.data().dernierNumero + 1;
 
   await updateDoc(compteurRef, {
     dernierNumero: increment(1)
