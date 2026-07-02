@@ -203,6 +203,8 @@ background:#084ec7;
 
 <button id="btnMessage" style="background:#153A73;margin-top:12px;">💬 Envoyer un message</button>
 
+<button id="btnFavori" style="background:white;color:#0B63F6;border:2px solid #0B63F6;margin-top:12px;">🤍 Ajouter aux favoris</button>
+
 <div id="formMessage" style="display:none;margin-top:15px;">
 
 <textarea id="contenuMessage" placeholder="Écrivez votre message..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
@@ -265,14 +267,70 @@ Professeur d'anglais passionné, spécialisé dans la préparation au CEPE, BEPC
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, addDoc, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const ENSEIGNANT_ID = "ENS-000245";
+const ENSEIGNANT_NOM = "Mr Ouattara";
 
 let parentConnecte = null;
+
+function favoriRef(uid) {
+    return doc(db, "favoris", uid + "_" + ENSEIGNANT_ID);
+}
+
+async function actualiserBoutonFavori() {
+    if (!parentConnecte) return;
+    const snap = await getDoc(favoriRef(parentConnecte.uid));
+    const btn = document.getElementById("btnFavori");
+    if (snap.exists()) {
+        btn.innerHTML = "❤️ Retirer des favoris";
+        btn.style.background = "#0B63F6";
+        btn.style.color = "white";
+    } else {
+        btn.innerHTML = "🤍 Ajouter aux favoris";
+        btn.style.background = "white";
+        btn.style.color = "#0B63F6";
+    }
+}
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         parentConnecte = user;
+        actualiserBoutonFavori();
     }
+});
+
+document.getElementById("btnFavori").addEventListener("click", async () => {
+
+    if (!parentConnecte) {
+        alert("Veuillez vous connecter pour ajouter un favori.");
+        window.location.href = "connexion-parent.html";
+        return;
+    }
+
+    try {
+
+        const ref = favoriRef(parentConnecte.uid);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+            await deleteDoc(ref);
+        } else {
+            await setDoc(ref, {
+                parentId: parentConnecte.uid,
+                enseignantId: ENSEIGNANT_ID,
+                enseignantNom: ENSEIGNANT_NOM,
+                matiere: "Anglais",
+                dateAjout: new Date().toISOString()
+            });
+        }
+
+        actualiserBoutonFavori();
+
+    } catch (error) {
+        alert(error.message);
+    }
+
 });
 
 document.getElementById("btnMessage").addEventListener("click", () => {
