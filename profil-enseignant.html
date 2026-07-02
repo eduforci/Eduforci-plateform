@@ -259,6 +259,28 @@ Professeur d'anglais passionné, spécialisé dans la préparation au CEPE, BEPC
 
 </p>
 
+<div style="margin-top:25px;padding:20px;background:#f8f9fc;border-radius:15px;">
+
+<h3 style="color:#153A73;margin-bottom:15px;">Laisser un avis</h3>
+
+<label style="display:block;margin-bottom:8px;font-weight:600;color:#153A73;">Note</label>
+
+<select id="noteAvis" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;margin-bottom:12px;">
+<option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+<option value="4">⭐⭐⭐⭐ (4/5)</option>
+<option value="3">⭐⭐⭐ (3/5)</option>
+<option value="2">⭐⭐ (2/5)</option>
+<option value="1">⭐ (1/5)</option>
+</select>
+
+<label style="display:block;margin-bottom:8px;font-weight:600;color:#153A73;">Commentaire</label>
+
+<textarea id="commentaireAvis" placeholder="Partagez votre expérience..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:90px;resize:vertical;"></textarea>
+
+<button id="btnEnvoyerAvis" style="margin-top:12px;">Publier mon avis</button>
+
+</div>
+
 </div>
 
 </div>
@@ -366,6 +388,46 @@ document.getElementById("btnEnvoyerMessage").addEventListener("click", async () 
         alert("Message envoyé avec succès !");
         document.getElementById("contenuMessage").value = "";
         document.getElementById("formMessage").style.display = "none";
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+document.getElementById("btnEnvoyerAvis").addEventListener("click", async () => {
+
+    if (!parentConnecte) {
+        alert("Veuillez vous connecter pour publier un avis.");
+        window.location.href = "connexion-parent.html";
+        return;
+    }
+
+    const note = document.getElementById("noteAvis").value;
+    const commentaire = document.getElementById("commentaireAvis").value.trim();
+
+    if (!commentaire) {
+        alert("Merci d'écrire un commentaire avant de publier.");
+        return;
+    }
+
+    try {
+
+        const parentSnap = await getDoc(doc(db, "parents", parentConnecte.uid));
+        const parentNom = parentSnap.exists() ? parentSnap.data().nom : "Parent";
+
+        await addDoc(collection(db, "avis"), {
+            parentId: parentConnecte.uid,
+            parentNom: parentNom,
+            enseignantNom: ENSEIGNANT_NOM,
+            enseignantId: ENSEIGNANT_ID,
+            note: Number(note),
+            commentaire: commentaire,
+            dateAvis: new Date().toISOString()
+        });
+
+        alert("Votre avis a été publié avec succès !");
+        document.getElementById("commentaireAvis").value = "";
 
     } catch (error) {
         alert(error.message);
