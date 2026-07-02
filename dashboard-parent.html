@@ -158,7 +158,7 @@ margin-bottom:10px;
 
 <a href="mes-reservations.html">📅 Mes réservations</a>
 
-<a href="#">💬 Messages</a>
+<a href="messages.html">💬 Messages</a>
 
 <a href="#">⭐ Mes avis</a>
 
@@ -204,7 +204,7 @@ Retrouvez vos professeurs, vos réservations et vos messages en un seul endroit.
 
 <div class="card">
 
-<h2>5</h2>
+<h2 id="nbMessages">5</h2>
 
 <p>Messages</p>
 
@@ -357,6 +357,14 @@ onAuthStateChanged(auth, async (user) => {
         const q = query(collection(db, "reservations"), where("parentId", "==", user.uid));
         const snap = await getDocs(q);
         document.getElementById("nbReservations").innerHTML = snap.size;
+    } catch (error) {
+        console.log(error.message);
+    }
+
+    try {
+        const qMsg = query(collection(db, "messages"), where("parentId", "==", user.uid));
+        const snapMsg = await getDocs(qMsg);
+        document.getElementById("nbMessages").innerHTML = snapMsg.size;
     } catch (error) {
         console.log(error.message);
     }
