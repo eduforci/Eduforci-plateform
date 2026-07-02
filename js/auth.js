@@ -129,9 +129,31 @@ async function creerCompteEnseignant(
 
 }
 }
+// Connexion Enseignant
+async function connexionEnseignant(email, motDePasse) {
 
+  try {
+
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    alert("Connexion réussie !");
+
+    window.location.href = "dashboard-enseignant.html";
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
 export {
   creerCompteParent,
   creerCompteEnseignant,
-  connexionParent
+  connexionParent,
+  connexionEnseignant
 };
