@@ -93,18 +93,27 @@ color:#0B63F6;
 </head>
 
 <body>
-
-<div class="form-box">
-
+<form class="form-box" id="formConnexion">
 <img src="images/logo.png" class="logo" alt="EDUFORCI">
 
 <h2>Connexion Établissement</h2>
 
-<input type="text" placeholder="E-mail ou téléphone">
+<input
+type="email"
+id="email"
+placeholder="Adresse e-mail"
+required>
 
-<input type="password" placeholder="Mot de passe">
+<input
+type="password"
+id="password"
+placeholder="Mot de passe"
+required>
 
-<button>Se connecter</button>
+<button type="submit">
+Se connecter
+</button>
+
 
 <div class="links">
 
@@ -114,7 +123,24 @@ color:#0B63F6;
 
 </div>
 
-</div>
+</form>
+<script type="module">
 
+import { connexionEtablissement } from "./js/auth.js";
+
+const form = document.getElementById("formConnexion");
+
+form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    await connexionEtablissement(email, password);
+
+});
+
+</script>
 </body>
 </html>
