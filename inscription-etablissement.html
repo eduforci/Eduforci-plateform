@@ -128,12 +128,12 @@ color:#0B63F6;
 <input type="text" id="adresse" required>
 
 <label>Type d'établissement</label>
-<select>
-<option>Choisir...</option>
-<option>Public</option>
-<option>Privé</option>
-</select id="type" required>
-
+<select id="type" required>
+    <option value="">Choisir...</option>
+    <option>Public</option>
+    <option>Privé</option>
+</select>
+  
 <label>Niveaux enseignés</label>
 <input type="text" id="niveaux" required>
 
@@ -163,10 +163,9 @@ Créer le compte Établissement
 
 import { creerCompteEtablissement } from "./js/auth.js";
 
-const type= document.getElementById("type"). value;
+const form = document.getElementById("formEtablissement");
 
 form.addEventListener("submit", async (e) => {
-
     e.preventDefault();
 
     const nom = document.getElementById("nom").value;
