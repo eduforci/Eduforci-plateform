@@ -111,7 +111,7 @@ color:#0B63F6;
 </head>
 
 <body>
-<form class="form-box" id="formEnseignant" novalidate>
+<form class="form-box" id="formEnseignant">
 <img src="images/logo.png" class="logo" alt="Logo EDUFORCI">
 
 <h2>Inscription Enseignant</h2>
@@ -121,18 +121,19 @@ color:#0B63F6;
 
 <label>Téléphone</label>
 <input type="tel" id="telephone" required>
-  
+
 <label>Adresse e-mail</label>
 <input type="email" id="email" required>
-  
+
 <label>Ville</label>
 <input type="text" id="ville" required>
-  
+
 <label>Matière enseignée</label>
 <input type="text" id="matiere" placeholder="Ex : Mathématiques, Anglais..." required>
+
 <label>Niveau enseigné</label>
 <select id="niveau" required>
-<option>Choisir...</option>
+<option value="">Choisir...</option>
 <option>Primaire</option>
 <option>Collège</option>
 <option>Lycée</option>
@@ -144,17 +145,14 @@ color:#0B63F6;
 
 <label>Diplôme le plus élevé</label>
 <input type="text" id="diplome" required>
-  
+
 <label>Présentation</label>
 <textarea id="presentation" placeholder="Présentez-vous en quelques lignes..." required></textarea>
+
 <label>Mode d'enseignement</label>
-
 <div class="checkbox-group">
-
 <label><input type="checkbox"> À domicile</label>
-
 <label><input type="checkbox"> En ligne</label>
-
 </div>
 
 <label>Photo de profil</label>
@@ -165,43 +163,30 @@ color:#0B63F6;
 
 <label>Mot de passe</label>
 <input type="password" id="password" required>
-  
+
 <label>Confirmer le mot de passe</label>
 <input type="password" id="confirmPassword" required>
 
 <button type="submit" id="btnInscription">
 Créer mon compte Enseignant
 </button>
-  
+
 <div class="links">
-
 <a href="connexion-enseignant.html">J'ai déjà un compte</a>
-
 </div>
 
 </form>
-<script>
-window.addEventListener("error", function (e) {
-  alert("Erreur JS détectée : " + e.message + " (ligne " + e.lineno + ")");
-});
-</script>
 
 <script type="module">
 
 import { creerCompteEnseignant } from "./js/auth.js";
 
-alert("Script chargé avec succès, import OK");
-
 const form = document.getElementById("formEnseignant");
-
-if (!form) {
-  alert("ERREUR : le formulaire #formEnseignant est introuvable dans le HTML !");
-}
 
 form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
-    alert("Le formulaire est bien envoyé");
+
     const nom = document.getElementById("nom").value;
     const telephone = document.getElementById("telephone").value;
     const email = document.getElementById("email").value;
