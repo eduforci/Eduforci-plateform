@@ -201,6 +201,16 @@ background:#084ec7;
 
 <button onclick="location.href='reservation.html'">Réserver ce professeur</button>
 
+<button id="btnMessage" style="background:#153A73;margin-top:12px;">💬 Envoyer un message</button>
+
+<div id="formMessage" style="display:none;margin-top:15px;">
+
+<textarea id="contenuMessage" placeholder="Écrivez votre message..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
+
+<button id="btnEnvoyerMessage" style="margin-top:10px;">Envoyer</button>
+
+</div>
+
 </div>
 
 <div class="card">
@@ -250,6 +260,62 @@ Professeur d'anglais passionné, spécialisé dans la préparation au CEPE, BEPC
 </div>
 
 </div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let parentConnecte = null;
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        parentConnecte = user;
+    }
+});
+
+document.getElementById("btnMessage").addEventListener("click", () => {
+    const form = document.getElementById("formMessage");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+});
+
+document.getElementById("btnEnvoyerMessage").addEventListener("click", async () => {
+
+    if (!parentConnecte) {
+        alert("Veuillez vous connecter pour envoyer un message.");
+        window.location.href = "connexion-parent.html";
+        return;
+    }
+
+    const contenu = document.getElementById("contenuMessage").value.trim();
+
+    if (!contenu) {
+        alert("Merci d'écrire un message avant d'envoyer.");
+        return;
+    }
+
+    try {
+
+        await addDoc(collection(db, "messages"), {
+            parentId: parentConnecte.uid,
+            enseignantNom: "Mr Ouattara",
+            enseignantId: "ENS-000245",
+            contenu: contenu,
+            dateEnvoi: new Date().toISOString()
+        });
+
+        alert("Message envoyé avec succès !");
+        document.getElementById("contenuMessage").value = "";
+        document.getElementById("formMessage").style.display = "none";
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+</script>
 
 </body>
 
