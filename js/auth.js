@@ -69,18 +69,14 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
 // Connexion Parent
 async function connexionParent(email, motDePasse) {
   try {
-    alert("Tentative de connexion...");
 
     await signInWithEmailAndPassword(auth, email, motDePasse);
-
-    alert("Connexion réussie !");
 
     window.location.href = "dashboard-parent.html";
 
   } catch (error) {
     alert(error.code + "\n" + error.message);
   }
-}
 }
 
 // Création d'un compte Enseignant
@@ -131,6 +127,8 @@ async function creerCompteEnseignant(
   } catch (error) {
     alert(error.message);
   }
+}
+
 export {
   creerCompteParent,
   creerCompteEnseignant,
