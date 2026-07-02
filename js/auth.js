@@ -41,7 +41,7 @@ const numero = compteurSnap.data().dernierNumero + 1;
 // Création d'un compte Parent
 async function creerCompteParent(nom, telephone, email, motDePasse) {
 
-  try {
+  try {alert("Le nouveau auth.js est bien chargé !");
 
     const userCredential = await createUserWithEmailAndPassword(
       auth,
