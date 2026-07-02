@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Paramètres | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:260px;
+height:100vh;
+background:#153A73;
+color:white;
+padding:30px 20px;
+position:fixed;
+top:0;
+left:0;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+text-decoration:none;
+color:white;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:260px;
+padding:35px;
+width:100%;
+max-width:700px;
+}
+
+.welcome{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+}
+
+label{
+display:block;
+margin:15px 0 8px;
+font-weight:600;
+color:#153A73;
+}
+
+input{
+width:100%;
+padding:14px;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:15px;
+}
+
+input:disabled{
+background:#f2f2f2;
+color:#888;
+}
+
+button{
+margin-top:20px;
+padding:14px 25px;
+background:#0B63F6;
+color:white;
+border:none;
+border-radius:10px;
+font-size:15px;
+font-weight:600;
+cursor:pointer;
+}
+
+button:hover{
+background:#084ec7;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="dashboard-parent.html">🏠 Tableau de bord</a>
+
+<a href="recherche.html">🔍 Trouver un professeur</a>
+
+<a href="favoris.html">❤️ Mes favoris</a>
+
+<a href="mes-reservations.html">📅 Mes réservations</a>
+
+<a href="messages.html">💬 Messages</a>
+
+<a href="avis.html">⭐ Mes avis</a>
+
+<a href="parametres-parent.html" class="active">⚙️ Paramètres</a>
+
+<a href="index.html">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1>⚙️ Paramètres</h1>
+
+<p>Gérez vos informations personnelles et votre sécurité.</p>
+
+</div>
+
+<div class="welcome">
+
+<h2 style="color:#153A73;">Mes informations</h2>
+
+<label>Nom et prénom</label>
+<input type="text" id="nom">
+
+<label>Téléphone</label>
+<input type="tel" id="telephone">
+
+<label>Adresse e-mail</label>
+<input type="email" id="email" disabled>
+
+<button id="btnEnregistrerProfil">Enregistrer les modifications</button>
+
+</div>
+
+<div class="welcome">
+
+<h2 style="color:#153A73;">Changer le mot de passe</h2>
+
+<label>Nouveau mot de passe</label>
+<input type="password" id="nouveauMotDePasse" placeholder="Au moins 6 caractères">
+
+<label>Confirmer le nouveau mot de passe</label>
+<input type="password" id="confirmerMotDePasse">
+
+<button id="btnChangerMotDePasse">Changer le mot de passe</button>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let parentConnecte = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-parent.html";
+        return;
+    }
+
+    parentConnecte = user;
+
+    const docSnap = await getDoc(doc(db, "parents", user.uid));
+
+    if (docSnap.exists()) {
+        const parent = docSnap.data();
+        document.getElementById("nom").value = parent.nom || "";
+        document.getElementById("telephone").value = parent.telephone || "";
+        document.getElementById("email").value = parent.email || "";
+    }
+
+});
+
+document.getElementById("btnEnregistrerProfil").addEventListener("click", async () => {
+
+    if (!parentConnecte) return;
+
+    const nom = document.getElementById("nom").value.trim();
+    const telephone = document.getElementById("telephone").value.trim();
+
+    if (!nom || !telephone) {
+        alert("Merci de remplir le nom et le téléphone.");
+        return;
+    }
+
+    try {
+
+        await updateDoc(doc(db, "parents", parentConnecte.uid), {
+            nom: nom,
+            telephone: telephone
+        });
+
+        alert("Vos informations ont été mises à jour avec succès !");
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+document.getElementById("btnChangerMotDePasse").addEventListener("click", async () => {
+
+    if (!parentConnecte) return;
+
+    const nouveau = document.getElementById("nouveauMotDePasse").value;
+    const confirmer = document.getElementById("confirmerMotDePasse").value;
+
+    if (!nouveau || nouveau.length < 6) {
+        alert("Le mot de passe doit contenir au moins 6 caractères.");
+        return;
+    }
+
+    if (nouveau !== confirmer) {
+        alert("Les mots de passe ne correspondent pas.");
+        return;
+    }
+
+    try {
+
+        await updatePassword(parentConnecte, nouveau);
+        alert("Votre mot de passe a été changé avec succès !");
+        document.getElementById("nouveauMotDePasse").value = "";
+        document.getElementById("confirmerMotDePasse").value = "";
+
+    } catch (error) {
+
+        if (error.code === "auth/requires-recent-login") {
+            alert("Pour des raisons de sécurité, veuillez vous déconnecter et vous reconnecter avant de changer votre mot de passe.");
+        } else {
+            alert(error.message);
+        }
+
+    }
+
+});
+
+</script>
+
+</body>
+
+                       </html>
+
