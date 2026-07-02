@@ -1,9 +1,11 @@
 import { auth, db } from "./firebase.js";
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
 import {
   doc,
   getDoc,
@@ -12,10 +14,14 @@ import {
   increment
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-// Génère un identifiant unique du type PAR-2026-000001 ou ENS-2026-000001
+// ======================================
+// GÉNÉRATION DES IDENTIFIANTS
+// ======================================
+
 async function genererIdentifiant(type, prefixe) {
 
   const compteurRef = doc(db, "compteurs", type);
+
   const compteurSnap = await getDoc(compteurRef);
 
   if (!compteurSnap.exists()) {
@@ -23,6 +29,7 @@ async function genererIdentifiant(type, prefixe) {
   }
 
   const data = compteurSnap.data();
+
   const numero = data.dernierNumero + 1;
 
   await updateDoc(compteurRef, {
@@ -32,9 +39,12 @@ async function genererIdentifiant(type, prefixe) {
   const annee = new Date().getFullYear();
 
   return `${prefixe}-${annee}-${String(numero).padStart(6, "0")}`;
-}
 
-// Création d'un compte Parent
+}
+// ======================================
+// INSCRIPTION PARENT
+// ======================================
+
 async function creerCompteParent(nom, telephone, email, motDePasse) {
 
   try {
@@ -44,11 +54,16 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
       email,
       motDePasse
     );
+
     const user = userCredential.user;
 
-    const identifiant = await genererIdentifiant("parents", "PAR");
+    const identifiant = await genererIdentifiant(
+      "parents",
+      "PAR"
+    );
 
     await setDoc(doc(db, "parents", user.uid), {
+
       uid: user.uid,
       identifiant: identifiant,
       nom: nom,
@@ -56,30 +71,50 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
       email: email,
       role: "parent",
       dateCreation: new Date().toISOString()
+
     });
 
-    alert("Compte créé avec succès !");
+    alert("Compte Parent créé avec succès !");
+
     window.location.href = "dashboard-parent.html";
 
   } catch (error) {
-    alert(error.message);
+
+    alert(error.code + "\n\n" + error.message);
+
   }
+
 }
 
-// Connexion Parent
+// ======================================
+// CONNEXION PARENT
+// ======================================
+
 async function connexionParent(email, motDePasse) {
+
   try {
 
-    await signInWithEmailAndPassword(auth, email, motDePasse);
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    alert("Connexion réussie !");
 
     window.location.href = "dashboard-parent.html";
 
   } catch (error) {
-    alert(error.code + "\n" + error.message);
-  }
-}
 
-// Création d'un compte Enseignant
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
+}
+// ======================================
+// INSCRIPTION ENSEIGNANT
+// ======================================
+
 async function creerCompteEnseignant(
   nom,
   telephone,
@@ -103,9 +138,13 @@ async function creerCompteEnseignant(
 
     const user = userCredential.user;
 
-    const identifiant = await genererIdentifiant("enseignants", "ENS");
+    const identifiant = await genererIdentifiant(
+      "enseignants",
+      "ENS"
+    );
 
     await setDoc(doc(db, "enseignants", user.uid), {
+
       uid: user.uid,
       identifiant: identifiant,
       nom: nom,
@@ -119,17 +158,25 @@ async function creerCompteEnseignant(
       presentation: presentation,
       role: "enseignant",
       dateCreation: new Date().toISOString()
+
     });
 
     alert("Compte Enseignant créé avec succès !");
+
     window.location.href = "dashboard-enseignant.html";
-catch (error) {
-    alert(
-        "Code : " + error.code +
-        "\n\nMessage : " + error.message
-    );
+
+  } catch (error) {
+
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
 }
-// Connexion Enseignant
+
+// ======================================
+// CONNEXION ENSEIGNANT
+// ======================================
+
 async function connexionEnseignant(email, motDePasse) {
 
   try {
@@ -146,12 +193,15 @@ async function connexionEnseignant(email, motDePasse) {
 
   } catch (error) {
 
-    alert(error.message);
+    alert(error.code + "\n\n" + error.message);
 
   }
 
 }
-  // Création d'un compte Établissement
+// ======================================
+// INSCRIPTION ÉTABLISSEMENT
+// ======================================
+
 async function creerCompteEtablissement(
   nom,
   responsable,
@@ -209,10 +259,61 @@ async function creerCompteEtablissement(
   }
 
 }
+
+// ======================================
+// CONNEXION ÉTABLISSEMENT
+// ======================================
+
+async function connexionEtablissement(email, motDePasse) {
+
+  try {
+
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    alert("Connexion réussie !");
+
+    window.location.href = "dashboard-etablissement.html";
+
+  } catch (error) {
+
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
+}
+
+// ======================================
+// DÉCONNEXION
+// ======================================
+
+async function deconnexion() {
+
+  try {
+
+    await signOut(auth);
+
+  } catch (error) {
+
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
+}
+
+// ======================================
+// EXPORTS
+// ======================================
+
 export {
   creerCompteParent,
-  creerCompteEnseignant,
-  creerCompteEtablissement,
   connexionParent,
-  connexionEnseignant
+  creerCompteEnseignant,
+  connexionEnseignant,
+  creerCompteEtablissement,
+  connexionEtablissement,
+  deconnexion
 };
