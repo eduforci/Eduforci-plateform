@@ -160,7 +160,7 @@ margin-bottom:10px;
 
 <a href="messages.html">💬 Messages</a>
 
-<a href="#">⭐ Mes avis</a>
+<a href="avis.html">⭐ Mes avis</a>
 
 <a href="#">⚙️ Paramètres</a>
 
@@ -212,7 +212,7 @@ Retrouvez vos professeurs, vos réservations et vos messages en un seul endroit.
 
 <div class="card">
 
-<h2>2</h2>
+<h2 id="nbAvis">2</h2>
 
 <p>Avis publiés</p>
 
@@ -373,6 +373,14 @@ onAuthStateChanged(auth, async (user) => {
         const qFav = query(collection(db, "favoris"), where("parentId", "==", user.uid));
         const snapFav = await getDocs(qFav);
         document.getElementById("nbFavoris").innerHTML = snapFav.size;
+    } catch (error) {
+        console.log(error.message);
+    }
+
+    try {
+        const qAvis = query(collection(db, "avis"), where("parentId", "==", user.uid));
+        const snapAvis = await getDocs(qAvis);
+        document.getElementById("nbAvis").innerHTML = snapAvis.size;
     } catch (error) {
         console.log(error.message);
     }
