@@ -17,6 +17,12 @@ async function genererIdentifiant(type, prefixe) {
 console.log("Lecture du document :", compteurRef.path);
   const compteurSnap = await getDoc(compteurRef);
 
+alert(
+  "Projet : " + db.app.options.projectId +
+  "\nExiste : " + compteurSnap.exists() +
+  "\nChemin : " + compteurRef.path
+);
+
 if (!compteurSnap.exists()) {
   throw new Error("Document compteur introuvable : " + type);
 }
