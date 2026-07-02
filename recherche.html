@@ -130,8 +130,8 @@ background:#084ec7;
 
 <div class="search-box">
 
-<select>
-<option>Matière</option>
+<select id="matiere">
+<option value="">Toutes les matières</option>
 <option>Mathématiques</option>
 <option>Anglais</option>
 <option>Français</option>
@@ -140,16 +140,16 @@ background:#084ec7;
 <option>Histoire-Géographie</option>
 </select>
 
-<select>
-<option>Niveau</option>
+<select id="niveau">
+<option value="">Tous les niveaux</option>
 <option>Primaire</option>
 <option>Collège</option>
 <option>Lycée</option>
 <option>Université</option>
 </select>
 
-<select>
-<option>Ville</option>
+  <select id="ville">
+<option value="">Toutes les villes</option>
 <option>Abidjan</option>
 <option>Bouaké</option>
 <option>Yamoussoukro</option>
@@ -158,10 +158,9 @@ background:#084ec7;
 <option>Daloa</option>
 </select>
 
-<button>
+<button id="btnRecherche">
 🔍 Rechercher
 </button>
-
 </div>
 
 <br><br>
@@ -177,7 +176,9 @@ Résultats de la recherche
 
 <img src="images/professeur.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
 
-<h3 style="margin:15px 0;">Mr Ouattara</h3>
+<h3 style="margin:15px 0;"> <div id="listeEnseignants"
+style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;">
+</div>  </h3>
 
 <p>📚 Anglais</p>
 
@@ -195,7 +196,9 @@ Voir le profil
 
 <img src="images/professeur.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
 
-<h3 style="margin:15px 0;">Mme Traoré</h3>
+<h3 style="margin:15px 0;">  <div id="listeEnseignants"
+style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;">
+</div>  </h3>
 
 <p>📚 Mathématiques</p>
 
@@ -213,6 +216,57 @@ Voir le profil
 
 </div>
 
+  <script type="module">
+
+import { db } from "./js/firebase.js";
+
+import {
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const liste = document.getElementById("listeEnseignants");
+
+async function chargerEnseignants() {
+
+    liste.innerHTML = "";
+
+    const snapshot = await getDocs(collection(db, "enseignants"));
+
+    snapshot.forEach((doc) => {
+
+        const prof = doc.data();
+
+        liste.innerHTML += `
+
+        <div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
+
+            <img src="images/professeur.jpg"
+            style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
+
+            <h3>${prof.nom}</h3>
+
+            <p>📚 ${prof.matiere}</p>
+
+            <p>📍 ${prof.ville}</p>
+
+            <p>🎓 ${prof.niveau}</p>
+
+            <button onclick="alert('Cette fonctionnalité arrive bientôt.')">
+                Voir le profil
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+chargerEnseignants();
+
+</script>
 </body>
 
 </html>
