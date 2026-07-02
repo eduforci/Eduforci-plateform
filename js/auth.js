@@ -151,9 +151,68 @@ async function connexionEnseignant(email, motDePasse) {
   }
 
 }
+  // Création d'un compte Établissement
+async function creerCompteEtablissement(
+  nom,
+  responsable,
+  telephone,
+  email,
+  ville,
+  adresse,
+  type,
+  niveaux,
+  description,
+  motDePasse
+) {
+
+  try {
+
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    const user = userCredential.user;
+
+    const identifiant = await genererIdentifiant(
+      "etablissements",
+      "ETB"
+    );
+
+    await setDoc(doc(db, "etablissements", user.uid), {
+
+      uid: user.uid,
+      identifiant: identifiant,
+      nom: nom,
+      responsable: responsable,
+      telephone: telephone,
+      email: email,
+      ville: ville,
+      adresse: adresse,
+      type: type,
+      niveaux: niveaux,
+      description: description,
+      role: "etablissement",
+      dateCreation: new Date().toISOString()
+
+    });
+
+    alert("Compte Établissement créé avec succès !");
+
+    window.location.href = "dashboard-etablissement.html";
+
+  } catch (error) {
+
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
+}
 export {
   creerCompteParent,
   creerCompteEnseignant,
+  creerCompteEtablissement,
   connexionParent,
   connexionEnseignant
 };
