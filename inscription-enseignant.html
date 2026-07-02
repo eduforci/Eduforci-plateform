@@ -180,19 +180,28 @@ Créer mon compte Enseignant
 </div>
 
 </form>
-<script type="module">
-  import { creerCompteEnseignant } from "./js/auth.js";
+<script>
+window.addEventListener("error", function (e) {
+  alert("Erreur JS détectée : " + e.message + " (ligne " + e.lineno + ")");
+});
+</script>
 
-alert("Le script est chargé");
+<script type="module">
+
+import { creerCompteEnseignant } from "./js/auth.js";
+
+alert("Script chargé avec succès, import OK");
 
 const form = document.getElementById("formEnseignant");
 
-alert(form ? "Formulaire trouvé" : "Formulaire introuvable");
+if (!form) {
+  alert("ERREUR : le formulaire #formEnseignant est introuvable dans le HTML !");
+}
 
-form.onsubmit = function(e) {
+form.addEventListener("submit", async (e) => {
+
     e.preventDefault();
-    alert("Le bouton fonctionne !");
-};
+    alert("Le formulaire est bien envoyé");
     const nom = document.getElementById("nom").value;
     const telephone = document.getElementById("telephone").value;
     const email = document.getElementById("email").value;
