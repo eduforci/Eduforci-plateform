@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Offres d'emploi | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#153A73;
+color:#fff;
+position:fixed;
+left:0;
+top:0;
+padding:30px 20px;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:270px;
+width:100%;
+padding:35px;
+}
+
+.welcome{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:750px;
+}
+
+th{
+background:#153A73;
+color:white;
+padding:14px;
+text-align:left;
+}
+
+td{
+padding:14px;
+border-bottom:1px solid #eee;
+}
+
+tr:nth-child(even){
+background:#f8f9fc;
+}
+
+.btn-fermer{
+padding:8px 15px;
+background:#dc3545;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+margin-right:5px;
+}
+
+.btn-reactiver{
+padding:8px 15px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+margin-right:5px;
+}
+
+.btn-supprimer{
+padding:8px 15px;
+background:#6c757d;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+}
+
+.vide{
+text-align:center;
+padding:40px 20px;
+color:#666;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+
+<a href="reservations-admin.html">📅 Réservations</a>
+
+<a href="offres-admin.html" class="active">📢 Offres d'emploi</a>
+
+<a href="#">📄 Candidatures</a>
+
+<a href="#">💳 Paiements</a>
+
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1>📢 Offres d'emploi</h1>
+
+<p style="margin-top:10px;color:#666;">Toutes les offres publiées par les établissements sur la plateforme.</p>
+
+</div>
+
+<div class="welcome">
+
+<table id="tableOffres">
+
+<tr id="ligneEntete">
+<th>Poste</th>
+<th>Établissement</th>
+<th>Ville</th>
+<th>Niveau</th>
+<th>Statut</th>
+<th>Action</th>
+</tr>
+
+</table>
+
+<div id="messageVide" class="vide" style="display:none;">Aucune offre publiée pour le moment.</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    await chargerOffres();
+
+});
+
+async function chargerOffres() {
+
+    const table = document.getElementById("tableOffres");
+    const messageVide = document.getElementById("messageVide");
+
+    document.querySelectorAll("#tableOffres tr:not(#ligneEntete)").forEach(tr => tr.remove());
+
+    try {
+
+        const snap = await getDocs(collection(db, "offres"));
+
+        if (snap.empty) {
+            messageVide.style.display = "block";
+            return;
+        }
+
+        messageVide.style.display = "none";
+
+        const offres = [];
+        snap.forEach((docSnap) => offres.push({ id: docSnap.id, ...docSnap.data() }));
+        offres.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+
+        offres.forEach((o) => {
+
+            const active = o.statut === "active";
+            const couleur = active ? "green" : "#999";
+            const texte = active ? "Active" : "Fermée";
+
+            const actionHtml = active
+                ? `<button class="btn-fermer" data-id="${o.id}" data-action="fermer">Fermer</button>`
+                : `<button class="btn-reactiver" data-id="${o.id}" data-action="reactiver">Réactiver</button>`;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${o.poste || "-"}</td>
+                <td>${o.etablissementNom || "-"}</td>
+                <td>${o.ville || "-"}</td>
+                <td>${o.niveau || "-"}</td>
+                <td style="color:${couleur};"><b>${texte}</b></td>
+                <td>${actionHtml} <button class="btn-supprimer" data-id="${o.id}" data-action="supprimer">Supprimer</button></td>
+            `;
+            table.appendChild(tr);
+
+        });
+
+        document.querySelectorAll(".btn-fermer, .btn-reactiver, .btn-supprimer").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+
+                try {
+
+                    if (btn.dataset.action === "supprimer") {
+                        if (!confirm("Voulez-vous vraiment supprimer cette offre ?")) return;
+                        await deleteDoc(doc(db, "offres", btn.dataset.id));
+                    } else {
+                        await updateDoc(doc(db, "offres", btn.dataset.id), {
+                            statut: btn.dataset.action === "fermer" ? "fermee" : "active"
+                        });
+                    }
+
+                    await chargerOffres();
+
+                } catch (error) {
+                    alert(error.message);
+                }
+
+            });
+        });
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+
+</html>
