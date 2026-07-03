@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Connexion Admin | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#153A73,#0B63F6);
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.form-box{
+max-width:400px;
+width:100%;
+background:#fff;
+padding:35px;
+border-radius:20px;
+box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+
+.logo{
+display:block;
+margin:auto;
+height:60px;
+margin-bottom:15px;
+}
+
+h2{
+text-align:center;
+color:#153A73;
+margin-bottom:25px;
+}
+
+input{
+width:100%;
+padding:14px;
+margin-bottom:15px;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:15px;
+}
+
+button{
+width:100%;
+padding:15px;
+background:#153A73;
+color:#fff;
+border:none;
+border-radius:10px;
+font-size:17px;
+font-weight:600;
+cursor:pointer;
+}
+
+button:hover{
+background:#0d2850;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<form class="form-box" id="formConnexionAdmin">
+
+<img src="images/logo.png" class="logo" alt="EDUFORCI">
+
+<h2>🔐 Espace Administration</h2>
+
+<input type="email" id="email" placeholder="Adresse e-mail" required>
+
+<input type="password" id="password" placeholder="Mot de passe" required>
+
+<button type="submit">Se connecter</button>
+
+</form>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const form = document.getElementById("formConnexionAdmin");
+
+form.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+        if (!adminSnap.exists()) {
+            await signOut(auth);
+            alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+            return;
+        }
+
+        window.location.href = "dashboard-admin.html";
+
+    } catch (error) {
+        alert(error.code + "\n\n" + error.message);
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>
