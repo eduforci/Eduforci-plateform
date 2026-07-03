@@ -145,21 +145,36 @@ async function creerCompteEnseignant(
 
     await setDoc(doc(db, "enseignants", user.uid), {
 
-      uid: user.uid,
-      identifiant: identifiant,
-      nom: nom,
-      telephone: telephone,
-      email: email,
-      ville: ville,
-      matiere: matiere,
-      niveau: niveau,
-      experience: experience,
-      diplome: diplome,
-      presentation: presentation,
-      role: "enseignant",
-      dateCreation: new Date().toISOString()
+  uid: user.uid,
+  identifiant: identifiant,
 
-    });
+  nom: nom,
+  telephone: telephone,
+  email: email,
+
+  ville: ville,
+  matiere: matiere,
+  niveau: niveau,
+
+  experience: experience,
+  diplome: diplome,
+  presentation: presentation,
+
+  // Nouveaux champs
+  photo: "",
+  cv: "",
+  tarif: 0,
+  modeCours: [],
+  disponible: true,
+  note: 0,
+  nombreAvis: 0,
+  verification: false,
+  statut: "En attente",
+
+  role: "enseignant",
+  dateCreation: new Date().toISOString()
+
+});
 
     alert("Compte Enseignant créé avec succès !");
 
