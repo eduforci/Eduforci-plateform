@@ -101,9 +101,9 @@ margin-bottom:10px;
 
 <img src="images/logo.png" alt="EDUFORCI">
 
-<a href="#">🏠 Tableau de bord</a>
+<a href="dashboard-etablissement.html">🏠 Tableau de bord</a>
 
-<a href="#">📢 Publier une offre</a>
+<a href="publier-offre.html">📢 Publier une offre</a>
 
 <a href="#">👨‍🏫 Rechercher un enseignant</a>
 
@@ -115,7 +115,7 @@ margin-bottom:10px;
 
 <a href="#">⚙️ Paramètres</a>
 
-<a href="index.html">🚪 Déconnexion</a>
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
 
 </div>
 
@@ -123,7 +123,7 @@ margin-bottom:10px;
 
 <div class="welcome">
 
-<h1>Bienvenue, Collège La Grâce 👋</h1>
+<h1 id="titreBienvenue">Bienvenue 👋</h1>
 
 <p>
 
@@ -137,7 +137,7 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 <div class="card">
 
-<h2>4</h2>
+<h2 id="nbOffres">-</h2>
 
 <p>Offres publiées</p>
 
@@ -145,7 +145,7 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 <div class="card">
 
-<h2>18</h2>
+<h2 id="nbCandidatures">-</h2>
 
 <p>Candidatures reçues</p>
 
@@ -153,7 +153,7 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 <div class="card">
 
-<h2>6</h2>
+<h2 id="nbMessages">-</h2>
 
 <p>Messages</p>
 
@@ -161,7 +161,7 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 <div class="card">
 
-<h2>12</h2>
+<h2 id="nbRecrutes">-</h2>
 
 <p>Enseignants recrutés</p>
 
@@ -176,9 +176,9 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 <br>
 
-<table style="width:100%;border-collapse:collapse;">
+<table id="tableOffres" style="width:100%;border-collapse:collapse;">
 
-<tr style="background:#0B63F6;color:white;">
+<tr id="ligneEnteteOffres" style="background:#0B63F6;color:white;">
 
 <th style="padding:15px;">Poste</th>
 
@@ -190,31 +190,13 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 </tr>
 
-<tr>
-
-<td style="padding:15px;">Professeur de Mathématiques</td>
-
-<td>Collège</td>
-
-<td>Abidjan</td>
-
-<td style="color:green;"><b>Active</b></td>
-
-</tr>
-
-<tr style="background:#f7f7f7;">
-
-<td style="padding:15px;">Professeur d'Anglais</td>
-
-<td>Lycée</td>
-
-<td>Bouaké</td>
-
-<td style="color:orange;"><b>En cours</b></td>
-
-</tr>
-
 </table>
+
+<div id="messageVideOffres" style="display:none;text-align:center;padding:30px;color:#666;">
+
+Vous n'avez publié aucune offre pour le moment. <a href="publier-offre.html" style="color:#0B63F6;font-weight:600;text-decoration:none;">Publier votre première offre →</a>
+
+</div>
 
 </div>
 
@@ -222,45 +204,83 @@ Gérez vos offres d'emploi, consultez les candidatures des enseignants et trouve
 
 <div class="welcome">
 
-<h2>👨‍🏫 Dernières candidatures</h2>
+<h2>👨‍🏫 Candidatures reçues</h2>
 
-<br>
-
-<div class="cards">
-
-<div class="card">
-
-<h2>👨‍🏫</h2>
-
-<p><strong>Mr Ouattara</strong></p>
-
-<p>Anglais</p>
-
-<p>⭐ 4.9 / 5</p>
-
-<button>Voir le profil</button>
-
-</div>
-
-<div class="card">
-
-<h2>👩‍🏫</h2>
-
-<p><strong>Mme Traoré</strong></p>
-
-<p>Mathématiques</p>
-
-<p>⭐ 4.8 / 5</p>
-
-<button>Voir le profil</button>
+<p style="color:#999;font-style:italic;margin-top:10px;">Fonctionnalité à venir — les enseignants pourront bientôt postuler directement à vos offres.</p>
 
 </div>
 
 </div>
 
-</div>
+<script type="module">
 
-</div>
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-etablissement.html";
+        return;
+    }
+
+    const docSnap = await getDoc(doc(db, "etablissements", user.uid));
+
+    if (docSnap.exists()) {
+        const etab = docSnap.data();
+        document.getElementById("titreBienvenue").innerHTML = "Bienvenue, " + (etab.nom || "") + " 👋";
+    }
+
+    try {
+
+        const q = query(collection(db, "offres"), where("etablissementId", "==", user.uid));
+        const snap = await getDocs(q);
+
+        document.getElementById("nbOffres").innerHTML = snap.size;
+        document.getElementById("nbCandidatures").innerHTML = 0;
+        document.getElementById("nbMessages").innerHTML = 0;
+        document.getElementById("nbRecrutes").innerHTML = 0;
+
+        const table = document.getElementById("tableOffres");
+        const messageVide = document.getElementById("messageVideOffres");
+
+        if (snap.empty) {
+            messageVide.style.display = "block";
+        } else {
+
+            snap.forEach((docSnap) => {
+
+                const o = docSnap.data();
+                const couleur = o.statut === "active" ? "green" : "#999";
+                const texte = o.statut === "active" ? "Active" : "Fermée";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="padding:15px;">${o.poste || "-"}</td>
+                    <td>${o.niveau || "-"}</td>
+                    <td>${o.ville || "-"}</td>
+                    <td style="color:${couleur};"><b>${texte}</b></td>
+                `;
+                table.appendChild(tr);
+
+            });
+
+        }
+
+    } catch (error) {
+        console.log(error.message);
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
 
 </body>
 
