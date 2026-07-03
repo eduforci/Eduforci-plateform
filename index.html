@@ -1,134 +1,228 @@
-
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>EDUFORCI | Trouver le professeur idéal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
 </head>
+
 <body>
+
 <header>
+
 <div class="navbar">
+
 <div class="logo">
-<img src="logo.png" alt="EDUFORCI" />
+
+<img src="logo.png" alt="EDUFORCI">
+
 </div>
+
 <button id="menuBtn">
+
 <i class="fas fa-bars"></i>
+
 </button>
+
 </div>
+
 </header>
+
 <section class="hero">
+
 <div class="overlay"></div>
+
 <div class="hero-content">
-<h1>Trouver le professeur idéal pour réussir.</h1>
-<p>Cours à domicile • Cours en ligne • Préparation CEPE • BEPC • BAC</p>
+
+<h1>
+
+Trouver le professeur idéal
+pour réussir.
+
+</h1>
+
+<p>
+
+Cours à domicile • Cours en ligne • Préparation CEPE • BEPC • BAC
+
+</p>
+
 <div class="search-box">
-<select id="selectMatiere">
+
+<select>
+
 <option>Matière</option>
+
 <option>Mathématiques</option>
+
 <option>Anglais</option>
+
 <option>Français</option>
+
 <option>Physique</option>
+
 </select>
-<select id="selectNiveau">
+
+<select>
+
 <option>Niveau</option>
+
 <option>Primaire</option>
+
 <option>Collège</option>
+
 <option>Lycée</option>
+
 </select>
-<select id="selectVille">
+
+<select>
+
 <option>Ville</option>
+
 <option>Abidjan</option>
+
 <option>Bouaké</option>
+
 <option>Yamoussoukro</option>
+
 </select>
-<button id="btnRechercher">Rechercher</button>
+
+<button>
+
+Rechercher
+
+</button>
+
 </div>
+
 </div>
+
 </section>
+    <section class="quick-access">
 
-<section class="quick-access">
 <div class="card">
+
 <i class="fas fa-user-graduate"></i>
+
 <h3>Parents</h3>
-<p>Trouvez rapidement un professeur qualifié pour votre enfant.</p>
-<a href="#">Trouver un professeur</a>
+
+<p>
+
+Trouvez rapidement un professeur qualifié pour votre enfant.
+
+</p>
+
+<a href="#">
+
+Trouver un professeur
+
+</a>
+
 </div>
 
 <div class="card">
+
 <i class="fas fa-chalkboard-teacher"></i>
+
 <h3>Enseignants</h3>
-<p>Inscrivez-vous et proposez vos services partout en Côte d'Ivoire.</p>
-<a href="#" id="btnDevenirEnseignant">Devenir enseignant</a>
+
+<p>
+
+Inscrivez-vous et proposez vos services partout en Côte d'Ivoire.
+
+</p>
+
+<a href="#">
+
+Devenir enseignant
+
+</a>
+
 </div>
 
 <div class="card">
+
 <i class="fas fa-school"></i>
+
 <h3>Établissements</h3>
-<p>Publiez vos besoins et recrutez les meilleurs enseignants.</p>
-<a href="#" id="btnPublierOffre">Publier une offre</a>
+
+<p>
+
+Publiez vos besoins et recrutez les meilleurs enseignants.
+
+</p>
+
+<a href="#">
+
+Publier une offre
+
+</a>
+
 </div>
+
 </section>
 
 <div class="side-menu" id="sideMenu">
+
 <button id="closeBtn">
+
 <i class="fas fa-times"></i>
+
 </button>
+
 <h2>EDUFORCI</h2>
+
 <h4>Navigation</h4>
+
 <a href="#">Accueil</a>
+
 <a href="#">Trouver un professeur</a>
+
 <a href="#">Enseignants</a>
+
 <a href="#">Établissements</a>
+
 <a href="#">Services</a>
+
 <a href="#">Galerie</a>
+
 <a href="#">Contact</a>
-<hr />
+<hr>
 <h4>connexion</h4>
+
 <a href="connexion-parent.html">👨‍👩‍👧 Parent</a>
+
 <a href="connexion-enseignant.html">👨‍🏫 Enseignant</a>
+
 <a href="connexion-etablissement.html">🏫 Établissement</a>
+
 <h4>inscription</h4>
+
 <a href="inscription-parent.html">👨‍👩‍👧 Parent</a>
+
 <a href="inscription-enseignant.html">👨‍🏫 Enseignant</a>
+
 <a href="inscription-etablissement.html">🏫 Etablissement</a>
+
 </div>
+<script src="script.js"></script>
 
-<script>
-  // Pour "Trouver un professeur" (parents) avec demande de confirmation
-  document.getElementById('btnRechercher').addEventListener('click', () => {
-    const reponse = confirm("Vous avez déjà un compte ? Cliquez OK pour vous connecter, Annuler pour vous inscrire.");
-    if (reponse) {
-      window.location.href = 'connexion-parent.html';
-    } else {
-      window.location.href = 'inscription-parent.html';
-    }
-  });
-
-  // Pour "Devenir enseignant"
-  document.getElementById('btnDevenirEnseignant').addEventListener('click', () => {
-    const reponse = confirm("Vous avez déjà un compte ? Cliquez OK pour vous connecter, Annuler pour vous inscrire.");
-    if (reponse) {
-      window.location.href = 'connexion-enseignant.html';
-    } else {
-      window.location.href = 'inscription-enseignant.html';
-    }
-  });
-
-  // Pour "Publier une offre"
-  document.getElementById('btnPublierOffre').addEventListener('click', () => {
-    const reponse = confirm("Votre établissement a déjà un compte ? Cliquez OK pour vous connecter, Annuler pour vous inscrire.");
-    if (reponse) {
-      window.location.href = 'connexion-etablissement.html';
-    } else {
-      window.location.href = 'inscription-etablissement.html';
-    }
-  });
-</script>
 </body>
+
 </html>
