@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -99,19 +100,34 @@
 </div>
 
 <script>
-  // Redirige vers la page de connexion/inscription pour les parents
+  // Pour "Trouver un professeur" (parents)
   document.getElementById('btnRechercher').addEventListener('click', () => {
-    window.location.href = 'connexion-parent.html';
+    const reponse = confirm("Vous avez déjà un compte ? Cliquez OK pour vous connecter, Annuler pour vous inscrire.");
+    if (reponse) {
+      window.location.href = 'connexion-parent.html';
+    } else {
+      window.location.href = 'inscription-parent.html';
+    }
   });
 
-  // "Devenir enseignant" vers inscription/connexion enseignant
+  // Pour "Devenir enseignant"
   document.getElementById('btnDevenirEnseignant').addEventListener('click', () => {
-    window.location.href = 'inscription-enseignant.html';
+    const reponse = confirm("Vous avez déjà un compte ? Cliquez OK pour vous connecter, Annuler pour vous inscrire.");
+    if (reponse) {
+      window.location.href = 'connexion-enseignant.html';
+    } else {
+      window.location.href = 'inscription-enseignant.html';
+    }
   });
 
-  // "Publier une offre" vers inscription/connexion établissement
+  // Pour "Publier une offre"
   document.getElementById('btnPublierOffre').addEventListener('click', () => {
-    window.location.href = 'inscription-etablissement.html';
+    const reponse = confirm("Votre établissement a déjà un compte ? Cliquez OK pour vous connecter, Annuler pour vous inscrire.");
+    if (reponse) {
+      window.location.href = 'connexion-etablissement.html';
+    } else {
+      window.location.href = 'inscription-etablissement.html';
+    }
   });
 </script>
 </body>
