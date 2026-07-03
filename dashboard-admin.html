@@ -120,13 +120,13 @@ margin-bottom:10px;
 
 <img src="images/logo.png" alt="EDUFORCI">
 
-<a href="#">📊 Tableau de bord</a>
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
 
-<a href="#">👨‍🏫 Enseignants</a>
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
 
-<a href="#">👨‍👩‍👧 Parents</a>
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
 
-<a href="#">🏫 Établissements</a>
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
 
 <a href="#">📅 Réservations</a>
 
@@ -138,7 +138,7 @@ margin-bottom:10px;
 
 <a href="#">⚙️ Paramètres</a>
 
-<a href="index.html">🚪 Déconnexion</a>
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
 
 </div>
 
@@ -160,7 +160,7 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 
 <div class="card">
 
-<h2>58</h2>
+<h2 id="nbEnseignants">-</h2>
 
 <p>Enseignants</p>
 
@@ -168,7 +168,7 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 
 <div class="card">
 
-<h2>126</h2>
+<h2 id="nbParents">-</h2>
 
 <p>Parents</p>
 
@@ -176,7 +176,7 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 
 <div class="card">
 
-<h2>9</h2>
+<h2 id="nbEtablissements">-</h2>
 
 <p>Établissements</p>
 
@@ -184,7 +184,7 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 
 <div class="card">
 
-<h2>37</h2>
+<h2 id="nbReservations">-</h2>
 
 <p>Réservations</p>
 
@@ -307,6 +307,57 @@ Consulter
 
 </div>
 
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    try {
+
+        const [enseignantsSnap, parentsSnap, etablissementsSnap, reservationsSnap] = await Promise.all([
+            getDocs(collection(db, "enseignants")),
+            getDocs(collection(db, "parents")),
+            getDocs(collection(db, "etablissements")),
+            getDocs(collection(db, "reservations"))
+        ]);
+
+        document.getElementById("nbEnseignants").innerHTML = enseignantsSnap.size;
+        document.getElementById("nbParents").innerHTML = parentsSnap.size;
+        document.getElementById("nbEtablissements").innerHTML = etablissementsSnap.size;
+        document.getElementById("nbReservations").innerHTML = reservationsSnap.size;
+
+    } catch (error) {
+        console.log(error.message);
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
 </body>
 
-</html>
+  </html>
+  
