@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gestion des utilisateurs | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#153A73;
+color:#fff;
+position:fixed;
+left:0;
+top:0;
+padding:30px 20px;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:270px;
+width:100%;
+padding:35px;
+}
+
+.welcome{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:600px;
+}
+
+th{
+background:#153A73;
+color:white;
+padding:14px;
+text-align:left;
+}
+
+td{
+padding:14px;
+border-bottom:1px solid #eee;
+}
+
+tr:nth-child(even){
+background:#f8f9fc;
+}
+
+.btn-supprimer{
+padding:8px 15px;
+background:#dc3545;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+}
+
+.btn-supprimer:hover{
+background:#b02a37;
+}
+
+.vide{
+text-align:center;
+padding:40px 20px;
+color:#666;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="gestion-utilisateurs.html?type=enseignants" id="lienEnseignants">👨‍🏫 Enseignants</a>
+
+<a href="gestion-utilisateurs.html?type=parents" id="lienParents">👨‍👩‍👧 Parents</a>
+
+<a href="gestion-utilisateurs.html?type=etablissements" id="lienEtablissements">🏫 Établissements</a>
+
+<a href="#">📅 Réservations</a>
+
+<a href="#">📢 Offres d'emploi</a>
+
+<a href="#">📄 Candidatures</a>
+
+<a href="#">💳 Paiements</a>
+
+<a href="#">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1 id="titrePage">Utilisateurs</h1>
+
+<p style="margin-top:10px;color:#666;">La suppression retire l'utilisateur de la plateforme. Son compte de connexion reste techniquement actif ; contactez-nous si un blocage complet est nécessaire.</p>
+
+</div>
+
+<div class="welcome">
+
+<table id="tableUtilisateurs">
+
+<tr id="ligneEntete">
+<th>Identifiant</th>
+<th>Nom</th>
+<th>Téléphone</th>
+<th>E-mail</th>
+<th>Inscrit le</th>
+<th>Action</th>
+</tr>
+
+</table>
+
+<div id="messageVide" class="vide" style="display:none;">Aucun utilisateur trouvé.</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const params = new URLSearchParams(window.location.search);
+const type = params.get("type") || "parents";
+
+const titres = {
+    parents: "👨‍👩‍👧 Parents",
+    enseignants: "👨‍🏫 Enseignants",
+    etablissements: "🏫 Établissements"
+};
+
+document.getElementById("titrePage").innerHTML = titres[type] || "Utilisateurs";
+
+document.getElementById("lienEnseignants").classList.toggle("active", type === "enseignants");
+document.getElementById("lienParents").classList.toggle("active", type === "parents");
+document.getElementById("lienEtablissements").classList.toggle("active", type === "etablissements");
+
+function getNomAffiche(data, type) {
+    if (type === "etablissements") return data.nom || "-";
+    return data.nom || "-";
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    await chargerUtilisateurs();
+
+});
+
+async function chargerUtilisateurs() {
+
+    const table = document.getElementById("tableUtilisateurs");
+    const messageVide = document.getElementById("messageVide");
+
+    document.querySelectorAll("#tableUtilisateurs tr:not(#ligneEntete)").forEach(tr => tr.remove());
+
+    try {
+
+        const snap = await getDocs(collection(db, type));
+
+        if (snap.empty) {
+            messageVide.style.display = "block";
+            return;
+        }
+
+        messageVide.style.display = "none";
+
+        snap.forEach((docSnap) => {
+
+            const u = docSnap.data();
+            const date = u.dateCreation ? new Date(u.dateCreation).toLocaleDateString("fr-FR") : "-";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${u.identifiant || "-"}</td>
+                <td>${getNomAffiche(u, type)}</td>
+                <td>${u.telephone || "-"}</td>
+                <td>${u.email || "-"}</td>
+                <td>${date}</td>
+                <td><button class="btn-supprimer" data-id="${docSnap.id}">Supprimer</button></td>
+            `;
+            table.appendChild(tr);
+
+        });
+
+        document.querySelectorAll(".btn-supprimer").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+
+                if (!confirm("Voulez-vous vraiment supprimer cet utilisateur de la plateforme ?")) {
+                    return;
+                }
+
+                try {
+                    await deleteDoc(doc(db, type, btn.dataset.id));
+                    await chargerUtilisateurs();
+                } catch (error) {
+                    alert(error.message);
+                }
+
+            });
+        });
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+
+</html>
