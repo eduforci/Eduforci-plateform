@@ -121,17 +121,17 @@ background:#084ec7;
 
 <a href="dashboard-admin.html">📊 Tableau de bord</a>
 
-<a href="#">👨‍🏫 Enseignants</a>
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
 
-<a href="#">👨‍👩‍👧 Parents</a>
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
 
-<a href="#">🏫 Établissements</a>
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
 
-<a href="#">📅 Réservations</a>
+<a href="reservations-admin.html">📅 Réservations</a>
 
-<a href="#">⚙️ Paramètres</a>
+<a href="parametres-admin.html">⚙️ Paramètres</a>
 
-<a href="index.html">🚪 Déconnexion</a>
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
 
 </div>
 
@@ -143,53 +143,53 @@ background:#084ec7;
 
 <label>Nom de la plateforme</label>
 
-<input type="text" value="EDUFORCI">
+<input type="text" id="nomPlateforme" value="EDUFORCI">
 
 <label>Téléphone officiel</label>
 
-<input type="text" value="+225 07 47 32 73 09">
+<input type="text" id="telephoneOfficiel" value="+225 07 47 32 73 09">
 
 <label>Adresse e-mail</label>
 
-<input type="email" placeholder="contact@eduforci.ci">
+<input type="email" id="emailOfficiel" placeholder="contact@eduforci.ci">
 
 <label>Adresse</label>
 
-<textarea placeholder="Adresse du siège d'EDUFORCI"></textarea>
+<textarea id="adresseOfficielle" placeholder="Adresse du siège d'EDUFORCI"></textarea>
 
 <label>Compte WhatsApp</label>
 
-<input type="text" placeholder="+225 XX XX XX XX XX">
+<input type="text" id="whatsapp" placeholder="+225 XX XX XX XX XX">
 
 <label>Facebook</label>
 
-<input type="text" placeholder="https://facebook.com/eduforci">
+<input type="text" id="facebook" placeholder="https://facebook.com/eduforci">
 
 <label>Commission EDUFORCI (%)</label>
 
-<input type="number" value="0">
+<input type="number" id="commission" value="0">
 
 <label>Autoriser les nouvelles inscriptions</label>
 
-<select>
+<select id="autoriserInscriptions">
 
-<option>Oui</option>
+<option value="oui">Oui</option>
 
-<option>Non</option>
+<option value="non">Non</option>
 
 </select>
 
 <label>Autoriser les nouvelles réservations</label>
 
-<select>
+<select id="autoriserReservations">
 
-<option>Oui</option>
+<option value="oui">Oui</option>
 
-<option>Non</option>
+<option value="non">Non</option>
 
 </select>
 
-<button>
+<button id="btnEnregistrerParametres">
 
 💾 Enregistrer les paramètres
 
@@ -201,6 +201,8 @@ background:#084ec7;
 <div class="card">
 
 <h2>📜 Journal d'administration</h2>
+
+<p style="color:#999;font-style:italic;margin-bottom:15px;">Aperçu illustratif — le suivi automatique de chaque action sera activé prochainement.</p>
 
 <table style="width:100%;border-collapse:collapse;margin-top:20px;">
 
@@ -254,15 +256,39 @@ background:#084ec7;
 
 <h2>👨‍💼 Gestion des administrateurs</h2>
 
-<p>Nombre d'administrateurs : <strong>1</strong></p>
+<p id="nbAdmins">Nombre d'administrateurs : <strong>...</strong></p>
 
-<p>Administrateur principal : <strong>Coach</strong></p>
+<div id="formAjoutAdmin" style="display:none;margin-top:20px;">
 
-<button>➕ Ajouter un administrateur</button>
+<label>E-mail du compte à promouvoir administrateur</label>
 
-<button style="margin-left:10px;background:#28a745;">
+<p style="color:#999;font-size:13px;margin-top:5px;">La personne doit déjà avoir un compte Parent, Enseignant ou Établissement sur EDUFORCI.</p>
+
+<input type="email" id="emailNouvelAdmin" placeholder="exemple@gmail.com">
+
+<button id="btnConfirmerAjoutAdmin">Confirmer</button>
+
+</div>
+
+<button id="btnAjouterAdmin">➕ Ajouter un administrateur</button>
+
+<button id="btnChangerMdpAdmin" style="margin-left:10px;background:#28a745;">
 🔑 Modifier mon mot de passe
 </button>
+
+<div id="formMdpAdmin" style="display:none;margin-top:20px;">
+
+<label>Nouveau mot de passe</label>
+
+<input type="password" id="nouveauMdpAdmin" placeholder="Au moins 6 caractères">
+
+<label>Confirmer le nouveau mot de passe</label>
+
+<input type="password" id="confirmerMdpAdmin">
+
+<button id="btnValiderMdpAdmin">Valider</button>
+
+</div>
 
 </div>
 
@@ -272,15 +298,17 @@ background:#084ec7;
 
 <h2>💾 Sauvegarde</h2>
 
+<p style="color:#999;font-style:italic;margin-bottom:15px;">Fonctionnalité à venir — pas encore disponible.</p>
+
 <p>
 
 Effectuez une sauvegarde des données de la plateforme ou restaurez une sauvegarde précédente.
 
 </p>
 
-<button>📥 Télécharger une sauvegarde</button>
+<button id="btnSauvegarde">📥 Télécharger une sauvegarde</button>
 
-<button style="margin-left:10px;background:#6c757d;">
+<button id="btnRestaurer" style="margin-left:10px;background:#6c757d;">
 📤 Restaurer une sauvegarde
 </button>
 
@@ -288,6 +316,205 @@ Effectuez une sauvegarde des données de la plateforme ou restaurez une sauvegar
 
 </div>
 
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, setDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let adminConnecte = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    adminConnecte = user;
+
+    await chargerParametres();
+    await chargerNbAdmins();
+
+});
+
+async function chargerParametres() {
+
+    try {
+
+        const snap = await getDoc(doc(db, "parametres", "general"));
+
+        if (snap.exists()) {
+            const p = snap.data();
+            document.getElementById("nomPlateforme").value = p.nomPlateforme || "EDUFORCI";
+            document.getElementById("telephoneOfficiel").value = p.telephoneOfficiel || "";
+            document.getElementById("emailOfficiel").value = p.emailOfficiel || "";
+            document.getElementById("adresseOfficielle").value = p.adresseOfficielle || "";
+            document.getElementById("whatsapp").value = p.whatsapp || "";
+            document.getElementById("facebook").value = p.facebook || "";
+            document.getElementById("commission").value = p.commission ?? 0;
+            document.getElementById("autoriserInscriptions").value = p.autoriserInscriptions || "oui";
+            document.getElementById("autoriserReservations").value = p.autoriserReservations || "oui";
+        }
+
+    } catch (error) {
+        console.log(error.message);
+    }
+
+}
+
+async function chargerNbAdmins() {
+
+    try {
+        const snap = await getDocs(collection(db, "admins"));
+        document.getElementById("nbAdmins").innerHTML =
+            "Nombre d'administrateurs : <strong>" + snap.size + "</strong>";
+    } catch (error) {
+        console.log(error.message);
+    }
+
+}
+
+document.getElementById("btnEnregistrerParametres").addEventListener("click", async () => {
+
+    try {
+
+        await setDoc(doc(db, "parametres", "general"), {
+            nomPlateforme: document.getElementById("nomPlateforme").value,
+            telephoneOfficiel: document.getElementById("telephoneOfficiel").value,
+            emailOfficiel: document.getElementById("emailOfficiel").value,
+            adresseOfficielle: document.getElementById("adresseOfficielle").value,
+            whatsapp: document.getElementById("whatsapp").value,
+            facebook: document.getElementById("facebook").value,
+            commission: Number(document.getElementById("commission").value),
+            autoriserInscriptions: document.getElementById("autoriserInscriptions").value,
+            autoriserReservations: document.getElementById("autoriserReservations").value
+        });
+
+        alert("Paramètres enregistrés avec succès !");
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+document.getElementById("btnAjouterAdmin").addEventListener("click", () => {
+    const form = document.getElementById("formAjoutAdmin");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+});
+
+document.getElementById("btnConfirmerAjoutAdmin").addEventListener("click", async () => {
+
+    const email = document.getElementById("emailNouvelAdmin").value.trim();
+
+    if (!email) {
+        alert("Merci de saisir un e-mail.");
+        return;
+    }
+
+    try {
+
+        const collectionsACherher = ["parents", "enseignants", "etablissements"];
+        let uidTrouve = null;
+
+        for (const nomCollection of collectionsACherher) {
+            const q = query(collection(db, nomCollection), where("email", "==", email));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                uidTrouve = snap.docs[0].id;
+                break;
+            }
+        }
+
+        if (!uidTrouve) {
+            alert("Aucun compte EDUFORCI trouvé avec cet e-mail. La personne doit d'abord s'inscrire (Parent, Enseignant ou Établissement).");
+            return;
+        }
+
+        await setDoc(doc(db, "admins", uidTrouve), {
+            role: "admin",
+            ajoutePar: adminConnecte.uid,
+            dateAjout: new Date().toISOString()
+        });
+
+        alert("Ce compte a maintenant les droits administrateur !");
+        document.getElementById("emailNouvelAdmin").value = "";
+        document.getElementById("formAjoutAdmin").style.display = "none";
+        await chargerNbAdmins();
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+document.getElementById("btnChangerMdpAdmin").addEventListener("click", () => {
+    const form = document.getElementById("formMdpAdmin");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+});
+
+document.getElementById("btnValiderMdpAdmin").addEventListener("click", async () => {
+
+    const nouveau = document.getElementById("nouveauMdpAdmin").value;
+    const confirmer = document.getElementById("confirmerMdpAdmin").value;
+
+    if (!nouveau || nouveau.length < 6) {
+        alert("Le mot de passe doit contenir au moins 6 caractères.");
+        return;
+    }
+
+    if (nouveau !== confirmer) {
+        alert("Les mots de passe ne correspondent pas.");
+        return;
+    }
+
+    try {
+
+        await updatePassword(adminConnecte, nouveau);
+        alert("Mot de passe changé avec succès !");
+        document.getElementById("nouveauMdpAdmin").value = "";
+        document.getElementById("confirmerMdpAdmin").value = "";
+        document.getElementById("formMdpAdmin").style.display = "none";
+
+    } catch (error) {
+
+        if (error.code === "auth/requires-recent-login") {
+            alert("Pour des raisons de sécurité, veuillez vous déconnecter et vous reconnecter avant de changer votre mot de passe.");
+        } else {
+            alert(error.message);
+        }
+
+    }
+
+});
+
+document.getElementById("btnSauvegarde").addEventListener("click", () => {
+    alert("Cette fonctionnalité n'est pas encore disponible.");
+});
+
+document.getElementById("btnRestaurer").addEventListener("click", () => {
+    alert("Cette fonctionnalité n'est pas encore disponible.");
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
 </body>
 
-</html>
+  </html>
+  
