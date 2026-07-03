@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Réservations | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#153A73;
+color:#fff;
+position:fixed;
+left:0;
+top:0;
+padding:30px 20px;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:270px;
+width:100%;
+padding:35px;
+}
+
+.welcome{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+overflow-x:auto;
+}
+
+.filtres{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.filtres button{
+padding:10px 18px;
+border:2px solid #0B63F6;
+background:white;
+color:#0B63F6;
+border-radius:10px;
+font-weight:600;
+cursor:pointer;
+font-size:14px;
+}
+
+.filtres button.active{
+background:#0B63F6;
+color:white;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:700px;
+}
+
+th{
+background:#153A73;
+color:white;
+padding:14px;
+text-align:left;
+}
+
+td{
+padding:14px;
+border-bottom:1px solid #eee;
+}
+
+tr:nth-child(even){
+background:#f8f9fc;
+}
+
+.btn-valider{
+padding:8px 15px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+margin-right:5px;
+}
+
+.btn-refuser{
+padding:8px 15px;
+background:#dc3545;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+}
+
+.vide{
+text-align:center;
+padding:40px 20px;
+color:#666;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<img src="images/logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+
+<a href="reservations-admin.html" class="active">📅 Réservations</a>
+
+<a href="#">📢 Offres d'emploi</a>
+
+<a href="#">📄 Candidatures</a>
+
+<a href="#">💳 Paiements</a>
+
+<a href="#">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1>📅 Réservations</h1>
+
+<p style="margin-top:10px;color:#666;">Validez ou refusez les demandes de cours des parents.</p>
+
+</div>
+
+<div class="welcome">
+
+<div class="filtres">
+<button data-filtre="toutes" class="active">Toutes</button>
+<button data-filtre="en_attente">En attente</button>
+<button data-filtre="confirme">Confirmées</button>
+<button data-filtre="refuse">Refusées</button>
+</div>
+
+<table id="tableReservations">
+
+<tr id="ligneEntete">
+<th>Date</th>
+<th>Heure</th>
+<th>Parent</th>
+<th>Professeur</th>
+<th>Matière</th>
+<th>Statut</th>
+<th>Action</th>
+</tr>
+
+</table>
+
+<div id="messageVide" class="vide" style="display:none;">Aucune réservation trouvée.</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let toutesReservations = [];
+let filtreActuel = "toutes";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    await chargerReservations();
+
+});
+
+async function chargerReservations() {
+
+    try {
+
+        const snap = await getDocs(collection(db, "reservations"));
+        toutesReservations = [];
+
+        snap.forEach((docSnap) => {
+            toutesReservations.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        toutesReservations.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+
+        afficherReservations();
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+function afficherReservations() {
+
+    const table = document.getElementById("tableReservations");
+    const messageVide = document.getElementById("messageVide");
+
+    document.querySelectorAll("#tableReservations tr:not(#ligneEntete)").forEach(tr => tr.remove());
+
+    const liste = filtreActuel === "toutes"
+        ? toutesReservations
+        : toutesReservations.filter(r => r.statut === filtreActuel);
+
+    if (liste.length === 0) {
+        messageVide.style.display = "block";
+        return;
+    }
+
+    messageVide.style.display = "none";
+
+    liste.forEach((r) => {
+
+        let couleur = "orange";
+        let texte = "En attente";
+
+        if (r.statut === "confirme") {
+            couleur = "green";
+            texte = "Confirmé";
+        } else if (r.statut === "refuse") {
+            couleur = "red";
+            texte = "Refusé";
+        }
+
+        const actionHtml = r.statut === "en_attente"
+            ? `<button class="btn-valider" data-id="${r.id}" data-action="confirme">Valider</button>
+               <button class="btn-refuser" data-id="${r.id}" data-action="refuse">Refuser</button>`
+            : `<em style="color:#999;">Traité</em>`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${r.date || "-"}</td>
+            <td>${r.heure || "-"}</td>
+            <td>${r.parentNom || "-"}</td>
+            <td>${r.enseignantNom || "-"}</td>
+            <td>${r.matiere || "-"}</td>
+            <td style="color:${couleur};"><b>${texte}</b></td>
+            <td>${actionHtml}</td>
+        `;
+        table.appendChild(tr);
+
+    });
+
+    document.querySelectorAll(".btn-valider, .btn-refuser").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+
+            try {
+                await updateDoc(doc(db, "reservations", btn.dataset.id), {
+                    statut: btn.dataset.action
+                });
+                await chargerReservations();
+            } catch (error) {
+                alert(error.message);
+            }
+
+        });
+    });
+
+}
+
+document.querySelectorAll(".filtres button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".filtres button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        filtreActuel = btn.dataset.filtre;
+        afficherReservations();
+    });
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+
+  </html>
+  
