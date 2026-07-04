@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rechercher un enseignant | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:900px;}
+
+h1{color:#153A73;margin-bottom:20px;}
+
+.filtres{background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;display:flex;gap:12px;flex-wrap:wrap;}
+.filtres input{flex:1;min-width:150px;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+.filtres button{padding:14px 22px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+.filtres button:hover{background:#084ec7;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;}
+
+.teacher-card{background:white;border-radius:20px;padding:22px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+.avatar{width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:#0B63F6;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;}
+.teacher-card h4{color:#153A73;margin-bottom:6px;}
+.teacher-card p{font-size:14px;color:#555;margin-bottom:4px;}
+
+.btn-contact{display:inline-block;width:100%;margin-top:12px;padding:10px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+.btn-contact:hover{background:#084ec7;}
+
+.empty{background:white;padding:40px;border-radius:20px;text-align:center;color:#999;box-shadow:0 10px 25px rgba(0,0,0,.08);grid-column:1/-1;}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:999;}
+.modal-overlay.actif{display:flex;}
+.modal{background:white;padding:25px;border-radius:20px;width:90%;max-width:420px;}
+.modal h3{color:#153A73;margin-bottom:15px;}
+.modal textarea{width:100%;min-height:100px;padding:12px;border:1px solid #ddd;border-radius:10px;resize:vertical;margin-bottom:15px;}
+.modal .actions{display:flex;gap:10px;}
+.modal .actions button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+.modal .envoyer{background:#0B63F6;color:white;}
+.modal .annuler{background:#eee;color:#333;}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-etablissement.html">🏠 Tableau de bord</a>
+<a href="publier-offre.html">📢 Publier une offre</a>
+<a href="recherche-enseignant-etablissement.html" class="active">👨‍🏫 Rechercher un enseignant</a>
+<a href="candidatures-etablissement.html">📩 Candidatures reçues</a>
+<a href="messages-etablissement.html">💬 Messages</a>
+<a href="mon-etablissement.html">🏫 Mon établissement</a>
+<a href="parametres-etablissement.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<h1>👨‍🏫 Rechercher un enseignant</h1>
+
+<div class="filtres">
+<input id="filtreMatiere" type="text" placeholder="Matière (ex : Mathématiques)">
+<input id="filtreVille" type="text" placeholder="Ville (ex : Abidjan)">
+<button id="btnFiltrer">Filtrer</button>
+</div>
+
+<div class="grid" id="grilleEnseignants"></div>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal">
+<h3 id="modalTitre">Contacter l'enseignant</h3>
+<textarea id="modalMessage" placeholder="Votre message pour l'enseignant..."></textarea>
+<div class="actions">
+<button class="envoyer" id="btnEnvoyerMessage">Envoyer</button>
+<button class="annuler" id="btnAnnulerMessage">Annuler</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let etablissementConnecte = null;
+let etablissementNom = "Établissement";
+let tousLesEnseignants = [];
+let enseignantSelectionne = null;
+
+function afficherListe(liste) {
+
+    const grille = document.getElementById("grilleEnseignants");
+    grille.innerHTML = "";
+
+    if (liste.length === 0) {
+        grille.innerHTML = `<div class="empty">Aucun enseignant ne correspond à votre recherche.</div>`;
+        return;
+    }
+
+    liste.forEach((ens) => {
+
+        const initiales = (ens.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
+
+        const card = document.createElement("div");
+        card.className = "teacher-card";
+        card.innerHTML = `
+            <div class="avatar">${initiales}</div>
+            <h4>${ens.nom || "Enseignant"}</h4>
+            <p>📚 ${ens.matiere || "—"}</p>
+            <p>📍 ${ens.ville || "—"}</p>
+            <p>🎓 ${ens.niveau || "—"}</p>
+            <button class="btn-contact" data-identifiant="${ens.identifiant || ""}" data-nom="${ens.nom || "Enseignant"}">Contacter</button>
+        `;
+        grille.appendChild(card);
+    });
+
+    grille.querySelectorAll(".btn-contact").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            enseignantSelectionne = { identifiant: btn.dataset.identifiant, nom: btn.dataset.nom };
+            document.getElementById("modalTitre").textContent = "Contacter " + btn.dataset.nom;
+            document.getElementById("modalMessage").value = "";
+            document.getElementById("modalOverlay").classList.add("actif");
+        });
+    });
+
+}
+
+async function chargerEnseignants() {
+
+    try {
+
+        const snap = await getDocs(collection(db, "enseignants"));
+        tousLesEnseignants = [];
+
+        snap.forEach((docSnap) => {
+            tousLesEnseignants.push(docSnap.data());
+        });
+
+        afficherListe(tousLesEnseignants);
+
+    } catch (error) {
+        document.getElementById("grilleEnseignants").innerHTML = `<div class="empty">Erreur : ${error.message}</div>`;
+    }
+
+}
+
+document.getElementById("btnFiltrer").addEventListener("click", () => {
+
+    const matiere = document.getElementById("filtreMatiere").value.trim().toLowerCase();
+    const ville = document.getElementById("filtreVille").value.trim().toLowerCase();
+
+    const filtres = tousLesEnseignants.filter((ens) => {
+        const matOk = !matiere || (ens.matiere || "").toLowerCase().includes(matiere);
+        const villeOk = !ville || (ens.ville || "").toLowerCase().includes(ville);
+        return matOk && villeOk;
+    });
+
+    afficherListe(filtres);
+
+});
+
+document.getElementById("btnAnnulerMessage").addEventListener("click", () => {
+    document.getElementById("modalOverlay").classList.remove("actif");
+});
+
+document.getElementById("btnEnvoyerMessage").addEventListener("click", async () => {
+
+    const contenu = document.getElementById("modalMessage").value.trim();
+
+    if (!contenu || !enseignantSelectionne || !enseignantSelectionne.identifiant) {
+        alert("Message vide ou enseignant sans identifiant valide.");
+        return;
+    }
+
+    try {
+
+        await addDoc(collection(db, "messages"), {
+            enseignantId: enseignantSelectionne.identifiant,
+            etablissementId: etablissementConnecte.uid,
+            etablissementNom: etablissementNom,
+            contenu: contenu,
+            dateEnvoi: new Date().toISOString()
+        });
+
+        document.getElementById("modalOverlay").classList.remove("actif");
+        alert("Message envoyé à " + enseignantSelectionne.nom + " !");
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-etablissement.html";
+        return;
+    }
+
+    etablissementConnecte = user;
+
+    const snap = await getDoc(doc(db, "etablissements", user.uid));
+    if (snap.exists()) {
+        etablissementNom = snap.data().nom || "Établissement";
+    }
+
+    chargerEnseignants();
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-etablissement.html";
+});
+
+</script>
+
+</body>
+</html>

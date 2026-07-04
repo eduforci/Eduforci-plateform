@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon établissement | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:700px;}
+
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+h1{color:#153A73;margin-bottom:20px;}
+
+label{display:block;margin:15px 0 8px;font-weight:600;color:#153A73;}
+input,select,textarea{width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+input[disabled]{background:#f0f2f6;color:#888;}
+textarea{resize:vertical;min-height:100px;}
+
+button{width:100%;padding:15px;margin-top:25px;background:#0B63F6;color:white;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;}
+button:hover{background:#084ec7;}
+
+.msg{margin-top:15px;padding:14px;border-radius:10px;font-weight:600;display:none;}
+.msg.ok{background:#e6f7ec;color:#28a745;}
+.msg.err{background:#fdeaea;color:#d93025;}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-etablissement.html">🏠 Tableau de bord</a>
+<a href="publier-offre.html">📢 Publier une offre</a>
+<a href="recherche-enseignant-etablissement.html">👨‍🏫 Rechercher un enseignant</a>
+<a href="candidatures-etablissement.html">📩 Candidatures reçues</a>
+<a href="messages-etablissement.html">💬 Messages</a>
+<a href="mon-etablissement.html" class="active">🏫 Mon établissement</a>
+<a href="parametres-etablissement.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="card">
+<h1>🏫 Mon établissement</h1>
+
+<label>Nom de l'établissement</label>
+<input id="nom" type="text" placeholder="Ex : Collège Excellence">
+
+<label>Responsable</label>
+<input id="responsable" type="text" placeholder="Nom du responsable">
+
+<label>Email</label>
+<input id="email" type="text" disabled>
+
+<label>Téléphone</label>
+<input id="telephone" type="tel" placeholder="Ex : 07 00 00 00 00">
+
+<label>Ville</label>
+<input id="ville" type="text" placeholder="Ex : Abidjan">
+
+<label>Adresse</label>
+<input id="adresse" type="text" placeholder="Adresse complète">
+
+<label>Type d'établissement</label>
+<select id="type">
+<option value="">Choisir...</option>
+<option>École primaire</option>
+<option>Collège</option>
+<option>Lycée</option>
+<option>Institut / Université</option>
+<option>Centre de formation</option>
+</select>
+
+<label>Niveaux accueillis</label>
+<input id="niveaux" type="text" placeholder="Ex : Primaire, Collège">
+
+<label>Description</label>
+<textarea id="description" placeholder="Présentez votre établissement en quelques lignes..."></textarea>
+
+<button id="btnEnregistrer">💾 Enregistrer les modifications</button>
+
+<div class="msg ok" id="msgOk">✔ Informations mises à jour avec succès.</div>
+<div class="msg err" id="msgErr">Une erreur est survenue.</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let uid = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-etablissement.html";
+        return;
+    }
+
+    uid = user.uid;
+
+    const snap = await getDoc(doc(db, "etablissements", uid));
+
+    if (snap.exists()) {
+        const data = snap.data();
+        document.getElementById("nom").value = data.nom || "";
+        document.getElementById("responsable").value = data.responsable || "";
+        document.getElementById("email").value = data.email || user.email || "";
+        document.getElementById("telephone").value = data.telephone || "";
+        document.getElementById("ville").value = data.ville || "";
+        document.getElementById("adresse").value = data.adresse || "";
+        document.getElementById("type").value = data.type || "";
+        document.getElementById("niveaux").value = data.niveaux || "";
+        document.getElementById("description").value = data.description || "";
+    } else {
+        document.getElementById("email").value = user.email || "";
+    }
+
+});
+
+document.getElementById("btnEnregistrer").addEventListener("click", async () => {
+
+    const msgOk = document.getElementById("msgOk");
+    const msgErr = document.getElementById("msgErr");
+    msgOk.style.display = "none";
+    msgErr.style.display = "none";
+
+    if (!uid) return;
+
+    try {
+
+        await updateDoc(doc(db, "etablissements", uid), {
+            nom: document.getElementById("nom").value.trim(),
+            responsable: document.getElementById("responsable").value.trim(),
+            telephone: document.getElementById("telephone").value.trim(),
+            ville: document.getElementById("ville").value.trim(),
+            adresse: document.getElementById("adresse").value.trim(),
+            type: document.getElementById("type").value,
+            niveaux: document.getElementById("niveaux").value.trim(),
+            description: document.getElementById("description").value.trim()
+        });
+
+        msgOk.style.display = "block";
+
+    } catch (error) {
+        msgErr.textContent = error.message;
+        msgErr.style.display = "block";
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-etablissement.html";
+});
+
+</script>
+
+</body>
+</html>

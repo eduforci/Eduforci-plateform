@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candidatures reçues | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:800px;}
+
+h1{color:#153A73;margin-bottom:20px;}
+
+.candidature{background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px;}
+.candidature p{margin:6px 0;color:#333;}
+.candidature p strong{color:#153A73;}
+
+.empty{background:white;padding:40px;border-radius:20px;text-align:center;color:#999;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+.empty span{display:block;margin-top:8px;font-size:14px;}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-etablissement.html">🏠 Tableau de bord</a>
+<a href="publier-offre.html">📢 Publier une offre</a>
+<a href="recherche-enseignant-etablissement.html">👨‍🏫 Rechercher un enseignant</a>
+<a href="candidatures-etablissement.html" class="active">📩 Candidatures reçues</a>
+<a href="messages-etablissement.html">💬 Messages</a>
+<a href="mon-etablissement.html">🏫 Mon établissement</a>
+<a href="parametres-etablissement.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<h1>📩 Candidatures reçues</h1>
+
+<div id="listeCandidatures"></div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+async function chargerCandidatures(uid) {
+
+    const container = document.getElementById("listeCandidatures");
+    container.innerHTML = "";
+
+    try {
+
+        const q = query(collection(db, "candidatures"), where("etablissementId", "==", uid));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            container.innerHTML = `<div class="empty">Aucune candidature reçue pour le moment.<span>Les enseignants pourront bientôt postuler directement à vos offres publiées.</span></div>`;
+            return;
+        }
+
+        snap.forEach((docSnap) => {
+
+            const d = docSnap.data();
+            const el = document.createElement("div");
+            el.className = "candidature";
+
+            el.innerHTML = `
+                <p><strong>👤 Enseignant :</strong> ${d.enseignantNom || "—"}</p>
+                <p><strong>📢 Offre :</strong> ${d.poste || "—"}</p>
+                <p><strong>💬 Message :</strong> ${d.message || "—"}</p>
+            `;
+            container.appendChild(el);
+        });
+
+    } catch (error) {
+        container.innerHTML = `<div class="empty">Erreur lors du chargement : ${error.message}</div>`;
+    }
+
+}
+
+onAuthStateChanged(auth, (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-etablissement.html";
+        return;
+    }
+
+    chargerCandidatures(user.uid);
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-etablissement.html";
+});
+
+</script>
+
+</body>
+</html>
