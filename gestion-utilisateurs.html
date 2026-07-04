@@ -128,7 +128,7 @@ color:#666;
 
 <div class="sidebar">
 
-<img src="images/logo.png" alt="EDUFORCI">
+<img src="logo.png" alt="EDUFORCI">
 
 <a href="dashboard-admin.html">📊 Tableau de bord</a>
 
@@ -171,6 +171,8 @@ color:#666;
 <th>Nom</th>
 <th>Téléphone</th>
 <th>E-mail</th>
+<th id="entetWave" style="display:none;">Numéro Wave</th>
+<th>Statut</th>
 <th>Inscrit le</th>
 <th>Action</th>
 </tr>
@@ -203,6 +205,8 @@ document.getElementById("titrePage").innerHTML = titres[type] || "Utilisateurs";
 document.getElementById("lienEnseignants").classList.toggle("active", type === "enseignants");
 document.getElementById("lienParents").classList.toggle("active", type === "parents");
 document.getElementById("lienEtablissements").classList.toggle("active", type === "etablissements");
+
+document.getElementById("entetWave").style.display = (type === "enseignants") ? "table-cell" : "none";
 
 function getNomAffiche(data, type) {
     if (type === "etablissements") return data.nom || "-";
@@ -252,12 +256,22 @@ async function chargerUtilisateurs() {
             const u = docSnap.data();
             const date = u.dateCreation ? new Date(u.dateCreation).toLocaleDateString("fr-FR") : "-";
 
+            const celluleWave = type === "enseignants"
+                ? `<td>${u.numeroWave || "—"}</td>`
+                : "";
+
+            const celluleStatut = type === "enseignants"
+                ? `<td style="color:${u.disponible !== false ? "#28a745" : "#d93025"};font-weight:600;">${u.disponible !== false ? "🟢 Disponible" : "🔴 Indisponible"}</td>`
+                : `<td>—</td>`;
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${u.identifiant || "-"}</td>
                 <td>${getNomAffiche(u, type)}</td>
                 <td>${u.telephone || "-"}</td>
                 <td>${u.email || "-"}</td>
+                ${celluleWave}
+                ${celluleStatut}
                 <td>${date}</td>
                 <td><button class="btn-supprimer" data-id="${docSnap.id}">Supprimer</button></td>
             `;

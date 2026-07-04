@@ -36,6 +36,22 @@ button:hover{background:#084ec7;}
 .msg.ok{background:#e6f7ec;color:#28a745;}
 .msg.err{background:#fdeaea;color:#d93025;}
 
+.statut-row{display:flex;align-items:center;justify-content:space-between;padding:16px;background:#f8f9fc;border-radius:12px;margin-top:20px;}
+.statut-row .label-statut{font-weight:600;color:#153A73;}
+.statut-row .etat{font-size:14px;margin-top:4px;}
+.statut-row .etat.on{color:#28a745;}
+.statut-row .etat.off{color:#d93025;}
+
+.switch{position:relative;width:56px;height:30px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:30px;transition:.3s;}
+.slider:before{position:absolute;content:"";height:24px;width:24px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+input:checked + .slider{background:#28a745;}
+input:checked + .slider:before{transform:translateX(26px);}
+
+.wave-box{margin-top:10px;padding:16px;background:#f0f9ff;border-radius:12px;border:1px solid #cfe8ff;}
+.wave-box p.hint{color:#666;font-size:13px;margin-top:6px;}
+
 </style>
 
 </head>
@@ -85,6 +101,23 @@ button:hover{background:#084ec7;}
 <label>Années d'expérience</label>
 <input id="experience" type="number" min="0" placeholder="Ex : 3">
 
+<div class="statut-row">
+<div>
+<div class="label-statut">🟢 Statut de disponibilité</div>
+<div class="etat" id="etatTexte">Chargement...</div>
+</div>
+<label class="switch">
+<input type="checkbox" id="toggleDisponible">
+<span class="slider"></span>
+</label>
+</div>
+
+<div class="wave-box">
+<label>💳 Numéro Wave (pour recevoir vos paiements)</label>
+<input id="numeroWave" type="tel" placeholder="Ex : 07 00 00 00 00">
+<p class="hint">Ce numéro reste privé : il est transmis uniquement à l'administrateur de la plateforme, pour l'organisation de vos paiements. Il n'apparaît jamais sur votre profil public.</p>
+</div>
+
 <button id="btnEnregistrer">💾 Enregistrer les modifications</button>
 
 <div class="msg ok" id="msgOk">✔ Profil mis à jour avec succès.</div>
@@ -123,11 +156,30 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("matiere").value = data.matiere || "";
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
+        document.getElementById("numeroWave").value = data.numeroWave || "";
+        document.getElementById("toggleDisponible").checked = data.disponible !== false;
+        mettreAJourEtatTexte();
     } else {
         document.getElementById("email").value = user.email || "";
+        document.getElementById("toggleDisponible").checked = true;
+        mettreAJourEtatTexte();
     }
 
 });
+
+function mettreAJourEtatTexte() {
+    const coche = document.getElementById("toggleDisponible").checked;
+    const etat = document.getElementById("etatTexte");
+    if (coche) {
+        etat.textContent = "Disponible — les parents peuvent vous contacter";
+        etat.className = "etat on";
+    } else {
+        etat.textContent = "Indisponible — masqué des nouvelles demandes";
+        etat.className = "etat off";
+    }
+}
+
+document.getElementById("toggleDisponible").addEventListener("change", mettreAJourEtatTexte);
 
 document.getElementById("btnEnregistrer").addEventListener("click", async () => {
 
@@ -145,7 +197,9 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
             ville: document.getElementById("ville").value.trim(),
             matiere: document.getElementById("matiere").value.trim(),
             niveau: document.getElementById("niveau").value,
-            experience: document.getElementById("experience").value
+            experience: document.getElementById("experience").value,
+            numeroWave: document.getElementById("numeroWave").value.trim(),
+            disponible: document.getElementById("toggleDisponible").checked
         }, { merge: true });
 
         msgOk.style.display = "block";
