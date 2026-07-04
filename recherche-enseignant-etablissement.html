@@ -97,7 +97,7 @@ h1{color:#153A73;margin-bottom:20px;}
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let etablissementConnecte = null;
 let etablissementNom = "Établissement";
@@ -146,7 +146,7 @@ async function chargerEnseignants() {
 
     try {
 
-        const snap = await getDocs(collection(db, "enseignants"));
+        const snap = await getDocs(query(collection(db, "enseignants"), where("verification", "==", true)));
         tousLesEnseignants = [];
 
         snap.forEach((docSnap) => {

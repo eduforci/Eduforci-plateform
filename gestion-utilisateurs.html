@@ -114,6 +114,54 @@ font-size:13px;
 background:#b02a37;
 }
 
+.badge-verif{
+display:inline-block;
+padding:6px 12px;
+border-radius:20px;
+font-size:13px;
+font-weight:600;
+}
+
+.badge-verif.ok{
+background:#e6f7ec;
+color:#28a745;
+}
+
+.badge-verif.attente{
+background:#fff4e0;
+color:#e08b00;
+}
+
+.btn-approuver{
+padding:8px 15px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+margin-right:8px;
+}
+
+.btn-approuver:hover{
+background:#1f7a35;
+}
+
+.btn-suspendre{
+padding:8px 15px;
+background:#e08b00;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:13px;
+margin-right:8px;
+}
+
+.btn-suspendre:hover{
+background:#b56f00;
+}
+
 .vide{
 text-align:center;
 padding:40px 20px;
@@ -172,6 +220,7 @@ color:#666;
 <th>Téléphone</th>
 <th>E-mail</th>
 <th id="entetWave" style="display:none;">Numéro Wave</th>
+<th id="entetVerification" style="display:none;">Vérification</th>
 <th>Statut</th>
 <th>Inscrit le</th>
 <th>Action</th>
@@ -189,7 +238,7 @@ color:#666;
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, getDocs, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const params = new URLSearchParams(window.location.search);
 const type = params.get("type") || "parents";
@@ -207,6 +256,7 @@ document.getElementById("lienParents").classList.toggle("active", type === "pare
 document.getElementById("lienEtablissements").classList.toggle("active", type === "etablissements");
 
 document.getElementById("entetWave").style.display = (type === "enseignants") ? "table-cell" : "none";
+document.getElementById("entetVerification").style.display = (type === "enseignants") ? "table-cell" : "none";
 
 function getNomAffiche(data, type) {
     if (type === "etablissements") return data.nom || "-";
@@ -260,6 +310,19 @@ async function chargerUtilisateurs() {
                 ? `<td>${u.numeroWave || "—"}</td>`
                 : "";
 
+            const estVerifie = u.verification === true;
+
+            const celluleVerification = type === "enseignants"
+                ? `<td>
+                    <span class="badge-verif ${estVerifie ? "ok" : "attente"}">${estVerifie ? "✅ Approuvé" : "⏳ En attente"}</span>
+                    <br>
+                    ${estVerifie
+                        ? `<button class="btn-suspendre" data-verif-id="${docSnap.id}" data-action="suspendre" style="margin-top:8px;">Suspendre</button>`
+                        : `<button class="btn-approuver" data-verif-id="${docSnap.id}" data-action="approuver" style="margin-top:8px;">Approuver</button>`
+                    }
+                   </td>`
+                : "";
+
             const celluleStatut = type === "enseignants"
                 ? `<td style="color:${u.disponible !== false ? "#28a745" : "#d93025"};font-weight:600;">${u.disponible !== false ? "🟢 Disponible" : "🔴 Indisponible"}</td>`
                 : `<td>—</td>`;
@@ -271,12 +334,31 @@ async function chargerUtilisateurs() {
                 <td>${u.telephone || "-"}</td>
                 <td>${u.email || "-"}</td>
                 ${celluleWave}
+                ${celluleVerification}
                 ${celluleStatut}
                 <td>${date}</td>
                 <td><button class="btn-supprimer" data-id="${docSnap.id}">Supprimer</button></td>
             `;
             table.appendChild(tr);
 
+        });
+
+        document.querySelectorAll("[data-verif-id]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+
+                const nouvelEtat = btn.dataset.action === "approuver";
+
+                try {
+                    await updateDoc(doc(db, "enseignants", btn.dataset.verifId), {
+                        verification: nouvelEtat,
+                        statut: nouvelEtat ? "Approuvé" : "En attente"
+                    });
+                    await chargerUtilisateurs();
+                } catch (error) {
+                    alert(error.message);
+                }
+
+            });
         });
 
         document.querySelectorAll(".btn-supprimer").forEach((btn) => {

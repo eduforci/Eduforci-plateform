@@ -205,7 +205,7 @@ Espace École <span class="arrow">-----&gt;</span>
 <script type="module">
 
 import { db } from "./js/firebase.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const NUMERO_WHATSAPP = "2250747327309";
 const conteneur = document.getElementById("listeEnseignantsAccueil");
@@ -219,10 +219,11 @@ async function chargerEnseignantsAccueil() {
 
     try {
 
-        const snapshot = await getDocs(collection(db, "enseignants"));
+        const q = query(collection(db, "enseignants"), where("verification", "==", true));
+        const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
-            conteneur.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#999;">Aucun enseignant inscrit pour le moment.</p>`;
+            conteneur.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#999;">Aucun enseignant approuvé pour le moment.</p>`;
             return;
         }
 

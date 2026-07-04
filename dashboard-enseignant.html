@@ -180,6 +180,8 @@ color:#666;
 
 <h1>Bonjour, <span id="nomEnseignant"></span> 👋</h1>
 
+<div id="banniereVerification" style="margin:15px 0;padding:14px 18px;border-radius:12px;font-weight:600;display:none;"></div>
+
 <p><b>Identifiant :</b> <span id="identifiant"></span></p>
 <p><b>Email :</b> <span id="email"></span></p>
 <p><b>Ville :</b> <span id="ville"></span></p>
@@ -333,6 +335,19 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("matiere").textContent = data.matiere;
     document.getElementById("niveau").textContent = data.niveau;
     document.getElementById("experience").textContent = data.experience;
+
+    const banniere = document.getElementById("banniereVerification");
+    banniere.style.display = "block";
+
+    if (data.verification === true) {
+        banniere.style.background = "#e6f7ec";
+        banniere.style.color = "#28a745";
+        banniere.textContent = "✅ Votre profil est approuvé et visible par les parents sur la page d'accueil.";
+    } else {
+        banniere.style.background = "#fff4e0";
+        banniere.style.color = "#e08b00";
+        banniere.textContent = "⏳ Votre profil est en attente de validation par l'équipe EDUFORCI. Il ne sera visible publiquement qu'après approbation.";
+    }
 
 }
 

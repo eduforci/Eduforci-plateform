@@ -236,7 +236,7 @@ Choisissez le professeur qui correspond le mieux à vos besoins.
 <script type="module">
 
 import { db } from "./js/firebase.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const liste = document.getElementById("listeEnseignants");
 
@@ -250,10 +250,10 @@ async function chargerEnseignants() {
 
     try {
 
-        const snapshot = await getDocs(collection(db, "enseignants"));
+        const snapshot = await getDocs(query(collection(db, "enseignants"), where("verification", "==", true)));
 
         if (snapshot.empty) {
-            liste.innerHTML = `<div class="empty">Aucun enseignant inscrit pour le moment.</div>`;
+            liste.innerHTML = `<div class="empty">Aucun enseignant approuvé pour le moment.</div>`;
             return;
         }
 

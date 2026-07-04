@@ -292,6 +292,11 @@ async function chargerEnseignant() {
 
     enseignant = snap.data();
 
+    if (enseignant.verification !== true) {
+        carte.innerHTML = `<p class="empty">Ce professeur est en attente de validation et ne peut pas encore être réservé.<br><a href="enseignants.html">Voir tous les enseignants →</a></p>`;
+        return;
+    }
+
     const initiales = (enseignant.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
     carte.innerHTML = `

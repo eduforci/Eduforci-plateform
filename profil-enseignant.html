@@ -489,6 +489,12 @@ async function chargerProfil() {
     }
 
     enseignant = snap.data();
+
+    if (enseignant.verification !== true) {
+        conteneur.innerHTML = `<div class="card" style="grid-column:1/-1;"><p class="empty">Ce profil est en attente de validation par l'équipe EDUFORCI et n'est pas encore visible publiquement.<br><a href="enseignants.html">Voir tous les enseignants →</a></p></div>`;
+        return;
+    }
+
     ENSEIGNANT_ID = enseignant.identifiant;
     ENSEIGNANT_NOM = enseignant.nom;
 
