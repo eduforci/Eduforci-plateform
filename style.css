@@ -795,3 +795,30 @@ scroll-behavior:smooth;
     cursor:not-allowed;
     opacity:.8;
 }
+.status{
+display:inline-block;
+padding:8px 18px;
+border-radius:30px;
+font-size:14px;
+font-weight:600;
+margin:12px 0;
+color:#fff;
+}
+
+.status.available{
+background:#28a745;
+}
+
+.status.unavailable{
+background:#dc3545;
+}
+.badge{
+display:inline-block;
+background:#0B63F6;
+color:#fff;
+padding:8px 18px;
+border-radius:30px;
+font-size:14px;
+font-weight:600;
+margin:8px 5px;
+}
