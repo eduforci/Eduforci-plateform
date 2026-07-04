@@ -161,15 +161,17 @@ async function creerCompteEnseignant(
   presentation: presentation,
 
   // Nouveaux champs
-  photo: "",
-  cv: "",
-  tarif: 0,
-  modeCours: [],
-  disponible: true,
-  note: 0,
-  nombreAvis: 0,
-  verification: false,
-  statut: "En attente",
+photo: "",
+cv: "",
+tarif: 0,
+modeCours: [],
+note: 0,
+nombreAvis: 0,
+
+verification: false,
+statutVerification: "En attente",
+
+disponibilite: "Disponible",
 
   role: "enseignant",
   dateCreation: new Date().toISOString()
