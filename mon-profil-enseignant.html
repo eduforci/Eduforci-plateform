@@ -52,6 +52,13 @@ input:checked + .slider:before{transform:translateX(26px);}
 .wave-box{margin-top:10px;padding:16px;background:#f0f9ff;border-radius:12px;border:1px solid #cfe8ff;}
 .wave-box p.hint{color:#666;font-size:13px;margin-top:6px;}
 
+.photo-zone{text-align:center;}
+.avatar-preview{width:140px;height:140px;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;background:#eaf1ff;color:#0B63F6;font-size:40px;font-weight:700;border:4px solid #0B63F6;overflow:hidden;}
+.avatar-preview img{width:100%;height:100%;object-fit:cover;}
+.btn-photo{width:auto;padding:10px 22px;margin-top:5px;background:#153A73;}
+.btn-photo:hover{background:#0d2a55;}
+.hint-photo{color:#666;font-size:13px;margin-top:10px;}
+
 </style>
 
 </head>
@@ -62,13 +69,24 @@ input:checked + .slider:before{transform:translateX(26px);}
 <a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
 <a href="mon-profil-enseignant.html" class="active">👤 Mon profil</a>
 <a href="mes-matieres-enseignant.html">📚 Mes matières</a>
-<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a><a href="messages-enseignant.html">💬 Messages</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
 <a href="avis-enseignant.html">⭐ Avis</a>
 <a href="parametres-enseignant.html">⚙️ Paramètres</a>
 <a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
 </div>
 
 <div class="main">
+
+<div class="card photo-zone">
+
+<div class="avatar-preview" id="avatarPreview">...</div>
+
+<input type="file" id="inputPhoto" accept="image/*" style="display:none;">
+<button type="button" class="btn-photo" id="btnChangerPhoto">📷 Changer ma photo</button>
+
+<p class="hint-photo">Format JPG ou PNG, 3 Mo maximum. Cette photo apparaîtra sur votre profil public et sur la page d'accueil.</p>
+
+</div>
 
 <div class="card">
 <h1>👤 Mon profil</h1>
@@ -127,11 +145,23 @@ input:checked + .slider:before{transform:translateX(26px);}
 
 <script type="module">
 
-import { auth, db } from "./js/firebase.js";
+import { auth, db, storage } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 
 let uid = null;
+let nomActuel = "";
+
+function afficherAvatar(url) {
+    const zone = document.getElementById("avatarPreview");
+    if (url) {
+        zone.innerHTML = `<img src="${url}" alt="Photo de profil">`;
+    } else {
+        const initiales = (nomActuel || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
+        zone.innerHTML = initiales;
+    }
+}
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -147,6 +177,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (snap.exists()) {
         const data = snap.data();
+        nomActuel = data.nom || "";
         document.getElementById("nom").value = data.nom || "";
         document.getElementById("identifiant").value = data.identifiant || "";
         document.getElementById("email").value = data.email || user.email || "";
@@ -156,10 +187,12 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("experience").value = data.experience || "";
         document.getElementById("numeroWave").value = data.numeroWave || "";
         document.getElementById("toggleDisponible").checked = data.disponible !== false;
+        afficherAvatar(data.photo || "");
         mettreAJourEtatTexte();
     } else {
         document.getElementById("email").value = user.email || "";
         document.getElementById("toggleDisponible").checked = true;
+        afficherAvatar("");
         mettreAJourEtatTexte();
     }
 
@@ -179,6 +212,45 @@ function mettreAJourEtatTexte() {
 
 document.getElementById("toggleDisponible").addEventListener("change", mettreAJourEtatTexte);
 
+document.getElementById("btnChangerPhoto").addEventListener("click", () => {
+    document.getElementById("inputPhoto").click();
+});
+
+document.getElementById("inputPhoto").addEventListener("change", async (e) => {
+
+    const fichier = e.target.files[0];
+    if (!fichier || !uid) return;
+
+    if (!fichier.type.startsWith("image/")) {
+        alert("Merci de choisir un fichier image (JPG ou PNG).");
+        return;
+    }
+
+    if (fichier.size > 3 * 1024 * 1024) {
+        alert("Cette image est trop lourde. Choisissez une photo de moins de 3 Mo.");
+        return;
+    }
+
+    const zone = document.getElementById("avatarPreview");
+    zone.innerHTML = "Envoi...";
+
+    try {
+
+        const cheminStorage = ref(storage, `photos-enseignants/${uid}`);
+        await uploadBytes(cheminStorage, fichier);
+        const url = await getDownloadURL(cheminStorage);
+
+        await setDoc(doc(db, "enseignants", uid), { photo: url }, { merge: true });
+
+        afficherAvatar(url);
+
+    } catch (error) {
+        alert("Erreur lors de l'envoi de la photo : " + error.message);
+        afficherAvatar("");
+    }
+
+});
+
 document.getElementById("btnEnregistrer").addEventListener("click", async () => {
 
     const msgOk = document.getElementById("msgOk");
@@ -190,8 +262,10 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
 
     try {
 
+        nomActuel = document.getElementById("nom").value.trim();
+
         await setDoc(doc(db, "enseignants", uid), {
-            nom: document.getElementById("nom").value.trim(),
+            nom: nomActuel,
             ville: document.getElementById("ville").value.trim(),
             matiere: document.getElementById("matiere").value.trim(),
             niveau: document.getElementById("niveau").value,

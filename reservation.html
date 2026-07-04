@@ -98,6 +98,18 @@ font-weight:700;
 
 border:5px solid #eaf1ff;
 
+overflow:hidden;
+
+}
+
+.avatar-circle img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
 }
 
 label{
@@ -300,7 +312,7 @@ async function chargerEnseignant() {
     const initiales = (enseignant.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
     carte.innerHTML = `
-        <div class="avatar-circle">${initiales}</div>
+        <div class="avatar-circle">${enseignant.photo ? `<img src="${enseignant.photo}" alt="${enseignant.nom || 'Enseignant'}">` : initiales}</div>
         <h2 style="color:#153A73;margin-bottom:10px;">${enseignant.nom || "Enseignant"}</h2>
         <p><strong>ID :</strong> ${enseignant.identifiant || "-"}</p>
         <p>📚 ${enseignant.matiere || "-"}</p>

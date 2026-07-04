@@ -169,8 +169,8 @@ color:#666;
 }
 
 .avatar-mini{
-width:44px;
-height:44px;
+width:60px;
+height:60px;
 border-radius:50%;
 background:#0B63F6;
 color:white;
@@ -178,7 +178,8 @@ display:flex;
 align-items:center;
 justify-content:center;
 font-weight:700;
-font-size:14px;
+font-size:16px;
+overflow:hidden;
 }
 
 </style>
@@ -352,7 +353,7 @@ async function chargerUtilisateurs() {
             const initiales = (u.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
             const cellulePhoto = type === "enseignants"
-                ? `<td><div class="avatar-mini">${initiales}</div></td>`
+                ? `<td><div class="avatar-mini">${u.photo ? `<img src="${u.photo}" alt="${u.nom || 'Enseignant'}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initiales}</div></td>`
                 : "";
 
             const celluleVille = type === "enseignants"

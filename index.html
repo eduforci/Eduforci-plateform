@@ -65,45 +65,82 @@ Cours à domicile • Cours en ligne • Préparation CEPE • BEPC • BAC
 
 <div class="search-box">
 
-<select>
+<select id="filtreMatiere">
 
-<option>Matière</option>
-
-<option>Mathématiques</option>
-
-<option>Anglais</option>
+<option value="">Matière</option>
 
 <option>Français</option>
 
-<option>Physique</option>
+<option>Anglais</option>
+
+<option>Espagnol</option>
+
+<option>Allemand</option>
+
+<option>Mathématiques</option>
+
+<option>Histoire-Géographie</option>
+
+<option>SVT</option>
+
+<option>Physique-Chimie</option>
+
+<option>Philosophie</option>
 
 </select>
 
-<select>
+<select id="filtreNiveau">
 
-<option>Niveau</option>
+<option value="">Niveau</option>
 
-<option>Primaire</option>
+<optgroup label="Primaire">
+<option>CP1</option>
+<option>CP2</option>
+<option>CE1</option>
+<option>CE2</option>
+<option>CM1</option>
+<option>CM2</option>
+</optgroup>
 
-<option>Collège</option>
+<optgroup label="1er cycle">
+<option>6e</option>
+<option>5e</option>
+<option>4e</option>
+<option>3e</option>
+</optgroup>
 
-<option>Lycée</option>
+<optgroup label="2nd cycle">
+<option>2nde A</option>
+<option>2nde C</option>
+<option>1ère A</option>
+<option>1ère C</option>
+<option>1ère D</option>
+<option>Tle A</option>
+<option>Tle C</option>
+<option>Tle D</option>
+</optgroup>
+
+<option value="autre">Autre (à préciser)</option>
 
 </select>
 
-<select>
+<input type="text" id="niveauAutre" placeholder="Précisez le niveau" style="display:none;">
 
-<option>Ville</option>
+<select id="typeLieu">
 
-<option>Abidjan</option>
+<option value="ville">Ville</option>
 
-<option>Bouaké</option>
-
-<option>Yamoussoukro</option>
+<option value="commune">Commune</option>
 
 </select>
 
-<button>
+<select id="filtreLieu">
+
+<option value="">Choisir...</option>
+
+</select>
+
+<button id="btnRechercher">
 
 Rechercher
 
@@ -206,6 +243,40 @@ Espace École <span class="arrow">-----&gt;</span>
 
 import { db } from "./js/firebase.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { VILLES, COMMUNES } from "./js/lieux.js";
+
+const selectNiveau = document.getElementById("filtreNiveau");
+const inputNiveauAutre = document.getElementById("niveauAutre");
+const selectTypeLieu = document.getElementById("typeLieu");
+const selectLieu = document.getElementById("filtreLieu");
+
+function remplirLieux() {
+    const liste = selectTypeLieu.value === "commune" ? COMMUNES : VILLES;
+    selectLieu.innerHTML = `<option value="">Choisir...</option>` + liste.map(l => `<option>${l}</option>`).join("");
+}
+
+remplirLieux();
+
+selectTypeLieu.addEventListener("change", remplirLieux);
+
+selectNiveau.addEventListener("change", () => {
+    inputNiveauAutre.style.display = selectNiveau.value === "autre" ? "block" : "none";
+});
+
+document.getElementById("btnRechercher").addEventListener("click", () => {
+
+    const matiere = document.getElementById("filtreMatiere").value;
+    const niveau = selectNiveau.value === "autre" ? inputNiveauAutre.value.trim() : selectNiveau.value;
+    const lieu = selectLieu.value;
+
+    const params = new URLSearchParams();
+    if (matiere) params.set("matiere", matiere);
+    if (niveau) params.set("niveau", niveau);
+    if (lieu) params.set("ville", lieu);
+
+    window.location.href = "enseignants.html" + (params.toString() ? "?" + params.toString() : "");
+
+});
 
 const NUMERO_WHATSAPP = "2250747327309";
 const conteneur = document.getElementById("listeEnseignantsAccueil");
@@ -246,7 +317,7 @@ async function chargerEnseignantsAccueil() {
             carte.className = "teacher-card";
 
             carte.innerHTML = `
-                <div class="avatar-circle">${initiales}</div>
+                <div class="avatar-circle">${prof.photo ? `<img src="${prof.photo}" alt="${prof.nom || 'Enseignant'}">` : initiales}</div>
                 <h4>${prof.nom || "Enseignant"}</h4>
                 <span class="badge">${prof.verification ? "✔ Vérifié" : "⏳ En attente"}</span>
                 <p><i class="fas fa-book"></i> ${prof.matiere || "-"}</p>
