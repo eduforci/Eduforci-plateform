@@ -84,12 +84,7 @@ button:hover{background:#084ec7;}
 
 <label>Années d'expérience</label>
 <input id="experience" type="number" min="0" placeholder="Ex : 3">
-<label>Statut de disponibilité</label>
 
-<select id="statut">
-    <option value="Disponible">🟢 Disponible</option>
-    <option value="Indisponible">🔴 Indisponible</option>
-</select>
 <button id="btnEnregistrer">💾 Enregistrer les modifications</button>
 
 <div class="msg ok" id="msgOk">✔ Profil mis à jour avec succès.</div>
@@ -103,7 +98,7 @@ button:hover{background:#084ec7;}
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let uid = null;
 
@@ -128,7 +123,6 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("matiere").value = data.matiere || "";
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
-        document.getElementById("statut").value = data.disponibilite || "Disponible";
     } else {
         document.getElementById("email").value = user.email || "";
     }
@@ -146,13 +140,13 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
 
     try {
 
-        await updateDoc(doc(db, "enseignants", uid), {
+        await setDoc(doc(db, "enseignants", uid), {
             nom: document.getElementById("nom").value.trim(),
             ville: document.getElementById("ville").value.trim(),
             matiere: document.getElementById("matiere").value.trim(),
             niveau: document.getElementById("niveau").value,
             experience: document.getElementById("experience").value
-        });
+        }, { merge: true });
 
         msgOk.style.display = "block";
 

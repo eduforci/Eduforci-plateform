@@ -106,7 +106,7 @@ button:hover{background:#084ec7;}
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let uid = null;
 
@@ -149,16 +149,17 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
 
     try {
 
-        await updateDoc(doc(db, "etablissements", uid), {
+        await setDoc(doc(db, "etablissements", uid), {
             nom: document.getElementById("nom").value.trim(),
             responsable: document.getElementById("responsable").value.trim(),
             telephone: document.getElementById("telephone").value.trim(),
+            email: document.getElementById("email").value.trim(),
             ville: document.getElementById("ville").value.trim(),
             adresse: document.getElementById("adresse").value.trim(),
             type: document.getElementById("type").value,
             niveaux: document.getElementById("niveaux").value.trim(),
             description: document.getElementById("description").value.trim()
-        });
+        }, { merge: true });
 
         msgOk.style.display = "block";
 
