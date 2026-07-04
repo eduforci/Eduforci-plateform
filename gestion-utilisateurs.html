@@ -168,6 +168,19 @@ padding:40px 20px;
 color:#666;
 }
 
+.avatar-mini{
+width:44px;
+height:44px;
+border-radius:50%;
+background:#0B63F6;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:700;
+font-size:14px;
+}
+
 </style>
 
 </head>
@@ -215,10 +228,14 @@ color:#666;
 <table id="tableUtilisateurs">
 
 <tr id="ligneEntete">
+<th id="entetPhoto" style="display:none;">Photo</th>
 <th>Identifiant</th>
 <th>Nom</th>
 <th>Téléphone</th>
 <th>E-mail</th>
+<th id="entetVille" style="display:none;">Ville</th>
+<th id="entetTarif" style="display:none;">Tarif</th>
+<th id="entetNote" style="display:none;">Note moyenne</th>
 <th id="entetWave" style="display:none;">Numéro Wave</th>
 <th id="entetVerification" style="display:none;">Vérification</th>
 <th>Statut</th>
@@ -255,8 +272,18 @@ document.getElementById("lienEnseignants").classList.toggle("active", type === "
 document.getElementById("lienParents").classList.toggle("active", type === "parents");
 document.getElementById("lienEtablissements").classList.toggle("active", type === "etablissements");
 
+document.getElementById("entetPhoto").style.display = (type === "enseignants") ? "table-cell" : "none";
+document.getElementById("entetVille").style.display = (type === "enseignants") ? "table-cell" : "none";
+document.getElementById("entetTarif").style.display = (type === "enseignants") ? "table-cell" : "none";
+document.getElementById("entetNote").style.display = (type === "enseignants") ? "table-cell" : "none";
 document.getElementById("entetWave").style.display = (type === "enseignants") ? "table-cell" : "none";
 document.getElementById("entetVerification").style.display = (type === "enseignants") ? "table-cell" : "none";
+
+function formaterTarifAdmin(tarif) {
+    const nombre = Number(tarif);
+    if (!nombre || nombre <= 0) return "À discuter";
+    return nombre.toLocaleString("fr-FR") + " FCFA/h";
+}
 
 function getNomAffiche(data, type) {
     if (type === "etablissements") return data.nom || "-";
@@ -301,10 +328,45 @@ async function chargerUtilisateurs() {
 
         messageVide.style.display = "none";
 
+        // Calcul des notes moyennes réelles à partir des avis (uniquement utile pour les enseignants)
+        const notesParEnseignant = {};
+
+        if (type === "enseignants") {
+            const avisSnap = await getDocs(collection(db, "avis"));
+            avisSnap.forEach((docSnap) => {
+                const a = docSnap.data();
+                if (!a.enseignantId) return;
+                if (!notesParEnseignant[a.enseignantId]) {
+                    notesParEnseignant[a.enseignantId] = { total: 0, count: 0 };
+                }
+                notesParEnseignant[a.enseignantId].total += Number(a.note) || 0;
+                notesParEnseignant[a.enseignantId].count += 1;
+            });
+        }
+
         snap.forEach((docSnap) => {
 
             const u = docSnap.data();
             const date = u.dateCreation ? new Date(u.dateCreation).toLocaleDateString("fr-FR") : "-";
+
+            const initiales = (u.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
+
+            const cellulePhoto = type === "enseignants"
+                ? `<td><div class="avatar-mini">${initiales}</div></td>`
+                : "";
+
+            const celluleVille = type === "enseignants"
+                ? `<td>${u.ville || "—"}</td>`
+                : "";
+
+            const celluleTarif = type === "enseignants"
+                ? `<td>${formaterTarifAdmin(u.tarif)}</td>`
+                : "";
+
+            const infoNote = notesParEnseignant[u.identifiant];
+            const celluleNote = type === "enseignants"
+                ? `<td>${infoNote ? (infoNote.total / infoNote.count).toFixed(1) + " / 5 (" + infoNote.count + ")" : "Pas encore noté"}</td>`
+                : "";
 
             const celluleWave = type === "enseignants"
                 ? `<td>${u.numeroWave || "—"}</td>`
@@ -329,10 +391,14 @@ async function chargerUtilisateurs() {
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
+                ${cellulePhoto}
                 <td>${u.identifiant || "-"}</td>
                 <td>${getNomAffiche(u, type)}</td>
                 <td>${u.telephone || "-"}</td>
                 <td>${u.email || "-"}</td>
+                ${celluleVille}
+                ${celluleTarif}
+                ${celluleNote}
                 ${celluleWave}
                 ${celluleVerification}
                 ${celluleStatut}
