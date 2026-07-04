@@ -128,7 +128,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("matiere").value = data.matiere || "";
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
-        document.getElementById("statut").value = data.statut || "Disponible";
+        document.getElementById("statut").value = data.disponibilite || "Disponible";
     } else {
         document.getElementById("email").value = user.email || "";
     }
