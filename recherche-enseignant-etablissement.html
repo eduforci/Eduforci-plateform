@@ -82,27 +82,23 @@ h1{color:#153A73;margin-bottom:20px;}
 
 </div>
 
-<div class="modal-overlay" id="modalOverlay">
-<div class="modal">
-<h3 id="modalTitre">Contacter l'enseignant</h3>
-<textarea id="modalMessage" placeholder="Votre message pour l'enseignant..."></textarea>
-<div class="actions">
-<button class="envoyer" id="btnEnvoyerMessage">Envoyer</button>
-<button class="annuler" id="btnAnnulerMessage">Annuler</button>
-</div>
-</div>
-</div>
-
 <script type="module">
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let etablissementConnecte = null;
 let etablissementNom = "Établissement";
 let tousLesEnseignants = [];
-let enseignantSelectionne = null;
+
+const NUMERO_WHATSAPP = "2250747327309";
+
+function construireLienWhatsapp(ens) {
+    const tarif = Number(ens.tarif) > 0 ? Number(ens.tarif).toLocaleString("fr-FR") + " FCFA/h" : "tarif à discuter";
+    const texte = `Bonjour, je représente l'établissement ${etablissementNom} et je suis intéressé(e) par ${ens.nom || "cet enseignant"} (${ens.matiere || "-"}), basé à ${ens.ville || "-"} (Réf : ${ens.identifiant || "-"}). Tarif indiqué : ${tarif}. Pouvez-vous m'aider à le/la réserver ?`;
+    return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(texte)}`;
+}
 
 function afficherListe(liste) {
 
@@ -118,6 +114,8 @@ function afficherListe(liste) {
 
         const initiales = (ens.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
+        const tarif = Number(ens.tarif) > 0 ? Number(ens.tarif).toLocaleString("fr-FR") + " FCFA/h" : "Tarif à discuter";
+
         const card = document.createElement("div");
         card.className = "teacher-card";
         card.innerHTML = `
@@ -126,18 +124,10 @@ function afficherListe(liste) {
             <p>📚 ${ens.matiere || "—"}</p>
             <p>📍 ${ens.ville || "—"}</p>
             <p>🎓 ${ens.niveau || "—"}</p>
-            <button class="btn-contact" data-identifiant="${ens.identifiant || ""}" data-nom="${ens.nom || "Enseignant"}">Contacter</button>
+            <p>💰 ${tarif}</p>
+            <a class="btn-contact" style="display:block;text-decoration:none;" target="_blank" rel="noopener" href="${construireLienWhatsapp(ens)}">📲 Réserver via WhatsApp</a>
         `;
         grille.appendChild(card);
-    });
-
-    grille.querySelectorAll(".btn-contact").forEach((btn) => {
-        btn.addEventListener("click", () => {
-            enseignantSelectionne = { identifiant: btn.dataset.identifiant, nom: btn.dataset.nom };
-            document.getElementById("modalTitre").textContent = "Contacter " + btn.dataset.nom;
-            document.getElementById("modalMessage").value = "";
-            document.getElementById("modalOverlay").classList.add("actif");
-        });
     });
 
 }
@@ -173,38 +163,6 @@ document.getElementById("btnFiltrer").addEventListener("click", () => {
     });
 
     afficherListe(filtres);
-
-});
-
-document.getElementById("btnAnnulerMessage").addEventListener("click", () => {
-    document.getElementById("modalOverlay").classList.remove("actif");
-});
-
-document.getElementById("btnEnvoyerMessage").addEventListener("click", async () => {
-
-    const contenu = document.getElementById("modalMessage").value.trim();
-
-    if (!contenu || !enseignantSelectionne || !enseignantSelectionne.identifiant) {
-        alert("Message vide ou enseignant sans identifiant valide.");
-        return;
-    }
-
-    try {
-
-        await addDoc(collection(db, "messages"), {
-            enseignantId: enseignantSelectionne.identifiant,
-            etablissementId: etablissementConnecte.uid,
-            etablissementNom: etablissementNom,
-            contenu: contenu,
-            dateEnvoi: new Date().toISOString()
-        });
-
-        document.getElementById("modalOverlay").classList.remove("actif");
-        alert("Message envoyé à " + enseignantSelectionne.nom + " !");
-
-    } catch (error) {
-        alert(error.message);
-    }
 
 });
 
