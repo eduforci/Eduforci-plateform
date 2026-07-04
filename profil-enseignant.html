@@ -76,23 +76,33 @@ box-shadow:0 10px 25px rgba(0,0,0,.08);
 
 }
 
-.profile-photo{
+.avatar-circle{
 
-width:180px;
+width:150px;
 
-height:180px;
+height:150px;
 
 border-radius:50%;
 
-object-fit:cover;
+display:flex;
 
-display:block;
+align-items:center;
+
+justify-content:center;
 
 margin:auto;
 
 margin-bottom:20px;
 
 border:5px solid #0B63F6;
+
+background:#eaf1ff;
+
+color:#0B63F6;
+
+font-size:44px;
+
+font-weight:700;
 
 }
 
@@ -119,6 +129,12 @@ border-radius:30px;
 display:inline-block;
 
 margin:auto;
+
+}
+
+.badge.attente{
+
+background:#e08b00;
 
 }
 
@@ -160,6 +176,67 @@ background:#084ec7;
 
 }
 
+.dispo-item{
+
+display:flex;
+
+justify-content:space-between;
+
+padding:10px 0;
+
+border-bottom:1px solid #eee;
+
+font-size:15px;
+
+}
+
+.dispo-item:last-child{
+
+border-bottom:none;
+
+}
+
+.dispo-oui{color:#28a745;font-weight:600;}
+.dispo-non{color:#bbb;}
+
+.avis-item{
+
+padding:15px 0;
+
+border-bottom:1px solid #eee;
+
+}
+
+.avis-item:last-child{
+
+border-bottom:none;
+
+}
+
+.avis-item .haut{
+
+display:flex;
+
+justify-content:space-between;
+
+margin-bottom:6px;
+
+font-weight:600;
+
+color:#153A73;
+
+}
+
+.empty{
+
+text-align:center;
+
+padding:60px 20px;
+
+color:#999;
+
+}
+
 </style>
 
 </head>
@@ -171,116 +248,11 @@ background:#084ec7;
 <img src="logo.png">
 
 </div>
-<div class="container">
 
-<div class="card">
+<div class="container" id="conteneurProfil">
 
-<img src="images/professeur.jpg" class="profile-photo" alt="Professeur">
-
-<h2>Mr Ouattara</h2>
-
-<div style="text-align:center;margin-bottom:20px;">
-<span class="badge">✔ Profil vérifié</span>
-</div>
-
-<div class="info">
-
-<p><strong>📚 Matières :</strong> Anglais</p>
-
-<p><strong>🎓 Diplôme :</strong> Licence d'Anglais</p>
-
-<p><strong>💼 Expérience :</strong> 4 ans</p>
-
-<p><strong>📍 Ville :</strong> Abidjan</p>
-
-<p><strong>⭐ Note :</strong> 4.9 / 5</p>
-
-<p><strong>📅 Disponibilité :</strong> Disponible</p>
-
-</div>
-
-<button onclick="location.href='reservation.html'">Réserver ce professeur</button>
-
-<button id="btnMessage" style="background:#153A73;margin-top:12px;">💬 Envoyer un message</button>
-
-<button id="btnFavori" style="background:white;color:#0B63F6;border:2px solid #0B63F6;margin-top:12px;">🤍 Ajouter aux favoris</button>
-
-<div id="formMessage" style="display:none;margin-top:15px;">
-
-<textarea id="contenuMessage" placeholder="Écrivez votre message..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
-
-<button id="btnEnvoyerMessage" style="margin-top:10px;">Envoyer</button>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2 style="text-align:left;">Présentation</h2>
-
-<p style="margin-top:20px;line-height:1.8;color:#555;">
-
-Professeur d'anglais passionné, spécialisé dans la préparation au CEPE, BEPC, BAC et aux cours de soutien à domicile. J'accompagne les élèves avec une méthode simple, pratique et adaptée à leur niveau afin de les aider à progresser rapidement.
-
-</p>
-
-<br>
-
-<h2 style="text-align:left;">Compétences</h2>
-
-<ul style="margin-top:15px;padding-left:20px;line-height:2;">
-
-<li>✔ Grammaire anglaise</li>
-
-<li>✔ Expression orale</li>
-
-<li>✔ Préparation aux examens</li>
-
-<li>✔ Cours particuliers à domicile</li>
-
-<li>✔ Cours en ligne</li>
-
-</ul>
-
-<br>
-
-<h2 style="text-align:left;">Avis des parents</h2>
-
-<p style="margin-top:15px;line-height:1.8;color:#555;">
-
-⭐⭐⭐⭐⭐ « Excellent enseignant, très pédagogue. Mon fils a beaucoup progressé. »
-
-</p>
-
-<p style="line-height:1.8;color:#555;">
-
-⭐⭐⭐⭐⭐ « Très ponctuel et professionnel. Je recommande. »
-
-</p>
-
-<div style="margin-top:25px;padding:20px;background:#f8f9fc;border-radius:15px;">
-
-<h3 style="color:#153A73;margin-bottom:15px;">Laisser un avis</h3>
-
-<label style="display:block;margin-bottom:8px;font-weight:600;color:#153A73;">Note</label>
-
-<select id="noteAvis" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;margin-bottom:12px;">
-<option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-<option value="4">⭐⭐⭐⭐ (4/5)</option>
-<option value="3">⭐⭐⭐ (3/5)</option>
-<option value="2">⭐⭐ (2/5)</option>
-<option value="1">⭐ (1/5)</option>
-</select>
-
-<label style="display:block;margin-bottom:8px;font-weight:600;color:#153A73;">Commentaire</label>
-
-<textarea id="commentaireAvis" placeholder="Partagez votre expérience..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:90px;resize:vertical;"></textarea>
-
-<button id="btnEnvoyerAvis" style="margin-top:12px;">Publier mon avis</button>
-
-</div>
-
+<div class="card" style="text-align:center;grid-column:1/-1;">
+<p class="empty">Chargement du profil...</p>
 </div>
 
 </div>
@@ -289,12 +261,78 @@ Professeur d'anglais passionné, spécialisé dans la préparation au CEPE, BEPC
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { collection, addDoc, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, addDoc, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-const ENSEIGNANT_ID = "ENS-000245";
-const ENSEIGNANT_NOM = "Mr Ouattara";
+const params = new URLSearchParams(window.location.search);
+const teacherDocId = params.get("id");
 
+const joursOrdre = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+const joursLabels = {lundi:"Lundi",mardi:"Mardi",mercredi:"Mercredi",jeudi:"Jeudi",vendredi:"Vendredi",samedi:"Samedi",dimanche:"Dimanche"};
+
+let ENSEIGNANT_ID = null;
+let ENSEIGNANT_NOM = null;
+let enseignant = null;
 let parentConnecte = null;
+
+function formaterTarif(tarif) {
+    const nombre = Number(tarif);
+    if (!nombre || nombre <= 0) return "Tarif à discuter";
+    return nombre.toLocaleString("fr-FR") + " FCFA / heure";
+}
+
+function construireDisponibiliteHTML() {
+
+    const dispo = enseignant.disponibilites || {};
+
+    return joursOrdre.map((cle) => {
+        const info = dispo[cle];
+        if (info && info.actif) {
+            return `<div class="dispo-item"><span>${joursLabels[cle]}</span><span class="dispo-oui">✔ ${info.horaire || "Disponible"}</span></div>`;
+        }
+        return `<div class="dispo-item"><span>${joursLabels[cle]}</span><span class="dispo-non">Indisponible</span></div>`;
+    }).join("");
+
+}
+
+async function chargerAvisEtNote() {
+
+    const zoneAvis = document.getElementById("zoneAvis");
+    const zoneNote = document.getElementById("zoneNote");
+
+    try {
+
+        const q = query(collection(db, "avis"), where("enseignantId", "==", ENSEIGNANT_ID));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            zoneNote.textContent = "Pas encore noté";
+            zoneAvis.innerHTML = `<p class="empty" style="padding:20px;">Aucun avis pour le moment. Soyez le premier à en laisser un !</p>`;
+            return;
+        }
+
+        let total = 0;
+        let html = "";
+
+        snap.forEach((docSnap) => {
+            const d = docSnap.data();
+            total += Number(d.note) || 0;
+            html += `
+                <div class="avis-item">
+                    <div class="haut"><span>${d.parentNom || "Parent"}</span><span>${"⭐".repeat(Number(d.note) || 0)}</span></div>
+                    <p style="color:#555;">${d.commentaire || ""}</p>
+                </div>
+            `;
+        });
+
+        const moyenne = (total / snap.size).toFixed(1);
+        zoneNote.textContent = moyenne + " / 5 (" + snap.size + " avis)";
+        zoneAvis.innerHTML = html;
+
+    } catch (error) {
+        zoneAvis.innerHTML = `<p class="empty">Erreur : ${error.message}</p>`;
+    }
+
+}
 
 function favoriRef(uid) {
     return doc(db, "favoris", uid + "_" + ENSEIGNANT_ID);
@@ -304,6 +342,7 @@ async function actualiserBoutonFavori() {
     if (!parentConnecte) return;
     const snap = await getDoc(favoriRef(parentConnecte.uid));
     const btn = document.getElementById("btnFavori");
+    if (!btn) return;
     if (snap.exists()) {
         btn.innerHTML = "❤️ Retirer des favoris";
         btn.style.background = "#0B63F6";
@@ -315,125 +354,255 @@ async function actualiserBoutonFavori() {
     }
 }
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        parentConnecte = user;
-        actualiserBoutonFavori();
-    }
-});
+function attacherEvenements() {
 
-document.getElementById("btnFavori").addEventListener("click", async () => {
+    document.getElementById("btnFavori").addEventListener("click", async () => {
 
-    if (!parentConnecte) {
-        alert("Veuillez vous connecter pour ajouter un favori.");
-        window.location.href = "connexion-parent.html";
-        return;
-    }
-
-    try {
-
-        const ref = favoriRef(parentConnecte.uid);
-        const snap = await getDoc(ref);
-
-        if (snap.exists()) {
-            await deleteDoc(ref);
-        } else {
-            await setDoc(ref, {
-                parentId: parentConnecte.uid,
-                enseignantId: ENSEIGNANT_ID,
-                enseignantNom: ENSEIGNANT_NOM,
-                matiere: "Anglais",
-                dateAjout: new Date().toISOString()
-            });
+        if (!parentConnecte) {
+            alert("Veuillez vous connecter pour ajouter un favori.");
+            window.location.href = "connexion-parent.html";
+            return;
         }
 
-        actualiserBoutonFavori();
+        try {
 
-    } catch (error) {
-        alert(error.message);
-    }
+            const ref = favoriRef(parentConnecte.uid);
+            const snap = await getDoc(ref);
 
-});
+            if (snap.exists()) {
+                await deleteDoc(ref);
+            } else {
+                await setDoc(ref, {
+                    parentId: parentConnecte.uid,
+                    enseignantId: ENSEIGNANT_ID,
+                    enseignantNom: ENSEIGNANT_NOM,
+                    matiere: enseignant.matiere || "-",
+                    dateAjout: new Date().toISOString()
+                });
+            }
 
-document.getElementById("btnMessage").addEventListener("click", () => {
-    const form = document.getElementById("formMessage");
-    form.style.display = form.style.display === "none" ? "block" : "none";
-});
+            actualiserBoutonFavori();
 
-document.getElementById("btnEnvoyerMessage").addEventListener("click", async () => {
+        } catch (error) {
+            alert(error.message);
+        }
 
-    if (!parentConnecte) {
-        alert("Veuillez vous connecter pour envoyer un message.");
-        window.location.href = "connexion-parent.html";
+    });
+
+    document.getElementById("btnMessage").addEventListener("click", () => {
+        const form = document.getElementById("formMessage");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    document.getElementById("btnEnvoyerMessage").addEventListener("click", async () => {
+
+        if (!parentConnecte) {
+            alert("Veuillez vous connecter pour envoyer un message.");
+            window.location.href = "connexion-parent.html";
+            return;
+        }
+
+        const contenu = document.getElementById("contenuMessage").value.trim();
+
+        if (!contenu) {
+            alert("Merci d'écrire un message avant d'envoyer.");
+            return;
+        }
+
+        try {
+
+            await addDoc(collection(db, "messages"), {
+                parentId: parentConnecte.uid,
+                enseignantNom: ENSEIGNANT_NOM,
+                enseignantId: ENSEIGNANT_ID,
+                contenu: contenu,
+                dateEnvoi: new Date().toISOString()
+            });
+
+            alert("Message envoyé avec succès !");
+            document.getElementById("contenuMessage").value = "";
+            document.getElementById("formMessage").style.display = "none";
+
+        } catch (error) {
+            alert(error.message);
+        }
+
+    });
+
+    document.getElementById("btnEnvoyerAvis").addEventListener("click", async () => {
+
+        if (!parentConnecte) {
+            alert("Veuillez vous connecter pour publier un avis.");
+            window.location.href = "connexion-parent.html";
+            return;
+        }
+
+        const note = document.getElementById("noteAvis").value;
+        const commentaire = document.getElementById("commentaireAvis").value.trim();
+
+        if (!commentaire) {
+            alert("Merci d'écrire un commentaire avant de publier.");
+            return;
+        }
+
+        try {
+
+            const parentSnap = await getDoc(doc(db, "parents", parentConnecte.uid));
+            const parentNom = parentSnap.exists() ? parentSnap.data().nom : "Parent";
+
+            await addDoc(collection(db, "avis"), {
+                parentId: parentConnecte.uid,
+                parentNom: parentNom,
+                enseignantNom: ENSEIGNANT_NOM,
+                enseignantId: ENSEIGNANT_ID,
+                note: Number(note),
+                commentaire: commentaire,
+                dateAvis: new Date().toISOString()
+            });
+
+            alert("Votre avis a été publié avec succès !");
+            document.getElementById("commentaireAvis").value = "";
+            chargerAvisEtNote();
+
+        } catch (error) {
+            alert(error.message);
+        }
+
+    });
+
+}
+
+async function chargerProfil() {
+
+    const conteneur = document.getElementById("conteneurProfil");
+
+    if (!teacherDocId) {
+        conteneur.innerHTML = `<div class="card" style="grid-column:1/-1;"><p class="empty">Aucun enseignant sélectionné.<br><a href="enseignants.html">Voir tous les enseignants →</a></p></div>`;
         return;
     }
 
-    const contenu = document.getElementById("contenuMessage").value.trim();
+    const snap = await getDoc(doc(db, "enseignants", teacherDocId));
 
-    if (!contenu) {
-        alert("Merci d'écrire un message avant d'envoyer.");
+    if (!snap.exists()) {
+        conteneur.innerHTML = `<div class="card" style="grid-column:1/-1;"><p class="empty">Cet enseignant est introuvable.<br><a href="enseignants.html">Voir tous les enseignants →</a></p></div>`;
         return;
     }
 
-    try {
+    enseignant = snap.data();
+    ENSEIGNANT_ID = enseignant.identifiant;
+    ENSEIGNANT_NOM = enseignant.nom;
 
-        await addDoc(collection(db, "messages"), {
-            parentId: parentConnecte.uid,
-            enseignantNom: "Mr Ouattara",
-            enseignantId: "ENS-000245",
-            contenu: contenu,
-            dateEnvoi: new Date().toISOString()
-        });
+    const initiales = (enseignant.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
-        alert("Message envoyé avec succès !");
-        document.getElementById("contenuMessage").value = "";
-        document.getElementById("formMessage").style.display = "none";
+    conteneur.innerHTML = `
 
-    } catch (error) {
-        alert(error.message);
-    }
+    <div class="card">
 
-});
+    <div class="avatar-circle">${initiales}</div>
 
-document.getElementById("btnEnvoyerAvis").addEventListener("click", async () => {
+    <h2>${enseignant.nom || "Enseignant"}</h2>
 
-    if (!parentConnecte) {
-        alert("Veuillez vous connecter pour publier un avis.");
-        window.location.href = "connexion-parent.html";
-        return;
-    }
+    <div style="text-align:center;margin-bottom:20px;">
+    <span class="badge ${enseignant.verification ? "" : "attente"}">${enseignant.verification ? "✔ Profil vérifié" : "⏳ Vérification en attente"}</span>
+    </div>
 
-    const note = document.getElementById("noteAvis").value;
-    const commentaire = document.getElementById("commentaireAvis").value.trim();
+    <div class="info">
 
-    if (!commentaire) {
-        alert("Merci d'écrire un commentaire avant de publier.");
-        return;
-    }
+    <p><strong>📚 Matière :</strong> ${enseignant.matiere || "-"}</p>
 
-    try {
+    <p><strong>🎓 Diplôme :</strong> ${enseignant.diplome || "-"}</p>
 
-        const parentSnap = await getDoc(doc(db, "parents", parentConnecte.uid));
-        const parentNom = parentSnap.exists() ? parentSnap.data().nom : "Parent";
+    <p><strong>💼 Expérience :</strong> ${enseignant.experience || "0"} an(s)</p>
 
-        await addDoc(collection(db, "avis"), {
-            parentId: parentConnecte.uid,
-            parentNom: parentNom,
-            enseignantNom: ENSEIGNANT_NOM,
-            enseignantId: ENSEIGNANT_ID,
-            note: Number(note),
-            commentaire: commentaire,
-            dateAvis: new Date().toISOString()
-        });
+    <p><strong>📍 Ville :</strong> ${enseignant.ville || "-"}</p>
 
-        alert("Votre avis a été publié avec succès !");
-        document.getElementById("commentaireAvis").value = "";
+    <p><strong>⭐ Note :</strong> <span id="zoneNote">...</span></p>
 
-    } catch (error) {
-        alert(error.message);
-    }
+    <p><strong>💰 Tarif :</strong> ${formaterTarif(enseignant.tarif)}</p>
 
-});
+    <p><strong>📅 Statut :</strong> <span style="color:${enseignant.disponible ? "#28a745" : "#d93025"};font-weight:600;">${enseignant.disponible ? "🟢 Disponible" : "🔴 Non disponible actuellement"}</span></p>
+
+    </div>
+
+    <button onclick="location.href='reservation.html?id=${teacherDocId}'">Réserver ce professeur</button>
+
+    <button id="btnMessage" style="background:#153A73;margin-top:12px;">💬 Envoyer un message</button>
+
+    <button id="btnFavori" style="background:white;color:#0B63F6;border:2px solid #0B63F6;margin-top:12px;">🤍 Ajouter aux favoris</button>
+
+    <div id="formMessage" style="display:none;margin-top:15px;">
+
+    <textarea id="contenuMessage" placeholder="Écrivez votre message..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
+
+    <button id="btnEnvoyerMessage" style="margin-top:10px;">Envoyer</button>
+
+    </div>
+
+    </div>
+
+    <div class="card">
+
+    <h2 style="text-align:left;">Présentation</h2>
+
+    <p style="margin-top:20px;line-height:1.8;color:#555;">
+    ${enseignant.presentation || "Ce professeur n'a pas encore ajouté de présentation."}
+    </p>
+
+    <br>
+
+    <h2 style="text-align:left;">📅 Disponibilités</h2>
+
+    <div style="margin-top:15px;">
+    ${construireDisponibiliteHTML()}
+    </div>
+
+    <br>
+
+    <h2 style="text-align:left;">Avis des parents</h2>
+
+    <div id="zoneAvis" style="margin-top:15px;">
+    <p class="empty" style="padding:20px;">Chargement des avis...</p>
+    </div>
+
+    <div style="margin-top:25px;padding:20px;background:#f8f9fc;border-radius:15px;">
+
+    <h3 style="color:#153A73;margin-bottom:15px;">Laisser un avis</h3>
+
+    <label style="display:block;margin-bottom:8px;font-weight:600;color:#153A73;">Note</label>
+
+    <select id="noteAvis" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;margin-bottom:12px;">
+    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+    <option value="4">⭐⭐⭐⭐ (4/5)</option>
+    <option value="3">⭐⭐⭐ (3/5)</option>
+    <option value="2">⭐⭐ (2/5)</option>
+    <option value="1">⭐ (1/5)</option>
+    </select>
+
+    <label style="display:block;margin-bottom:8px;font-weight:600;color:#153A73;">Commentaire</label>
+
+    <textarea id="commentaireAvis" placeholder="Partagez votre expérience..." style="width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;min-height:90px;resize:vertical;"></textarea>
+
+    <button id="btnEnvoyerAvis" style="margin-top:12px;">Publier mon avis</button>
+
+    </div>
+
+    </div>
+
+    `;
+
+    attacherEvenements();
+    chargerAvisEtNote();
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            parentConnecte = user;
+            actualiserBoutonFavori();
+        }
+    });
+
+}
+
+chargerProfil();
 
 </script>
 

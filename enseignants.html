@@ -76,7 +76,7 @@ margin-bottom:10px;
 
 display:grid;
 
-grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
 
 gap:30px;
 
@@ -104,19 +104,29 @@ transform:translateY(-8px);
 
 }
 
-.teacher-photo{
+.avatar-circle{
 
-width:130px;
+width:100px;
 
-height:130px;
+height:100px;
+
+margin:0 auto 15px;
 
 border-radius:50%;
 
-object-fit:cover;
+background:#0B63F6;
 
-border:5px solid #0B63F6;
+color:white;
 
-margin-bottom:15px;
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:30px;
+
+font-weight:700;
 
 }
 
@@ -135,6 +145,12 @@ border-radius:20px;
 font-size:14px;
 
 margin:10px 0;
+
+}
+
+.badge.attente{
+
+background:#e08b00;
 
 }
 
@@ -168,6 +184,24 @@ background:#084ec7;
 
 }
 
+.empty{
+
+grid-column:1/-1;
+
+text-align:center;
+
+padding:60px 20px;
+
+color:#999;
+
+background:white;
+
+border-radius:20px;
+
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+}
+
 </style>
 
 </head>
@@ -191,113 +225,73 @@ Choisissez le professeur qui correspond le mieux à vos besoins.
 </p>
 
 </div>
-<div class="grid">
+<div class="grid" id="listeEnseignants">
 
-<div class="card">
-
-<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
-
-<h2>Mr Ouattara</h2>
-
-<span class="badge">✔ Profil vérifié</span>
-
-<p><strong>📚 Matière :</strong> Anglais</p>
-
-<p><strong>📍 Ville :</strong> Abidjan</p>
-
-<p><strong>💰 Tarif :</strong> 7 500 FCFA / heure</p>
-
-<p><strong>🏠 Cours :</strong> À domicile & En ligne</p>
-<p><strong>🟢 Statut :</strong> Disponible</p>
-
-<p><strong>⭐ Note :</strong> 4.9 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-Voir le profil
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
-
-<h2>Mme Traoré</h2>
-
-<span class="badge">✔ Profil vérifié</span>
-
-<p><strong>📚 Matière :</strong> Mathématiques</p>
-
-<p><strong>📍 Ville :</strong> Bouaké</p>
-
-<p><strong>💰 Tarif :</strong> 8 000 FCFA / heure</p>
-
-<p><strong>🏠 Cours :</strong> À domicile</p>
-<p><strong>🔴 Statut :</strong> Indisponible</p>
-
-<p><strong>⭐ Note :</strong> 4.8 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-Voir le profil
-</button>
-
-</div>
-<div class="card">
-
-<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
-
-<h2>M. Kouassi</h2>
-
-<span class="badge">✔ Profil vérifié</span>
-
-<p><strong>📚 Matière :</strong> Physique-Chimie</p>
-
-<p><strong>📍 Ville :</strong> Yamoussoukro</p>
-
-<p><strong>💰 Tarif :</strong> 6 500 FCFA / heure</p>
-
-<p><strong>🏠 Cours :</strong> En ligne</p>
-
-<p><strong>🟢 Statut :</strong> Disponible</p>
-
-<p><strong>⭐ Note :</strong> 4.7 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-Voir le profil
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/professeur.jpg" class="teacher-photo" alt="Professeur">
-
-<h2>Mme Diallo</h2>
-
-<span class="badge">✔ Profil vérifié</span>
-
-<p><strong>📚 Matière :</strong> Français</p>
-
-<p><strong>📍 Ville :</strong> San Pedro</p>
-
-<p><strong>💰 Tarif :</strong> 7 000 FCFA / heure</p>
-
-<p><strong>🏠 Cours :</strong> À domicile</p>
-
-<p><strong>🔴 Statut :</strong> Indisponible</p>
-
-<p><strong>⭐ Note :</strong> 4.9 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-Voir le profil
-</button>
+<p class="empty">Chargement des enseignants...</p>
 
 </div>
 
 </div>
 
-</div>
+<script type="module">
 
+import { db } from "./js/firebase.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const liste = document.getElementById("listeEnseignants");
+
+function formaterTarif(tarif) {
+    const nombre = Number(tarif);
+    if (!nombre || nombre <= 0) return "Tarif à discuter";
+    return nombre.toLocaleString("fr-FR") + " FCFA / heure";
+}
+
+async function chargerEnseignants() {
+
+    try {
+
+        const snapshot = await getDocs(collection(db, "enseignants"));
+
+        if (snapshot.empty) {
+            liste.innerHTML = `<div class="empty">Aucun enseignant inscrit pour le moment.</div>`;
+            return;
+        }
+
+        liste.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+
+            const prof = docSnap.data();
+            const initiales = (prof.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
+
+            const carte = document.createElement("div");
+            carte.className = "card";
+
+            carte.innerHTML = `
+                <div class="avatar-circle">${initiales}</div>
+                <h2>${prof.nom || "Enseignant"}</h2>
+                <span class="badge ${prof.verification ? "" : "attente"}">${prof.verification ? "✔ Profil vérifié" : "⏳ En attente de vérification"}</span>
+                <p><strong>📚 Matière :</strong> ${prof.matiere || "-"}</p>
+                <p><strong>📍 Ville :</strong> ${prof.ville || "-"}</p>
+                <p><strong>🎓 Niveau :</strong> ${prof.niveau || "-"}</p>
+                <p><strong>💰 Tarif :</strong> ${formaterTarif(prof.tarif)}</p>
+                <p style="color:${prof.disponible ? "#28a745" : "#d93025"};"><strong>${prof.disponible ? "🟢 Disponible" : "🔴 Non disponible"}</strong></p>
+                <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">Voir le profil</button>
+            `;
+
+            liste.appendChild(carte);
+
+        });
+
+    } catch (error) {
+        liste.innerHTML = `<div class="empty">Erreur lors du chargement : ${error.message}</div>`;
+    }
+
+}
+
+chargerEnseignants();
+
+</script>
 </body>
 
 </html>

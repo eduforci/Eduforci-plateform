@@ -72,23 +72,31 @@ box-shadow:0 10px 25px rgba(0,0,0,.08);
 
 }
 
-.photo{
+.avatar-circle{
 
-width:170px;
+width:110px;
 
-height:170px;
+height:110px;
+
+margin:0 auto 20px;
 
 border-radius:50%;
 
-object-fit:cover;
+background:#0B63F6;
 
-display:block;
+color:#fff;
 
-margin:auto;
+display:flex;
 
-border:5px solid #0B63F6;
+align-items:center;
 
-margin-bottom:20px;
+justify-content:center;
+
+font-size:34px;
+
+font-weight:700;
+
+border:5px solid #eaf1ff;
 
 }
 
@@ -158,6 +166,16 @@ background:#084ec7;
 
 }
 
+.empty{
+
+text-align:center;
+
+padding:60px 20px;
+
+color:#999;
+
+}
+
 </style>
 
 </head>
@@ -166,41 +184,19 @@ background:#084ec7;
 
 <header>
 
-<img src="images/logo.png">
+<img src="logo.png">
 
 </header>
 
-<div class="container">
-  <div class="card" style="text-align:center;">
+<div class="container" id="conteneurPrincipal">
 
-<img src="images/professeur.jpg" class="photo" alt="Professeur">
-
-<h2>Mr Ouattara</h2>
-
-<p><strong>ID :</strong> ENS-000245</p>
-
-<p>📚 Anglais</p>
-
-<p>📍 Abidjan</p>
-
-<p>⭐ 4.9 / 5</p>
-
-<p>💰 7 500 FCFA / heure</p>
-
-<p style="color:green;"><strong>🟢 Disponible</strong></p>
-
+<div class="card" style="text-align:center;" id="carteEnseignant">
+<p class="empty">Chargement du profil de l'enseignant...</p>
 </div>
 
-<div class="card">
+<div class="card" id="carteFormulaire" style="display:none;">
 
 <h2 style="color:#153A73;">Réserver un cours</h2>
-
-<p style="margin:10px 0;color:#666;">
-Référence de réservation :
-<strong>RES-000001</strong>
-<br>
-<small>(Le numéro sera généré automatiquement plus tard.)</small>
-</p>
 
 <label>Date du cours</label>
 <input type="date" id="date">
@@ -225,19 +221,18 @@ Référence de réservation :
 <label>Message au professeur</label>
 
 <textarea id="message" placeholder="Décrivez votre besoin..."></textarea>
+
 <div style="margin-top:30px;padding:20px;background:#f8f9fc;border-radius:15px;border-left:5px solid #0B63F6;">
 
 <h3 style="color:#153A73;">📋 Récapitulatif de la réservation</h3>
 
 <br>
 
-<p><strong>👨‍🏫 Professeur :</strong> Mr Ouattara</p>
+<p><strong>👨‍🏫 Professeur :</strong> <span id="recapNom"></span></p>
 
-<p><strong>🆔 ID Enseignant :</strong> ENS-000245</p>
+<p><strong>📚 Matière :</strong> <span id="recapMatiere"></span></p>
 
-<p><strong>🆔 Réservation :</strong> RES-000001</p>
-
-<p><strong>💰 Tarif :</strong> 7 500 FCFA / heure</p>
+<p><strong>💰 Tarif :</strong> <span id="recapTarif"></span></p>
 
 <p><strong>📌 Statut :</strong>
 <span style="color:orange;font-weight:bold;">En attente de confirmation</span>
@@ -267,7 +262,55 @@ import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
+const params = new URLSearchParams(window.location.search);
+const teacherDocId = params.get("id");
+
 let parentConnecte = null;
+let enseignant = null;
+
+function formaterTarif(tarif) {
+    const nombre = Number(tarif);
+    if (!nombre || nombre <= 0) return "Tarif à discuter";
+    return nombre.toLocaleString("fr-FR") + " FCFA / heure";
+}
+
+async function chargerEnseignant() {
+
+    const carte = document.getElementById("carteEnseignant");
+
+    if (!teacherDocId) {
+        carte.innerHTML = `<p class="empty">Aucun enseignant sélectionné.<br><a href="enseignants.html">Voir tous les enseignants →</a></p>`;
+        return;
+    }
+
+    const snap = await getDoc(doc(db, "enseignants", teacherDocId));
+
+    if (!snap.exists()) {
+        carte.innerHTML = `<p class="empty">Cet enseignant est introuvable.<br><a href="enseignants.html">Voir tous les enseignants →</a></p>`;
+        return;
+    }
+
+    enseignant = snap.data();
+
+    const initiales = (enseignant.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
+
+    carte.innerHTML = `
+        <div class="avatar-circle">${initiales}</div>
+        <h2 style="color:#153A73;margin-bottom:10px;">${enseignant.nom || "Enseignant"}</h2>
+        <p><strong>ID :</strong> ${enseignant.identifiant || "-"}</p>
+        <p>📚 ${enseignant.matiere || "-"}</p>
+        <p>📍 ${enseignant.ville || "-"}</p>
+        <p>💰 ${formaterTarif(enseignant.tarif)}</p>
+        <p style="color:${enseignant.disponible ? "green" : "#d93025"};"><strong>${enseignant.disponible ? "🟢 Disponible" : "🔴 Non disponible actuellement"}</strong></p>
+    `;
+
+    document.getElementById("recapNom").textContent = enseignant.nom || "-";
+    document.getElementById("recapMatiere").textContent = enseignant.matiere || "-";
+    document.getElementById("recapTarif").textContent = formaterTarif(enseignant.tarif);
+
+    document.getElementById("carteFormulaire").style.display = "block";
+
+}
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -277,10 +320,17 @@ onAuthStateChanged(auth, async (user) => {
     parentConnecte = user;
 });
 
+chargerEnseignant();
+
 document.getElementById("btnConfirmer").addEventListener("click", async () => {
 
     if (!parentConnecte) {
         alert("Veuillez vous connecter pour réserver un cours.");
+        return;
+    }
+
+    if (!enseignant) {
+        alert("Aucun enseignant sélectionné.");
         return;
     }
 
@@ -303,10 +353,10 @@ document.getElementById("btnConfirmer").addEventListener("click", async () => {
         await addDoc(collection(db, "reservations"), {
             parentId: parentConnecte.uid,
             parentNom: parentNom,
-            enseignantNom: "Mr Ouattara",
-            enseignantId: "ENS-000245",
-            matiere: "Anglais",
-            tarif: "7 500 FCFA / heure",
+            enseignantNom: enseignant.nom || "-",
+            enseignantId: enseignant.identifiant || "-",
+            matiere: enseignant.matiere || "-",
+            tarif: formaterTarif(enseignant.tarif),
             date: date,
             heure: heure,
             mode: mode,
