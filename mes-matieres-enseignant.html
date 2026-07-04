@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes matières | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:700px;}
+
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+h1{color:#153A73;margin-bottom:10px;}
+p.sub{color:#666;margin-bottom:20px;}
+
+.add-row{display:flex;gap:10px;}
+.add-row input{flex:1;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+.add-row button{padding:14px 22px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+.add-row button:hover{background:#084ec7;}
+
+.tags{margin-top:25px;display:flex;flex-wrap:wrap;gap:12px;}
+.tag{background:#eaf1ff;color:#0B63F6;padding:10px 16px;border-radius:30px;font-weight:600;display:flex;align-items:center;gap:10px;}
+.tag button{background:none;border:none;color:#0B63F6;font-weight:800;cursor:pointer;font-size:16px;}
+
+.empty{color:#999;margin-top:20px;}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html" class="active">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="mes-demandes-enseignant.html">📨 Mes demandes</a>
+<a href="messages-enseignant.html">💬 Messages</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="card">
+<h1>📚 Mes matières</h1>
+<p class="sub">Ajoutez toutes les matières que vous enseignez. Les parents pourront vous trouver grâce à elles.</p>
+
+<div class="add-row">
+<input id="nouvelleMatiere" type="text" placeholder="Ex : Mathématiques">
+<button id="btnAjouter">Ajouter</button>
+</div>
+
+<div class="tags" id="listeMatieres"></div>
+<p class="empty" id="videMessage">Aucune matière ajoutée pour le moment.</p>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let uid = null;
+let matieres = [];
+
+function afficher() {
+    const container = document.getElementById("listeMatieres");
+    const vide = document.getElementById("videMessage");
+    container.innerHTML = "";
+
+    if (matieres.length === 0) {
+        vide.style.display = "block";
+        return;
+    }
+    vide.style.display = "none";
+
+    matieres.forEach((m, index) => {
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.innerHTML = `<span>${m}</span>`;
+        const btn = document.createElement("button");
+        btn.textContent = "✕";
+        btn.addEventListener("click", () => supprimer(index));
+        tag.appendChild(btn);
+        container.appendChild(tag);
+    });
+}
+
+async function sauvegarder() {
+    await setDoc(doc(db, "enseignants", uid), { matieresListe: matieres }, { merge: true });
+}
+
+async function supprimer(index) {
+    matieres.splice(index, 1);
+    afficher();
+    await sauvegarder();
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    uid = user.uid;
+
+    const snap = await getDoc(doc(db, "enseignants", uid));
+    if (snap.exists() && Array.isArray(snap.data().matieresListe)) {
+        matieres = snap.data().matieresListe;
+    }
+    afficher();
+
+});
+
+document.getElementById("btnAjouter").addEventListener("click", async () => {
+
+    const input = document.getElementById("nouvelleMatiere");
+    const valeur = input.value.trim();
+
+    if (!valeur) return;
+
+    if (matieres.includes(valeur)) {
+        input.value = "";
+        return;
+    }
+
+    matieres.push(valeur);
+    input.value = "";
+    afficher();
+    await sauvegarder();
+
+});
+
+document.getElementById("nouvelleMatiere").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("btnAjouter").click();
+    }
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>

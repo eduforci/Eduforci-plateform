@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes messages | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:800px;}
+
+h1{color:#153A73;margin-bottom:20px;}
+
+.message{background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px;}
+.message p{margin:6px 0;color:#333;}
+.message .meta{color:#999;font-size:13px;margin-bottom:10px;}
+
+.reponse{margin-top:15px;padding-top:15px;border-top:1px solid #eee;}
+.reponse textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px;min-height:70px;resize:vertical;}
+.reponse button{margin-top:10px;padding:10px 20px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+.reponse button:hover{background:#084ec7;}
+.reponse .deja{background:#eaf1ff;padding:12px;border-radius:10px;color:#153A73;margin-top:5px;}
+
+.empty{background:white;padding:40px;border-radius:20px;text-align:center;color:#999;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="mes-demandes-enseignant.html">📨 Mes demandes</a>
+<a href="messages-enseignant.html" class="active">💬 Messages</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<h1>💬 Mes messages</h1>
+
+<div id="listeMessages"></div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+async function chargerMessages(identifiant) {
+
+    const container = document.getElementById("listeMessages");
+    container.innerHTML = "";
+
+    if (!identifiant) {
+        container.innerHTML = `<div class="empty">Complétez d'abord votre profil (identifiant enseignant manquant) pour recevoir des messages.</div>`;
+        return;
+    }
+
+    try {
+
+        const q = query(collection(db, "messages"), where("enseignantId", "==", identifiant));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            container.innerHTML = `<div class="empty">Aucun message pour le moment.</div>`;
+            return;
+        }
+
+        snap.forEach((docSnap) => {
+
+            const d = docSnap.data();
+            const date = d.dateEnvoi ? new Date(d.dateEnvoi).toLocaleString("fr-FR") : "";
+
+            const el = document.createElement("div");
+            el.className = "message";
+
+            el.innerHTML = `
+                <div class="meta">${date}</div>
+                <p>${d.contenu || ""}</p>
+                <div class="reponse">
+                ${d.reponseEnseignant
+                    ? `<div class="deja"><strong>Votre réponse :</strong> ${d.reponseEnseignant}</div>`
+                    : `<textarea placeholder="Répondre à ce message..." data-id="${docSnap.id}"></textarea>
+                       <button data-reply="${docSnap.id}">Envoyer la réponse</button>`
+                }
+                </div>
+            `;
+
+            container.appendChild(el);
+        });
+
+        container.querySelectorAll("[data-reply]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const id = btn.getAttribute("data-reply");
+                const textarea = container.querySelector(`textarea[data-id="${id}"]`);
+                const texte = textarea.value.trim();
+                if (!texte) return;
+                await updateDoc(doc(db, "messages", id), { reponseEnseignant: texte });
+                chargerMessages(identifiant);
+            });
+        });
+
+    } catch (error) {
+        container.innerHTML = `<div class="empty">Erreur lors du chargement : ${error.message}</div>`;
+    }
+
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    const snap = await getDoc(doc(db, "enseignants", user.uid));
+    const identifiant = snap.exists() ? snap.data().identifiant : null;
+
+    chargerMessages(identifiant);
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>

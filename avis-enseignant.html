@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avis reçus | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:800px;}
+
+h1{color:#153A73;margin-bottom:10px;}
+
+.moyenne{background:white;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;text-align:center;}
+.moyenne .note{font-size:42px;color:#0B63F6;font-weight:700;}
+
+.avis{background:white;padding:22px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:18px;}
+.avis .haut{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.avis .parent{font-weight:600;color:#153A73;}
+.avis .etoiles{color:#FDB813;font-size:18px;}
+.avis p{color:#555;line-height:1.6;}
+
+.empty{background:white;padding:40px;border-radius:20px;text-align:center;color:#999;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="mes-demandes-enseignant.html">📨 Mes demandes</a>
+<a href="messages-enseignant.html">💬 Messages</a>
+<a href="avis-enseignant.html" class="active">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<h1>⭐ Avis reçus</h1>
+
+<div id="zoneMoyenne"></div>
+<div id="listeAvis"></div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+async function chargerAvis(identifiant) {
+
+    const zoneMoyenne = document.getElementById("zoneMoyenne");
+    const container = document.getElementById("listeAvis");
+    container.innerHTML = "";
+    zoneMoyenne.innerHTML = "";
+
+    if (!identifiant) {
+        container.innerHTML = `<div class="empty">Complétez d'abord votre profil (identifiant enseignant manquant) pour recevoir des avis.</div>`;
+        return;
+    }
+
+    try {
+
+        const q = query(collection(db, "avis"), where("enseignantId", "==", identifiant));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            container.innerHTML = `<div class="empty">Aucun avis pour le moment.</div>`;
+            return;
+        }
+
+        let total = 0;
+        let count = 0;
+
+        snap.forEach((docSnap) => {
+
+            const d = docSnap.data();
+            const note = Number(d.note) || 0;
+            total += note;
+            count++;
+
+            const el = document.createElement("div");
+            el.className = "avis";
+
+            el.innerHTML = `
+                <div class="haut">
+                    <span class="parent">${d.parentNom || "Parent"}</span>
+                    <span class="etoiles">${"⭐".repeat(note)}</span>
+                </div>
+                <p>${d.commentaire || ""}</p>
+            `;
+
+            container.appendChild(el);
+        });
+
+        const moyenne = count > 0 ? (total / count).toFixed(1) : "0";
+
+        zoneMoyenne.innerHTML = `
+            <div class="moyenne">
+                <div class="note">${moyenne} / 5</div>
+                <p>${count} avis reçu(s)</p>
+            </div>
+        `;
+
+    } catch (error) {
+        container.innerHTML = `<div class="empty">Erreur lors du chargement : ${error.message}</div>`;
+    }
+
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    const snap = await getDoc(doc(db, "enseignants", user.uid));
+    const identifiant = snap.exists() ? snap.data().identifiant : null;
+
+    chargerAvis(identifiant);
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>

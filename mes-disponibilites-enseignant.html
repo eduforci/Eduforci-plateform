@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes disponibilités | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:#f4f7fb;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:750px;}
+
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+h1{color:#153A73;margin-bottom:10px;}
+p.sub{color:#666;margin-bottom:25px;}
+
+.jour{display:flex;align-items:center;gap:15px;padding:14px 0;border-bottom:1px solid #eee;}
+.jour:last-child{border-bottom:none;}
+
+.jour label.nom{width:110px;font-weight:600;color:#153A73;}
+
+.switch{position:relative;width:50px;height:26px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:30px;transition:.3s;}
+.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+input:checked + .slider{background:#0B63F6;}
+input:checked + .slider:before{transform:translateX(24px);}
+
+.jour input[type="text"]{flex:1;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14px;}
+.jour input[type="text"]:disabled{background:#f4f4f4;color:#aaa;}
+
+button.save{width:100%;padding:15px;margin-top:20px;background:#0B63F6;color:white;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;}
+button.save:hover{background:#084ec7;}
+
+.msg{margin-top:15px;padding:14px;border-radius:10px;font-weight:600;display:none;}
+.msg.ok{background:#e6f7ec;color:#28a745;}
+
+</style>
+
+</head>
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html" class="active">📅 Mes disponibilités</a>
+<a href="mes-demandes-enseignant.html">📨 Mes demandes</a>
+<a href="messages-enseignant.html">💬 Messages</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="card">
+<h1>📅 Mes disponibilités</h1>
+<p class="sub">Activez les jours où vous êtes disponible et précisez vos horaires.</p>
+
+<div id="joursContainer"></div>
+
+<button class="save" id="btnEnregistrer">💾 Enregistrer mes disponibilités</button>
+<div class="msg ok" id="msgOk">✔ Disponibilités mises à jour avec succès.</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const jours = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+let uid = null;
+
+function construireLignes(dispoActuelles) {
+
+    const container = document.getElementById("joursContainer");
+    container.innerHTML = "";
+
+    jours.forEach((jour) => {
+
+        const cle = jour.toLowerCase();
+        const info = dispoActuelles[cle] || { actif: false, horaire: "" };
+
+        const ligne = document.createElement("div");
+        ligne.className = "jour";
+
+        ligne.innerHTML = `
+            <label class="nom">${jour}</label>
+            <label class="switch">
+                <input type="checkbox" data-jour="${cle}" ${info.actif ? "checked" : ""}>
+                <span class="slider"></span>
+            </label>
+            <input type="text" data-horaire="${cle}" placeholder="Ex : 16h00 - 18h00" value="${info.horaire || ""}" ${info.actif ? "" : "disabled"}>
+        `;
+
+        container.appendChild(ligne);
+    });
+
+    container.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.addEventListener("change", (e) => {
+            const cle = e.target.getAttribute("data-jour");
+            const champHoraire = container.querySelector(`input[data-horaire="${cle}"]`);
+            champHoraire.disabled = !e.target.checked;
+        });
+    });
+
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    uid = user.uid;
+
+    const snap = await getDoc(doc(db, "enseignants", uid));
+    const dispo = (snap.exists() && snap.data().disponibilites) ? snap.data().disponibilites : {};
+    construireLignes(dispo);
+
+});
+
+document.getElementById("btnEnregistrer").addEventListener("click", async () => {
+
+    const nouvelleDispo = {};
+
+    jours.forEach((jour) => {
+        const cle = jour.toLowerCase();
+        const cb = document.querySelector(`input[data-jour="${cle}"]`);
+        const horaire = document.querySelector(`input[data-horaire="${cle}"]`);
+        nouvelleDispo[cle] = { actif: cb.checked, horaire: horaire.value.trim() };
+    });
+
+    await setDoc(doc(db, "enseignants", uid), { disponibilites: nouvelleDispo }, { merge: true });
+
+    const msgOk = document.getElementById("msgOk");
+    msgOk.style.display = "block";
+    setTimeout(() => { msgOk.style.display = "none"; }, 3000);
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>
