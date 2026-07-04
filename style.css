@@ -508,6 +508,47 @@ background:#e6a70f;
 
 }
 
+.btn-whatsapp{
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:8px;
+
+width:100%;
+
+margin-top:10px;
+
+padding:12px;
+
+background:#25D366;
+
+color:#fff;
+
+border-radius:10px;
+
+font-weight:600;
+
+text-decoration:none;
+
+transition:.3s;
+
+}
+
+.btn-whatsapp:hover{
+
+background:#1ebe57;
+
+}
+
+.btn-whatsapp i{
+
+font-size:18px;
+
+}
 .teachers-preview-more{
 
 text-align:center;
