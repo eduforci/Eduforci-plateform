@@ -446,6 +446,13 @@ document.getElementById("filtreNiveau").addEventListener("change", () => {
 
 document.getElementById("btnFiltrer").addEventListener("click", appliquerFiltres);
 
+// Dès que l'utilisateur choisit sa ville ou sa commune, on filtre directement
+document.getElementById("filtreLieu").addEventListener("change", () => {
+    if (document.getElementById("filtreLieu").value) {
+        appliquerFiltres();
+    }
+});
+
 }
 
 chargerEnseignants();

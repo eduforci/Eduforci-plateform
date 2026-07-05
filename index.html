@@ -332,7 +332,7 @@ selectNiveau.addEventListener("change", () => {
     inputNiveauAutre.style.display = selectNiveau.value === "autre" ? "block" : "none";
 });
 
-document.getElementById("btnRechercher").addEventListener("click", () => {
+function lancerRecherche() {
 
     const matiere = document.getElementById("filtreMatiere").value;
     const niveau = selectNiveau.value === "autre" ? inputNiveauAutre.value.trim() : selectNiveau.value;
@@ -345,6 +345,16 @@ document.getElementById("btnRechercher").addEventListener("click", () => {
 
     window.location.href = "enseignants.html" + (params.toString() ? "?" + params.toString() : "");
 
+}
+
+document.getElementById("btnRechercher").addEventListener("click", lancerRecherche);
+
+// Dès que le parent choisit sa ville ou sa commune, on lance directement la recherche
+// pour lui faire gagner du temps, sans qu'il ait besoin de cliquer sur "Rechercher".
+selectLieu.addEventListener("change", () => {
+    if (selectLieu.value) {
+        lancerRecherche();
+    }
 });
 
 </script>
