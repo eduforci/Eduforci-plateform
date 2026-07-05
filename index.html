@@ -243,40 +243,6 @@ Espace École <span class="arrow">-----&gt;</span>
 
 import { db } from "./js/firebase.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-import { VILLES, COMMUNES } from "./js/lieux.js";
-
-const selectNiveau = document.getElementById("filtreNiveau");
-const inputNiveauAutre = document.getElementById("niveauAutre");
-const selectTypeLieu = document.getElementById("typeLieu");
-const selectLieu = document.getElementById("filtreLieu");
-
-function remplirLieux() {
-    const liste = selectTypeLieu.value === "commune" ? COMMUNES : VILLES;
-    selectLieu.innerHTML = `<option value="">Choisir...</option>` + liste.map(l => `<option>${l}</option>`).join("");
-}
-
-remplirLieux();
-
-selectTypeLieu.addEventListener("change", remplirLieux);
-
-selectNiveau.addEventListener("change", () => {
-    inputNiveauAutre.style.display = selectNiveau.value === "autre" ? "block" : "none";
-});
-
-document.getElementById("btnRechercher").addEventListener("click", () => {
-
-    const matiere = document.getElementById("filtreMatiere").value;
-    const niveau = selectNiveau.value === "autre" ? inputNiveauAutre.value.trim() : selectNiveau.value;
-    const lieu = selectLieu.value;
-
-    const params = new URLSearchParams();
-    if (matiere) params.set("matiere", matiere);
-    if (niveau) params.set("niveau", niveau);
-    if (lieu) params.set("ville", lieu);
-
-    window.location.href = "enseignants.html" + (params.toString() ? "?" + params.toString() : "");
-
-});
 
 const NUMERO_WHATSAPP = "2250747327309";
 const conteneur = document.getElementById("listeEnseignantsAccueil");
@@ -341,6 +307,45 @@ async function chargerEnseignantsAccueil() {
 }
 
 chargerEnseignantsAccueil();
+
+</script>
+
+<script type="module">
+
+import { VILLES, COMMUNES } from "./js/lieux.js";
+
+const selectNiveau = document.getElementById("filtreNiveau");
+const inputNiveauAutre = document.getElementById("niveauAutre");
+const selectTypeLieu = document.getElementById("typeLieu");
+const selectLieu = document.getElementById("filtreLieu");
+
+function remplirLieux() {
+    const liste = selectTypeLieu.value === "commune" ? COMMUNES : VILLES;
+    selectLieu.innerHTML = `<option value="">Choisir...</option>` + liste.map(l => `<option>${l}</option>`).join("");
+}
+
+remplirLieux();
+
+selectTypeLieu.addEventListener("change", remplirLieux);
+
+selectNiveau.addEventListener("change", () => {
+    inputNiveauAutre.style.display = selectNiveau.value === "autre" ? "block" : "none";
+});
+
+document.getElementById("btnRechercher").addEventListener("click", () => {
+
+    const matiere = document.getElementById("filtreMatiere").value;
+    const niveau = selectNiveau.value === "autre" ? inputNiveauAutre.value.trim() : selectNiveau.value;
+    const lieu = selectLieu.value;
+
+    const params = new URLSearchParams();
+    if (matiere) params.set("matiere", matiere);
+    if (niveau) params.set("niveau", niveau);
+    if (lieu) params.set("ville", lieu);
+
+    window.location.href = "enseignants.html" + (params.toString() ? "?" + params.toString() : "");
+
+});
 
 </script>
 
