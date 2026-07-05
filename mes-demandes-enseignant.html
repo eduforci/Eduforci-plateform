@@ -44,7 +44,7 @@ h1{color:#153A73;margin-bottom:20px;}
 
 </head>
 <body>
-<a href="index.html" title="Retour à l'accueil" style="position:fixed;bottom:20px;left:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">← Accueil</a>
+<a href="index.html" onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1 && window.history.length>1){history.back();return false;}" title="Retour" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">← Retour</a>
 
 
 <div class="sidebar">
