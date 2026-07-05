@@ -7,7 +7,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Offres d'emploi | EDUFORCI</title>
+<title>Candidatures | EDUFORCI</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -81,7 +81,7 @@ overflow-x:auto;
 table{
 width:100%;
 border-collapse:collapse;
-min-width:750px;
+min-width:700px;
 }
 
 th{
@@ -98,38 +98,6 @@ border-bottom:1px solid #eee;
 
 tr:nth-child(even){
 background:#f8f9fc;
-}
-
-.btn-fermer{
-padding:8px 15px;
-background:#dc3545;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-size:13px;
-margin-right:5px;
-}
-
-.btn-reactiver{
-padding:8px 15px;
-background:#28a745;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-size:13px;
-margin-right:5px;
-}
-
-.btn-supprimer{
-padding:8px 15px;
-background:#6c757d;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-size:13px;
 }
 
 .vide{
@@ -160,9 +128,9 @@ color:#666;
 
 <a href="reservations-admin.html">📅 Réservations</a>
 
-<a href="offres-admin.html" class="active">📢 Offres d'emploi</a>
+<a href="offres-admin.html">📢 Offres d'emploi</a>
 
-<a href="candidatures-admin.html">📄 Candidatures</a>
+<a href="candidatures-admin.html" class="active">📄 Candidatures</a>
 
 <a href="paiements-admin.html">💳 Paiements</a>
 
@@ -176,28 +144,25 @@ color:#666;
 
 <div class="welcome">
 
-<h1>📢 Offres d'emploi</h1>
+<h1>📄 Candidatures</h1>
 
-<p style="margin-top:10px;color:#666;">Toutes les offres publiées par les établissements sur la plateforme.</p>
+<p style="margin-top:10px;color:#666;">Suivi des candidatures d'enseignants aux offres publiées par les établissements.</p>
 
 </div>
 
 <div class="welcome">
 
-<table id="tableOffres">
+<table id="tableCandidatures">
 
 <tr id="ligneEntete">
-<th>Poste</th>
-<th>Établissement</th>
-<th>Ville</th>
-<th>Niveau</th>
-<th>Statut</th>
-<th>Action</th>
+<th>Enseignant</th>
+<th>Offre</th>
+<th>Message</th>
 </tr>
 
 </table>
 
-<div id="messageVide" class="vide" style="display:none;">Aucune offre publiée pour le moment.</div>
+<div id="messageVide" class="vide" style="display:none;">Aucune candidature pour le moment. Les enseignants pourront bientôt postuler directement aux offres publiées par les établissements.</div>
 
 </div>
 
@@ -207,7 +172,7 @@ color:#666;
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -225,20 +190,18 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    await chargerOffres();
+    await chargerCandidatures();
 
 });
 
-async function chargerOffres() {
+async function chargerCandidatures() {
 
-    const table = document.getElementById("tableOffres");
+    const table = document.getElementById("tableCandidatures");
     const messageVide = document.getElementById("messageVide");
-
-    document.querySelectorAll("#tableOffres tr:not(#ligneEntete)").forEach(tr => tr.remove());
 
     try {
 
-        const snap = await getDocs(collection(db, "offres"));
+        const snap = await getDocs(collection(db, "candidatures"));
 
         if (snap.empty) {
             messageVide.style.display = "block";
@@ -247,58 +210,23 @@ async function chargerOffres() {
 
         messageVide.style.display = "none";
 
-        const offres = [];
-        snap.forEach((docSnap) => offres.push({ id: docSnap.id, ...docSnap.data() }));
-        offres.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+        snap.forEach((docSnap) => {
 
-        offres.forEach((o) => {
-
-            const active = o.statut === "active";
-            const couleur = active ? "green" : "#999";
-            const texte = active ? "Active" : "Fermée";
-
-            const actionHtml = active
-                ? `<button class="btn-fermer" data-id="${o.id}" data-action="fermer">Fermer</button>`
-                : `<button class="btn-reactiver" data-id="${o.id}" data-action="reactiver">Réactiver</button>`;
+            const d = docSnap.data();
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${o.poste || "-"}</td>
-                <td>${o.etablissementNom || "-"}</td>
-                <td>${o.ville || "-"}</td>
-                <td>${o.niveau || "-"}</td>
-                <td style="color:${couleur};"><b>${texte}</b></td>
-                <td>${actionHtml} <button class="btn-supprimer" data-id="${o.id}" data-action="supprimer">Supprimer</button></td>
+                <td>${d.enseignantNom || "-"}</td>
+                <td>${d.poste || "-"}</td>
+                <td>${d.message || "-"}</td>
             `;
             table.appendChild(tr);
 
         });
 
-        document.querySelectorAll(".btn-fermer, .btn-reactiver, .btn-supprimer").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-
-                try {
-
-                    if (btn.dataset.action === "supprimer") {
-                        if (!confirm("Voulez-vous vraiment supprimer cette offre ?")) return;
-                        await deleteDoc(doc(db, "offres", btn.dataset.id));
-                    } else {
-                        await updateDoc(doc(db, "offres", btn.dataset.id), {
-                            statut: btn.dataset.action === "fermer" ? "fermee" : "active"
-                        });
-                    }
-
-                    await chargerOffres();
-
-                } catch (error) {
-                    alert(error.message);
-                }
-
-            });
-        });
-
     } catch (error) {
-        alert(error.message);
+        messageVide.textContent = "Erreur lors du chargement : " + error.message;
+        messageVide.style.display = "block";
     }
 
 }

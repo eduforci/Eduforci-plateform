@@ -134,9 +134,9 @@ margin-bottom:10px;
 
 <a href="offres-admin.html">📢 Offres d'emploi</a>
 
-<a href="#">📄 Candidatures</a>
+<a href="candidatures-admin.html">📄 Candidatures</a>
 
-<a href="#">💳 Paiements</a>
+<a href="paiements-admin.html">💳 Paiements</a>
 
 <a href="parametres-admin.html">⚙️ Paramètres</a>
 
@@ -195,97 +195,7 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 </div>
 <br><br>
 
-<div class="welcome">
 
-<h2>🔔 Demandes prioritaires</h2>
-
-<br>
-
-<table style="width:100%;border-collapse:collapse;">
-
-<tr style="background:#153A73;color:white;">
-
-<th style="padding:15px;">Référence</th>
-
-<th>Type</th>
-
-<th>Utilisateur</th>
-
-<th>Statut</th>
-
-<th>Action</th>
-
-</tr>
-
-<tr>
-
-<td style="padding:15px;">RES-000125</td>
-
-<td>Réservation</td>
-
-<td>Mme Koné → M. Ouattara</td>
-
-<td style="color:orange;"><strong>En attente</strong></td>
-
-<td>
-
-<button style="width:auto;padding:8px 15px;background:#28a745;">
-Valider
-</button>
-
-<button style="width:auto;padding:8px 15px;background:#dc3545;margin-left:5px;">
-Refuser
-</button>
-
-</td>
-
-</tr>
-
-<tr style="background:#f8f9fc;">
-
-<td style="padding:15px;">ENS-000059</td>
-
-<td>Nouvel enseignant</td>
-
-<td>M. Kouassi</td>
-
-<td style="color:blue;"><strong>À vérifier</strong></td>
-
-<td>
-
-<button style="width:auto;padding:8px 15px;">
-Voir le dossier
-</button>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="padding:15px;">OFF-000018</td>
-
-<td>Offre d'emploi</td>
-
-<td>Collège La Grâce</td>
-
-<td style="color:green;"><strong>Nouvelle</strong></td>
-
-<td>
-
-<button style="width:auto;padding:8px 15px;">
-Consulter
-</button>
-
-</td>
-
-</tr>
-
-</table>
-
-</div>
-
-<br>
 
 <div class="welcome">
 
@@ -331,23 +241,25 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    try {
+    const resultats = await Promise.allSettled([
+        getDocs(collection(db, "enseignants")),
+        getDocs(collection(db, "parents")),
+        getDocs(collection(db, "etablissements")),
+        getDocs(collection(db, "reservations"))
+    ]);
 
-        const [enseignantsSnap, parentsSnap, etablissementsSnap, reservationsSnap] = await Promise.all([
-            getDocs(collection(db, "enseignants")),
-            getDocs(collection(db, "parents")),
-            getDocs(collection(db, "etablissements")),
-            getDocs(collection(db, "reservations"))
-        ]);
+    const [enseignantsRes, parentsRes, etablissementsRes, reservationsRes] = resultats;
 
-        document.getElementById("nbEnseignants").innerHTML = enseignantsSnap.size;
-        document.getElementById("nbParents").innerHTML = parentsSnap.size;
-        document.getElementById("nbEtablissements").innerHTML = etablissementsSnap.size;
-        document.getElementById("nbReservations").innerHTML = reservationsSnap.size;
+    document.getElementById("nbEnseignants").innerHTML = enseignantsRes.status === "fulfilled" ? enseignantsRes.value.size : "!";
+    document.getElementById("nbParents").innerHTML = parentsRes.status === "fulfilled" ? parentsRes.value.size : "!";
+    document.getElementById("nbEtablissements").innerHTML = etablissementsRes.status === "fulfilled" ? etablissementsRes.value.size : "!";
+    document.getElementById("nbReservations").innerHTML = reservationsRes.status === "fulfilled" ? reservationsRes.value.size : "!";
 
-    } catch (error) {
-        console.log(error.message);
-    }
+    resultats.forEach((r, i) => {
+        if (r.status === "rejected") {
+            console.log(["enseignants", "parents", "etablissements", "reservations"][i], "->", r.reason.message);
+        }
+    });
 
 });
 

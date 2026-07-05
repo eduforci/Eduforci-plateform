@@ -7,7 +7,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Réservations | EDUFORCI</title>
+<title>Paiements | EDUFORCI</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -104,7 +104,7 @@ color:white;
 table{
 width:100%;
 border-collapse:collapse;
-min-width:700px;
+min-width:800px;
 }
 
 th{
@@ -123,20 +123,9 @@ tr:nth-child(even){
 background:#f8f9fc;
 }
 
-.btn-valider{
+.btn-payer{
 padding:8px 15px;
-background:#28a745;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-size:13px;
-margin-right:5px;
-}
-
-.btn-refuser{
-padding:8px 15px;
-background:#dc3545;
+background:#25D366;
 color:white;
 border:none;
 border-radius:8px;
@@ -170,13 +159,13 @@ color:#666;
 
 <a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
 
-<a href="reservations-admin.html" class="active">📅 Réservations</a>
+<a href="reservations-admin.html">📅 Réservations</a>
 
 <a href="offres-admin.html">📢 Offres d'emploi</a>
 
 <a href="candidatures-admin.html">📄 Candidatures</a>
 
-<a href="paiements-admin.html">💳 Paiements</a>
+<a href="paiements-admin.html" class="active">💳 Paiements</a>
 
 <a href="parametres-admin.html">⚙️ Paramètres</a>
 
@@ -188,9 +177,9 @@ color:#666;
 
 <div class="welcome">
 
-<h1>📅 Réservations</h1>
+<h1>💳 Paiements enseignants</h1>
 
-<p style="margin-top:10px;color:#666;">Validez ou refusez les demandes de cours des parents.</p>
+<p style="margin-top:10px;color:#666;">Réservations confirmées : envoyez le paiement via Wave au numéro de l'enseignant, puis marquez-le comme payé.</p>
 
 </div>
 
@@ -198,26 +187,26 @@ color:#666;
 
 <div class="filtres">
 <button data-filtre="toutes" class="active">Toutes</button>
-<button data-filtre="en_attente">En attente</button>
-<button data-filtre="confirme">Confirmées</button>
-<button data-filtre="refuse">Refusées</button>
+<button data-filtre="a_payer">À payer</button>
+<button data-filtre="payees">Payées</button>
 </div>
 
-<table id="tableReservations">
+<table id="tablePaiements">
 
 <tr id="ligneEntete">
 <th>Date</th>
-<th>Heure</th>
 <th>Parent</th>
-<th>Professeur</th>
+<th>Enseignant</th>
 <th>Matière</th>
+<th>Tarif</th>
+<th>Numéro Wave</th>
 <th>Statut</th>
 <th>Action</th>
 </tr>
 
 </table>
 
-<div id="messageVide" class="vide" style="display:none;">Aucune réservation trouvée.</div>
+<div id="messageVide" class="vide" style="display:none;">Aucune réservation confirmée pour le moment.</div>
 
 </div>
 
@@ -229,8 +218,9 @@ import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-let toutesReservations = [];
+let toutesConfirmees = [];
 let filtreActuel = "toutes";
+let wavesParIdentifiant = {};
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -248,41 +238,57 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    await chargerReservations();
+    await chargerPaiements();
 
 });
 
-async function chargerReservations() {
+async function chargerPaiements() {
+
+    const table = document.getElementById("tablePaiements");
+    const messageVide = document.getElementById("messageVide");
 
     try {
 
-        const snap = await getDocs(collection(db, "reservations"));
-        toutesReservations = [];
-
-        snap.forEach((docSnap) => {
-            toutesReservations.push({ id: docSnap.id, ...docSnap.data() });
+        const enseignantsSnap = await getDocs(collection(db, "enseignants"));
+        wavesParIdentifiant = {};
+        enseignantsSnap.forEach((docSnap) => {
+            const e = docSnap.data();
+            if (e.identifiant) wavesParIdentifiant[e.identifiant] = e.numeroWave || "";
         });
 
-        toutesReservations.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+        const reservationsSnap = await getDocs(collection(db, "reservations"));
+        toutesConfirmees = [];
 
-        afficherReservations();
+        reservationsSnap.forEach((docSnap) => {
+            const r = docSnap.data();
+            if (r.statut === "confirme") {
+                toutesConfirmees.push({ id: docSnap.id, ...r });
+            }
+        });
+
+        toutesConfirmees.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+
+        afficherPaiements();
 
     } catch (error) {
-        alert(error.message);
+        messageVide.textContent = "Erreur lors du chargement : " + error.message;
+        messageVide.style.display = "block";
     }
 
 }
 
-function afficherReservations() {
+function afficherPaiements() {
 
-    const table = document.getElementById("tableReservations");
+    const table = document.getElementById("tablePaiements");
     const messageVide = document.getElementById("messageVide");
 
-    document.querySelectorAll("#tableReservations tr:not(#ligneEntete)").forEach(tr => tr.remove());
+    document.querySelectorAll("#tablePaiements tr:not(#ligneEntete)").forEach(tr => tr.remove());
 
-    const liste = filtreActuel === "toutes"
-        ? toutesReservations
-        : toutesReservations.filter(r => r.statut === filtreActuel);
+    const liste = toutesConfirmees.filter((r) => {
+        if (filtreActuel === "a_payer") return !r.paiementEffectue;
+        if (filtreActuel === "payees") return r.paiementEffectue === true;
+        return true;
+    });
 
     if (liste.length === 0) {
         messageVide.style.display = "block";
@@ -293,44 +299,36 @@ function afficherReservations() {
 
     liste.forEach((r) => {
 
-        let couleur = "orange";
-        let texte = "En attente";
+        const wave = wavesParIdentifiant[r.enseignantId] || "—";
+        const paye = r.paiementEffectue === true;
 
-        if (r.statut === "confirme") {
-            couleur = "green";
-            texte = "Confirmé";
-        } else if (r.statut === "refuse") {
-            couleur = "red";
-            texte = "Refusé";
-        }
-
-        const actionHtml = r.statut === "en_attente"
-            ? `<button class="btn-valider" data-id="${r.id}" data-action="confirme">Valider</button>
-               <button class="btn-refuser" data-id="${r.id}" data-action="refuse">Refuser</button>`
-            : `<em style="color:#999;">Traité</em>`;
+        const actionHtml = paye
+            ? `<span style="color:#28a745;font-weight:600;">✔ Payé</span>`
+            : `<button class="btn-payer" data-id="${r.id}">Marquer payé</button>`;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${r.date || "-"}</td>
-            <td>${r.heure || "-"}</td>
             <td>${r.parentNom || "-"}</td>
             <td>${r.enseignantNom || "-"}</td>
             <td>${r.matiere || "-"}</td>
-            <td style="color:${couleur};"><b>${texte}</b></td>
+            <td>${r.tarif || "-"}</td>
+            <td>${wave}</td>
+            <td style="color:${paye ? "#28a745" : "#e08b00"};font-weight:600;">${paye ? "Payé" : "À payer"}</td>
             <td>${actionHtml}</td>
         `;
         table.appendChild(tr);
 
     });
 
-    document.querySelectorAll(".btn-valider, .btn-refuser").forEach((btn) => {
+    document.querySelectorAll(".btn-payer").forEach((btn) => {
         btn.addEventListener("click", async () => {
 
             try {
                 await updateDoc(doc(db, "reservations", btn.dataset.id), {
-                    statut: btn.dataset.action
+                    paiementEffectue: true
                 });
-                await chargerReservations();
+                await chargerPaiements();
             } catch (error) {
                 alert(error.message);
             }
@@ -345,7 +343,7 @@ document.querySelectorAll(".filtres button").forEach((btn) => {
         document.querySelectorAll(".filtres button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         filtreActuel = btn.dataset.filtre;
-        afficherReservations();
+        afficherPaiements();
     });
 });
 
@@ -359,5 +357,4 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 
 </body>
 
-    </html>
-    
+</html>
