@@ -177,16 +177,20 @@ color:#666;
 
 <div class="welcome">
 
-<h1>Bonjour, <span id="nomEnseignant"></span> 👋</h1>
+<h1>Bonjour, <span id="nomEnseignant">...</span> 👋</h1>
 
 <div id="banniereVerification" style="margin:15px 0;padding:14px 18px;border-radius:12px;font-weight:600;display:none;"></div>
 
+<div id="chargementInfo" style="color:#999;padding:10px 0;">⏳ Chargement de vos informations...</div>
+
+<div id="infoEnseignant" style="display:none;">
 <p><b>Identifiant :</b> <span id="identifiant"></span></p>
 <p><b>Email :</b> <span id="email"></span></p>
 <p><b>Ville :</b> <span id="ville"></span></p>
 <p><b>Matière :</b> <span id="matiere"></span></p>
 <p><b>Niveau :</b> <span id="niveau"></span></p>
 <p><b>Expérience :</b> <span id="experience"></span> an(s)</p>
+</div>
 </div>
 
 <div class="cards">
@@ -335,6 +339,9 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("niveau").textContent = data.niveau;
     document.getElementById("experience").textContent = data.experience;
 
+    document.getElementById("chargementInfo").style.display = "none";
+    document.getElementById("infoEnseignant").style.display = "block";
+
     const banniere = document.getElementById("banniereVerification");
     banniere.style.display = "block";
 
@@ -348,6 +355,8 @@ onAuthStateChanged(auth, async (user) => {
         banniere.textContent = "⏳ Votre profil est en attente de validation par l'équipe EDUFORCI. Il ne sera visible publiquement qu'après approbation.";
     }
 
+} else {
+    document.getElementById("chargementInfo").textContent = "Impossible de charger votre profil.";
 }
 
 });
