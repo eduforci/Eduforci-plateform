@@ -23,6 +23,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 </head>
 
 <body>
+<a href="index.html" onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1 && window.history.length>1){history.back();return false;}" title="Retour" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">← Retour</a>
 
 <header class="page-header">
     <h1>Contactez-nous</h1>
@@ -31,23 +32,29 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 <section class="contact-section">
 
+    <a href="tel:+2250747327309" style="text-decoration:none;color:inherit;">
     <div class="contact-card">
         <i class="fas fa-phone"></i>
         <h3>Téléphone</h3>
-        <p>+225 XX XX XX XX XX</p>
+        <p>+225 07 47 32 73 09</p>
     </div>
+    </a>
 
+    <a href="https://wa.me/2250747327309" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
     <div class="contact-card">
         <i class="fab fa-whatsapp"></i>
         <h3>WhatsApp</h3>
         <p>+225 07 47 32 73 09</p>
     </div>
+    </a>
 
+    <a href="mailto:contact@eduforci.com" style="text-decoration:none;color:inherit;">
     <div class="contact-card">
         <i class="fas fa-envelope"></i>
         <h3>Email</h3>
         <p>contact@eduforci.com</p>
     </div>
+    </a>
 
     <div class="contact-card">
         <i class="fas fa-map-marker-alt"></i>
@@ -61,21 +68,47 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 <h2>Envoyez-nous un message</h2>
 
-<form>
+<form id="formContact">
 
-<input type="text" placeholder="Votre nom" required>
+<input type="text" id="contactNom" placeholder="Votre nom" required>
 
-<input type="email" placeholder="Votre e-mail" required>
+<input type="email" id="contactEmail" placeholder="Votre e-mail" required>
 
-<input type="tel" placeholder="Votre téléphone">
+<input type="tel" id="contactTelephone" placeholder="Votre téléphone">
 
-<textarea placeholder="Votre message" rows="6" required></textarea>
+<textarea id="contactMessage" placeholder="Votre message" rows="6" required></textarea>
 
 <button type="submit">Envoyer le message</button>
 
 </form>
 
 </section>
+
+<script>
+
+document.getElementById("formContact").addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const nom = document.getElementById("contactNom").value.trim();
+    const email = document.getElementById("contactEmail").value.trim();
+    const telephone = document.getElementById("contactTelephone").value.trim();
+    const message = document.getElementById("contactMessage").value.trim();
+
+    if (!nom || !email || !message) {
+        alert("Merci de remplir au moins votre nom, votre e-mail et votre message.");
+        return;
+    }
+
+    const texte = `Bonjour, je vous contacte depuis le site EDUFORCI.\n\nNom : ${nom}\nEmail : ${email}\nTéléphone : ${telephone || "-"}\n\nMessage : ${message}`;
+
+    window.open("https://wa.me/2250747327309?text=" + encodeURIComponent(texte), "_blank");
+
+    document.getElementById("formContact").reset();
+
+});
+
+</script>
 
 </body>
 

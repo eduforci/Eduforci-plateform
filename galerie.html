@@ -12,6 +12,8 @@
 </head>
 
 <body>
+<a href="index.html" onclick="if(document.referrer && document.referrer.indexOf(window.location.host) !== -1 && window.history.length>1){history.back();return false;}" title="Retour" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">← Retour</a>
+
 <header class="page-header">
     <h1>Notre Galerie</h1>
     <p>Découvrez EDUFORCI à travers nos activités et nos services éducatifs.</p>
@@ -20,32 +22,32 @@
 <section class="gallery">
 
 <div class="gallery-card">
-<img src="images/cours-domicile.jpg" alt="Cours à domicile">
+<div class="gallery-visuel" style="background:linear-gradient(135deg,#0B63F6,#153A73);height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;">🏠</div>
 <h3>Cours à domicile</h3>
 </div>
 
 <div class="gallery-card">
-<img src="images/cours-ligne.jpg" alt="Cours en ligne">
+<div class="gallery-visuel" style="background:linear-gradient(135deg,#FDB813,#e08b00);height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;">💻</div>
 <h3>Cours en ligne</h3>
 </div>
 
 <div class="gallery-card">
-<img src="images/enseignants.jpg" alt="Enseignants">
+<div class="gallery-visuel" style="background:linear-gradient(135deg,#28a745,#1f7a35);height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;">👨‍🏫</div>
 <h3>Nos enseignants</h3>
 </div>
 
 <div class="gallery-card">
-<img src="images/eleves.jpg" alt="Élèves">
+<div class="gallery-visuel" style="background:linear-gradient(135deg,#25D366,#128C7E);height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;">🎒</div>
 <h3>Nos élèves</h3>
 </div>
 
 <div class="gallery-card">
-<img src="images/activites.jpg" alt="Activités">
+<div class="gallery-visuel" style="background:linear-gradient(135deg,#e08b00,#d93025);height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;">📚</div>
 <h3>Nos activités</h3>
 </div>
 
 <div class="gallery-card">
-<img src="images/reussites.jpg" alt="Réussites">
+<div class="gallery-visuel" style="background:linear-gradient(135deg,#153A73,#0B63F6);height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;">🏆</div>
 <h3>Nos réussites</h3>
 </div>
 
