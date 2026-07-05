@@ -213,9 +213,9 @@ function mettreAJourEtatTexte() {
 document.getElementById("toggleDisponible").addEventListener("change", mettreAJourEtatTexte);
 
 document.getElementById("btnChangerPhoto").addEventListener("click", () => {
+    alert("Le bouton fonctionne");
     document.getElementById("inputPhoto").click();
 });
-
 document.getElementById("inputPhoto").addEventListener("change", async (e) => {
 
     const fichier = e.target.files[0];
