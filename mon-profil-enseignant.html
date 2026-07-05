@@ -145,7 +145,7 @@ input:checked + .slider:before{transform:translateX(26px);}
 
 <script type="module">
 
-import { auth, db, storage } from "./js/firebase.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
@@ -236,13 +236,34 @@ document.getElementById("inputPhoto").addEventListener("change", async (e) => {
 
     try {
 
-        const cheminStorage = ref(storage, `photos-enseignants/${uid}`);
-        await uploadBytes(cheminStorage, fichier);
-        const url = await getDownloadURL(cheminStorage);
+        const formData = new FormData();
 
-        await setDoc(doc(db, "enseignants", uid), { photo: url }, { merge: true });
+formData.append("file", fichier);
+formData.append("upload_preset", "eduforci");
 
-        afficherAvatar(url);
+const reponse = await fetch(
+  "https://api.cloudinary.com/v1_1/osifmino/image/upload",
+  {
+    method: "POST",
+    body: formData
+  }
+);
+
+const resultat = await reponse.json();
+
+if (!resultat.secure_url) {
+  throw new Error("Échec de l'envoi de l'image.");
+}
+
+await setDoc(
+  doc(db, "enseignants", uid),
+  {
+    photo: resultat.secure_url
+  },
+  { merge: true }
+);
+
+afficherAvatar(resultat.secure_url);
 
     } catch (error) {
         alert("Erreur lors de l'envoi de la photo : " + error.message);
