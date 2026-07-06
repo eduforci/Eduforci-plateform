@@ -313,7 +313,19 @@ Choisissez le professeur qui correspond le mieux à vos besoins.
 
 import { db } from "./js/firebase.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-import { VILLES, COMMUNES } from "./js/lieux.js";
+const VILLES = [
+    "Abidjan","Yamoussoukro","Bouaké","Daloa","San-Pédro","Korhogo","Man","Gagnoa",
+    "Abengourou","Divo","Anyama","Agboville","Grand-Bassam","Bingerville","Dabou",
+    "Aboisso","Adzopé","Bonoua","Bouaflé","Sinfra","Issia","Soubré","Sassandra",
+    "Guiglo","Duékoué","Danané","Toulepleu","Odienné","Séguéla","Touba","Mankono",
+    "Boundiali","Ferkessédougou","Katiola","Dabakala","Bondoukou","Bouna","Tanda",
+    "Dimbokro","Bocanda","Daoukro","Toumodi","Tiassalé","Sikensi","Lakota","Oumé"
+];
+
+const COMMUNES = [
+    "Abobo","Adjamé","Attécoubé","Cocody","Koumassi","Marcory","Plateau",
+    "Port-Bouët","Treichville","Yopougon","Anyama","Bingerville","Songon"
+];
 
 const liste = document.getElementById("listeEnseignants");
 let tousLesEnseignants = [];
@@ -324,10 +336,14 @@ function formaterTarif(tarif) {
     return nombre.toLocaleString("fr-FR") + " FCFA / heure";
 }
 
-function afficherEnseignants(liste_a_afficher) {
+function afficherEnseignants(liste_a_afficher, lieuRecherche) {
 
     if (liste_a_afficher.length === 0) {
-        liste.innerHTML = `<div class="empty">Aucun enseignant ne correspond à votre recherche.</div>`;
+        if (lieuRecherche) {
+            liste.innerHTML = `<div class="empty">😔 Désolé, aucun enseignant disponible pour ${lieuRecherche} pour le moment.</div>`;
+        } else {
+            liste.innerHTML = `<div class="empty">Aucun enseignant ne correspond à votre recherche.</div>`;
+        }
         return;
     }
 
@@ -366,7 +382,8 @@ function appliquerFiltres() {
     const niveau = (document.getElementById("filtreNiveau").value === "autre"
         ? document.getElementById("niveauAutre").value
         : document.getElementById("filtreNiveau").value).trim().toLowerCase();
-    const lieu = document.getElementById("filtreLieu").value.trim().toLowerCase();
+    const lieuOriginal = document.getElementById("filtreLieu").value.trim();
+    const lieu = lieuOriginal.toLowerCase();
 
     const filtres = tousLesEnseignants.filter((item) => {
         const p = item.data;
@@ -376,7 +393,7 @@ function appliquerFiltres() {
         return matOk && niveauOk && lieuOk;
     });
 
-    afficherEnseignants(filtres);
+    afficherEnseignants(filtres, lieuOriginal);
 
 }
 

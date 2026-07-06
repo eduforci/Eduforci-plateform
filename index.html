@@ -495,7 +495,19 @@ chargerEnseignantsAccueil();
 
 <script type="module">
 
-import { VILLES, COMMUNES } from "./js/lieux.js";
+const VILLES = [
+    "Abidjan","Yamoussoukro","Bouaké","Daloa","San-Pédro","Korhogo","Man","Gagnoa",
+    "Abengourou","Divo","Anyama","Agboville","Grand-Bassam","Bingerville","Dabou",
+    "Aboisso","Adzopé","Bonoua","Bouaflé","Sinfra","Issia","Soubré","Sassandra",
+    "Guiglo","Duékoué","Danané","Toulepleu","Odienné","Séguéla","Touba","Mankono",
+    "Boundiali","Ferkessédougou","Katiola","Dabakala","Bondoukou","Bouna","Tanda",
+    "Dimbokro","Bocanda","Daoukro","Toumodi","Tiassalé","Sikensi","Lakota","Oumé"
+];
+
+const COMMUNES = [
+    "Abobo","Adjamé","Attécoubé","Cocody","Koumassi","Marcory","Plateau",
+    "Port-Bouët","Treichville","Yopougon","Anyama","Bingerville","Songon"
+];
 
 const selectNiveau = document.getElementById("filtreNiveau");
 const inputNiveauAutre = document.getElementById("niveauAutre");
