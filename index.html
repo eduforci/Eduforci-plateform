@@ -63,91 +63,6 @@ Cours à domicile • Cours en ligne • Préparation CEPE • BEPC • BAC
 
 </p>
 
-<div class="search-box">
-
-<select id="filtreMatiere">
-
-<option value="">Matière</option>
-
-<option>Français</option>
-
-<option>Anglais</option>
-
-<option>Espagnol</option>
-
-<option>Allemand</option>
-
-<option>Mathématiques</option>
-
-<option>Histoire-Géographie</option>
-
-<option>SVT</option>
-
-<option>Physique-Chimie</option>
-
-<option>Philosophie</option>
-
-</select>
-
-<select id="filtreNiveau">
-
-<option value="">Niveau</option>
-
-<optgroup label="Primaire">
-<option>CP1</option>
-<option>CP2</option>
-<option>CE1</option>
-<option>CE2</option>
-<option>CM1</option>
-<option>CM2</option>
-</optgroup>
-
-<optgroup label="1er cycle">
-<option>6e</option>
-<option>5e</option>
-<option>4e</option>
-<option>3e</option>
-</optgroup>
-
-<optgroup label="2nd cycle">
-<option>2nde A</option>
-<option>2nde C</option>
-<option>1ère A</option>
-<option>1ère C</option>
-<option>1ère D</option>
-<option>Tle A</option>
-<option>Tle C</option>
-<option>Tle D</option>
-</optgroup>
-
-<option value="autre">Autre (à préciser)</option>
-
-</select>
-
-<input type="text" id="niveauAutre" placeholder="Précisez le niveau" style="display:none;">
-
-<select id="typeLieu">
-
-<option value="ville">Ville</option>
-
-<option value="commune">Commune</option>
-
-</select>
-
-<select id="filtreLieu">
-
-<option value="">Choisir...</option>
-
-</select>
-
-<button id="btnRechercher">
-
-Rechercher
-
-</button>
-
-</div>
-
 </div>
 
 </section>
@@ -229,6 +144,10 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 
 <p style="grid-column:1/-1;text-align:center;color:#999;">Chargement des enseignants...</p>
 
+</div>
+
+<div style="text-align:center;margin-top:35px;">
+<a href="enseignants.html" style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#0B63F6,#153A73);color:white;padding:16px 32px;border-radius:30px;text-decoration:none;font-weight:700;box-shadow:0 10px 25px rgba(11,99,246,.35);">👨‍🏫 Voir le profil des autres enseignants disponibles</a>
 </div>
 
 </section>
@@ -490,67 +409,6 @@ async function chargerEnseignantsAccueil() {
 }
 
 chargerEnseignantsAccueil();
-
-</script>
-
-<script type="module">
-
-const VILLES = [
-    "Abidjan","Yamoussoukro","Bouaké","Daloa","San-Pédro","Korhogo","Man","Gagnoa",
-    "Abengourou","Divo","Anyama","Agboville","Grand-Bassam","Bingerville","Dabou",
-    "Aboisso","Adzopé","Bonoua","Bouaflé","Sinfra","Issia","Soubré","Sassandra",
-    "Guiglo","Duékoué","Danané","Toulepleu","Odienné","Séguéla","Touba","Mankono",
-    "Boundiali","Ferkessédougou","Katiola","Dabakala","Bondoukou","Bouna","Tanda",
-    "Dimbokro","Bocanda","Daoukro","Toumodi","Tiassalé","Sikensi","Lakota","Oumé"
-];
-
-const COMMUNES = [
-    "Abobo","Adjamé","Attécoubé","Cocody","Koumassi","Marcory","Plateau",
-    "Port-Bouët","Treichville","Yopougon","Anyama","Bingerville","Songon"
-];
-
-const selectNiveau = document.getElementById("filtreNiveau");
-const inputNiveauAutre = document.getElementById("niveauAutre");
-const selectTypeLieu = document.getElementById("typeLieu");
-const selectLieu = document.getElementById("filtreLieu");
-
-function remplirLieux() {
-    const liste = selectTypeLieu.value === "commune" ? COMMUNES : VILLES;
-    selectLieu.innerHTML = `<option value="">Choisir...</option>` + liste.map(l => `<option>${l}</option>`).join("");
-}
-
-remplirLieux();
-
-selectTypeLieu.addEventListener("change", remplirLieux);
-
-selectNiveau.addEventListener("change", () => {
-    inputNiveauAutre.style.display = selectNiveau.value === "autre" ? "block" : "none";
-});
-
-function lancerRecherche() {
-
-    const matiere = document.getElementById("filtreMatiere").value;
-    const niveau = selectNiveau.value === "autre" ? inputNiveauAutre.value.trim() : selectNiveau.value;
-    const lieu = selectLieu.value;
-
-    const params = new URLSearchParams();
-    if (matiere) params.set("matiere", matiere);
-    if (niveau) params.set("niveau", niveau);
-    if (lieu) params.set("ville", lieu);
-
-    window.location.href = "enseignants.html" + (params.toString() ? "?" + params.toString() : "");
-
-}
-
-document.getElementById("btnRechercher").addEventListener("click", lancerRecherche);
-
-// Dès que le parent choisit sa ville ou sa commune, on lance directement la recherche
-// pour lui faire gagner du temps, sans qu'il ait besoin de cliquer sur "Rechercher".
-selectLieu.addEventListener("change", () => {
-    if (selectLieu.value) {
-        lancerRecherche();
-    }
-});
 
 </script>
 
