@@ -234,15 +234,15 @@ box-shadow:0 10px 25px rgba(0,0,0,.08);
 
 <div class="title">
 
-<h1>Nos enseignants</h1>
+<h1 id="titrePage">Nos enseignants</h1>
 
-<p>
+<p id="sousTitrePage">
 Choisissez le professeur qui correspond le mieux à vos besoins.
 </p>
 
 </div>
 
-<div class="filtres" style="background:white;padding:20px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+<div id="barreFiltres" class="filtres" style="background:white;padding:20px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
 
 <select id="filtreMatiere">
 <option value="">Matière</option>
@@ -299,6 +299,10 @@ Choisissez le professeur qui correspond le mieux à vos besoins.
 
 <button id="btnFiltrer" style="padding:14px 22px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Filtrer</button>
 
+</div>
+
+<div id="modifierRecherche" style="display:none;margin-bottom:20px;">
+<a href="#" id="lienModifierRecherche" style="color:#0B63F6;font-weight:600;text-decoration:none;">✏️ Modifier ma recherche</a>
 </div>
 
 <div class="grid" id="listeEnseignants">
@@ -446,6 +450,17 @@ async function chargerEnseignants() {
             document.getElementById("filtreLieu").value = params.get("ville");
         }
 
+        // Si on arrive depuis une recherche (accueil), on masque le formulaire
+        // et on affiche directement les résultats correspondants.
+        const rechercheDepuisAccueil = params.get("matiere") || params.get("niveau") || params.get("ville");
+
+        if (rechercheDepuisAccueil) {
+            document.getElementById("barreFiltres").style.display = "none";
+            document.getElementById("modifierRecherche").style.display = "block";
+            document.getElementById("titrePage").textContent = "Résultats de votre recherche";
+            document.getElementById("sousTitrePage").textContent = "Voici les enseignants qui correspondent à vos critères. Cliquez sur un profil pour réserver.";
+        }
+
         appliquerFiltres();
 
     } catch (error) {
@@ -453,6 +468,14 @@ async function chargerEnseignants() {
     }
 
 }
+
+document.getElementById("lienModifierRecherche").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("barreFiltres").style.display = "grid";
+    document.getElementById("modifierRecherche").style.display = "none";
+    document.getElementById("titrePage").textContent = "Nos enseignants";
+    document.getElementById("sousTitrePage").textContent = "Choisissez le professeur qui correspond le mieux à vos besoins.";
+});
 
 remplirLieux();
 document.getElementById("typeLieu").addEventListener("change", remplirLieux);
