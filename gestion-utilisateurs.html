@@ -389,7 +389,7 @@ async function chargerUtilisateurs() {
                 : "";
 
             const celluleStatut = type === "enseignants"
-                ? `<td style="color:${u.disponible !== false ? "#28a745" : "#d93025"};font-weight:600;">${u.disponible !== false ? "🟢 Disponible" : "🔴 Indisponible"}</td>`
+                ? `<td style="color:${u.disponible === "disponible"  "#28a745" : "#d93025"};font-weight:600;">${u.disponible === "disponible"  ?"🟢 Disponible" : "🔴 Indisponible"}</td>`
                 : `<td>—</td>`;
 
             const tr = document.createElement("tr");
@@ -419,8 +419,9 @@ async function chargerUtilisateurs() {
 
                 try {
                     await updateDoc(doc(db, "enseignants", btn.dataset.verifId), {
-                        verification: nouvelEtat,
-                        statut: nouvelEtat ? "Approuvé" : "En attente"
+    verification: nouvelEtat,
+    statutVerification: nouvelEtat ? "Approuvé" : "En attente"
+});
                     });
                     await chargerUtilisateurs();
                 } catch (error) {
