@@ -94,13 +94,25 @@ async function connexionParent(email, motDePasse) {
 
   try {
 
-    await signInWithEmailAndPassword(
+    const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       motDePasse
     );
 
-    alert("Connexion réussie !");
+    const user = userCredential.user;
+
+    const parentSnap = await getDoc(doc(db, "parents", user.uid));
+
+    if (!parentSnap.exists()) {
+
+      await signOut(auth);
+
+      alert("Ce compte n'est pas un compte Parent.");
+
+      return;
+
+    }
 
     window.location.href = "dashboard-parent.html";
 
@@ -111,6 +123,7 @@ async function connexionParent(email, motDePasse) {
   }
 
 }
+
 // ======================================
 // INSCRIPTION ENSEIGNANT
 // ======================================
@@ -193,18 +206,29 @@ disponibilite: "Disponible",
 // ======================================
 // CONNEXION ENSEIGNANT
 // ======================================
-
 async function connexionEnseignant(email, motDePasse) {
 
   try {
 
-    await signInWithEmailAndPassword(
+    const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       motDePasse
     );
 
-    alert("Connexion réussie !");
+    const user = userCredential.user;
+
+    const enseignantSnap = await getDoc(doc(db, "enseignants", user.uid));
+
+    if (!enseignantSnap.exists()) {
+
+      await signOut(auth);
+
+      alert("Ce compte n'est pas un compte Enseignant.");
+
+      return;
+
+    }
 
     window.location.href = "dashboard-enseignant.html";
 
@@ -285,13 +309,25 @@ async function connexionEtablissement(email, motDePasse) {
 
   try {
 
-    await signInWithEmailAndPassword(
+    const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
       motDePasse
     );
 
-    alert("Connexion réussie !");
+    const user = userCredential.user;
+
+    const etablissementSnap = await getDoc(doc(db, "etablissements", user.uid));
+
+    if (!etablissementSnap.exists()) {
+
+      await signOut(auth);
+
+      alert("Ce compte n'est pas un compte Établissement.");
+
+      return;
+
+    }
 
     window.location.href = "dashboard-etablissement.html";
 
