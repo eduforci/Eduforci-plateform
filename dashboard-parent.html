@@ -225,46 +225,7 @@ Retrouvez vos professeurs, vos réservations et vos messages en un seul endroit.
 <h2>👨‍🏫 Professeurs recommandés</h2>
 
 <br>
-
-<div class="cards">
-
-<div class="card">
-
-<h2>👨‍🏫</h2>
-
-<p><strong>Mr Ouattara</strong></p>
-
-<p>Anglais</p>
-
-<p>⭐ 4.9 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-
-Voir le profil
-
-</button>
-
-</div>
-
-<div class="card">
-
-<h2>👩‍🏫</h2>
-
-<p><strong>Mme Traoré</strong></p>
-
-<p>Mathématiques</p>
-
-<p>⭐ 4.8 / 5</p>
-
-<button onclick="location.href='profil-enseignant.html'">
-
-Voir le profil
-
-</button>
-
-</div>
-
-</div>
+<div class="cards" id="listeEnseignants"></div>
 
 </div>
 
@@ -275,8 +236,50 @@ import { auth, db } from "./js/firebase.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
-import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs,orderBy,limit  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
+  async function chargerEnseignants() {
+
+    const liste = document.getElementById("listeEnseignants");
+    liste.innerHTML = "";
+
+    const q = query(
+        collection(db, "enseignants"),
+        where("verification", "==", true),
+        limit(6)
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+        liste.innerHTML = "<p>Aucun enseignant recommandé pour le moment.</p>";
+        return;
+    }
+
+    snap.forEach((docSnap) => {
+
+        const e = docSnap.data();
+
+        const carte = document.createElement("div");
+        carte.className = "card";
+
+        carte.innerHTML = `
+            <h2>👨‍🏫</h2>
+            <p><strong>${e.nom}</strong></p>
+            <p>${e.matiere}</p>
+            <p>📍 ${e.ville}</p>
+            <p>${e.disponibilite}</p>
+
+            <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">
+                Voir le profil
+            </button>
+        `;
+
+        liste.appendChild(carte);
+
+    });
+
+  }
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -327,7 +330,7 @@ onAuthStateChanged(auth, async (user) => {
     } catch (error) {
         console.log(error.message);
     }
-
+await chargerEnseignants();
 });
 
 </script>
