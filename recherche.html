@@ -206,22 +206,31 @@ async function chargerEnseignants() {
 
     liste.innerHTML = "";
 
-    
-const q = query(
-    collection(db, "enseignants"),
-    where("verification", "==", true)
-);
+    const matiere = document.getElementById("matiere").value;
+    const niveau = document.getElementById("niveau").value;
+    const ville = document.getElementById("ville").value;
 
-const snapshot = await getDocs(q);
-    snapshot.forEach((doc) => {
+    const q = query(
+        collection(db, "enseignants"),
+        where("verification", "==", true)
+    );
 
-        const prof = doc.data();
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach((docSnap) => {
+
+        const prof = docSnap.data();
+
+        // Filtrage
+        if (matiere && prof.matiere !== matiere) return;
+        if (niveau && prof.niveau !== niveau) return;
+        if (ville && prof.ville !== ville) return;
 
         liste.innerHTML += `
 
         <div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
 
-            <img src="images/professeur.jpg"
+            <img src="${prof.photo || 'images/professeur.jpg'}"
             style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
 
             <h3>${prof.nom}</h3>
@@ -232,9 +241,9 @@ const snapshot = await getDocs(q);
 
             <p>🎓 ${prof.niveau}</p>
 
-            <button onclick="location.href='profil-enseignant.html?id=${doc.id}'">
-Voir le profil
-</button>
+            <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">
+                Voir le profil
+            </button>
 
         </div>
 
@@ -242,14 +251,20 @@ Voir le profil
 
     });
 
-}
+    if (liste.innerHTML === "") {
+        liste.innerHTML = `
+        <div style="grid-column:1/-1;background:white;padding:30px;border-radius:20px;text-align:center;">
+            <h3>Aucun enseignant trouvé</h3>
+            <p>Essayez une autre matière, un autre niveau ou une autre ville.</p>
+        </div>`;
+    }
 
-document.getElementById("btnRecherche").addEventListener("click", () => {
+    }
+    document.getElementById("btnRecherche").addEventListener("click", () => {
     chargerEnseignants();
 });
 
 chargerEnseignants();
-
 </script>
 </body>
 
