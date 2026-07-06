@@ -2,6 +2,7 @@
 <html lang="fr">
 
 <head>
+<script src="js/notify.js"></script>
 
 <meta charset="UTF-8">
 
@@ -160,41 +161,6 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 </div>
 
 <div class="service-card">
-<i class="fas fa-home"></i>
-<h2>Cours particuliers à domicile</h2>
-<p>Nos enseignants qualifiés se déplacent chez vous pour accompagner les élèves dans toutes les matières.</p>
-<a href="enseignants.html" class="btn">Réserver</a>
-</div>
-
-<div class="service-card">
-<i class="fas fa-laptop"></i>
-<h2>Cours en ligne</h2>
-<p>Suivez des cours interactifs à distance avec des enseignants expérimentés.</p>
-<a href="enseignants.html" class="btn">Réserver</a>
-</div>
-
-<div class="service-card">
-<i class="fas fa-book-open"></i>
-<h2>Mise à niveau scolaire</h2>
-<p>Renforcez vos connaissances et améliorez vos résultats scolaires.</p>
-<a href="enseignants.html" class="btn">Réserver</a>
-</div>
-
-<div class="service-card">
-<i class="fas fa-graduation-cap"></i>
-<h2>Préparation aux examens</h2>
-<p>Préparation intensive au CEPE, BEPC, BAC et autres concours.</p>
-<a href="enseignants.html" class="btn">Réserver</a>
-</div>
-
-<div class="service-card">
-<i class="fas fa-pencil-alt"></i>
-<h2>Aide aux devoirs</h2>
-<p>Un accompagnement personnalisé pour réussir les devoirs à domicile.</p>
-<a href="enseignants.html" class="btn">Réserver</a>
-</div>
-
-<div class="service-card">
 <i class="fas fa-school"></i>
 <h2>Recrutement d'enseignants</h2>
 <p>Nous mettons à la disposition des établissements des enseignants qualifiés.</p>
@@ -206,13 +172,6 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 <h2>Cours d'alphabétisation</h2>
 <p>Lecture, écriture et calcul de base pour enfants, jeunes et adultes.</p>
 <a href="inscription-parent.html" class="btn">S'inscrire</a>
-</div>
-
-<div class="service-card">
-<i class="fas fa-globe-africa"></i>
-<h2>Formation en langues</h2>
-<p>Apprenez l'anglais, le français et d'autres langues avec nos formateurs.</p>
-<a href="enseignants.html" class="btn">Commencer</a>
 </div>
 
 </section>
@@ -455,7 +414,49 @@ chargerEnseignantsAccueil();
 <a href="inscription-etablissement.html">🏫 Etablissement</a>
 
 </div>
+
+<footer style="background:#0A2A57;color:#dbe4f5;padding:50px 20px 0;font-family:'Poppins',sans-serif;">
+
+<div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:30px;padding-bottom:35px;">
+
+<div>
+<img src="logo.png" alt="EDUFORCI" style="height:50px;margin-bottom:14px;">
+<p style="font-size:14px;line-height:1.7;color:#b7c6e6;">La plateforme qui connecte élèves, parents, enseignants et établissements partout en Côte d'Ivoire.</p>
+</div>
+
+<div>
+<h4 style="color:#fff;margin-bottom:14px;font-size:16px;">Navigation</h4>
+<p style="margin-bottom:10px;"><a href="index.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Accueil</a></p>
+<p style="margin-bottom:10px;"><a href="enseignants.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Nos enseignants</a></p>
+<p style="margin-bottom:10px;"><a href="services.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Services</a></p>
+<p style="margin-bottom:10px;"><a href="galerie.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Galerie</a></p>
+<p><a href="contact.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Contact</a></p>
+</div>
+
+<div>
+<h4 style="color:#fff;margin-bottom:14px;font-size:16px;">Espaces</h4>
+<p style="margin-bottom:10px;"><a href="connexion-parent.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Espace Parent</a></p>
+<p style="margin-bottom:10px;"><a href="connexion-enseignant.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Espace Enseignant</a></p>
+<p><a href="connexion-etablissement.html" style="color:#b7c6e6;text-decoration:none;font-size:14px;">Espace Établissement</a></p>
+</div>
+
+<div>
+<h4 style="color:#fff;margin-bottom:14px;font-size:16px;">Contact</h4>
+<p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-phone"></i> +225 07 47 32 73 09</p>
+<p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-envelope"></i> contact@eduforci.com</p>
+<p style="font-size:14px;color:#b7c6e6;"><i class="fas fa-map-marker-alt"></i> Côte d'Ivoire</p>
+</div>
+
+</div>
+
+<div style="border-top:1px solid rgba(255,255,255,.12);padding:18px 20px;text-align:center;font-size:13px;color:#8ea0c6;">
+&copy; <span id="anneeActuelle">2026</span> EDUFORCI. Tous droits réservés.
+</div>
+
+</footer>
+
 <script src="script.js"></script>
+<script>document.getElementById("anneeActuelle").textContent = new Date().getFullYear();</script>
 
 </body>
 

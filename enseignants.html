@@ -2,6 +2,7 @@
 <html lang="fr">
 
 <head>
+<script src="js/notify.js"></script>
 
 <meta charset="UTF-8">
 
@@ -237,72 +238,9 @@ box-shadow:0 10px 25px rgba(0,0,0,.08);
 <h1 id="titrePage">Nos enseignants</h1>
 
 <p id="sousTitrePage">
-Choisissez le professeur qui correspond le mieux à vos besoins.
+Découvrez tous les enseignants inscrits sur EDUFORCI.
 </p>
 
-</div>
-
-<div id="barreFiltres" class="filtres" style="background:white;padding:20px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
-
-<select id="filtreMatiere">
-<option value="">Matière</option>
-<option>Français</option>
-<option>Anglais</option>
-<option>Espagnol</option>
-<option>Allemand</option>
-<option>Mathématiques</option>
-<option>Histoire-Géographie</option>
-<option>SVT</option>
-<option>Physique-Chimie</option>
-<option>Philosophie</option>
-</select>
-
-<select id="filtreNiveau">
-<option value="">Niveau</option>
-<optgroup label="Primaire">
-<option>CP1</option>
-<option>CP2</option>
-<option>CE1</option>
-<option>CE2</option>
-<option>CM1</option>
-<option>CM2</option>
-</optgroup>
-<optgroup label="1er cycle">
-<option>6e</option>
-<option>5e</option>
-<option>4e</option>
-<option>3e</option>
-</optgroup>
-<optgroup label="2nd cycle">
-<option>2nde A</option>
-<option>2nde C</option>
-<option>1ère A</option>
-<option>1ère C</option>
-<option>1ère D</option>
-<option>Tle A</option>
-<option>Tle C</option>
-<option>Tle D</option>
-</optgroup>
-<option value="autre">Autre (à préciser)</option>
-</select>
-
-<input type="text" id="niveauAutre" placeholder="Précisez le niveau" style="display:none;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;">
-
-<select id="typeLieu">
-<option value="ville">Ville</option>
-<option value="commune">Commune</option>
-</select>
-
-<select id="filtreLieu">
-<option value="">Choisir...</option>
-</select>
-
-<button id="btnFiltrer" style="padding:14px 22px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Filtrer</button>
-
-</div>
-
-<div id="modifierRecherche" style="display:none;margin-bottom:20px;">
-<a href="#" id="lienModifierRecherche" style="color:#0B63F6;font-weight:600;text-decoration:none;">✏️ Modifier ma recherche</a>
 </div>
 
 <div class="grid" id="listeEnseignants">
@@ -317,22 +255,8 @@ Choisissez le professeur qui correspond le mieux à vos besoins.
 
 import { db } from "./js/firebase.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-const VILLES = [
-    "Abidjan","Yamoussoukro","Bouaké","Daloa","San-Pédro","Korhogo","Man","Gagnoa",
-    "Abengourou","Divo","Anyama","Agboville","Grand-Bassam","Bingerville","Dabou",
-    "Aboisso","Adzopé","Bonoua","Bouaflé","Sinfra","Issia","Soubré","Sassandra",
-    "Guiglo","Duékoué","Danané","Toulepleu","Odienné","Séguéla","Touba","Mankono",
-    "Boundiali","Ferkessédougou","Katiola","Dabakala","Bondoukou","Bouna","Tanda",
-    "Dimbokro","Bocanda","Daoukro","Toumodi","Tiassalé","Sikensi","Lakota","Oumé"
-];
-
-const COMMUNES = [
-    "Abobo","Adjamé","Attécoubé","Cocody","Koumassi","Marcory","Plateau",
-    "Port-Bouët","Treichville","Yopougon","Anyama","Bingerville","Songon"
-];
 
 const liste = document.getElementById("listeEnseignants");
-let tousLesEnseignants = [];
 
 function formaterTarif(tarif) {
     const nombre = Number(tarif);
@@ -340,14 +264,10 @@ function formaterTarif(tarif) {
     return nombre.toLocaleString("fr-FR") + " FCFA / heure";
 }
 
-function afficherEnseignants(liste_a_afficher, lieuRecherche) {
+function afficherEnseignants(liste_a_afficher) {
 
     if (liste_a_afficher.length === 0) {
-        if (lieuRecherche) {
-            liste.innerHTML = `<div class="empty">😔 Désolé, aucun enseignant disponible pour ${lieuRecherche} pour le moment.</div>`;
-        } else {
-            liste.innerHTML = `<div class="empty">Aucun enseignant ne correspond à votre recherche.</div>`;
-        }
+        liste.innerHTML = `<div class="empty">Aucun enseignant inscrit pour le moment.</div>`;
         return;
     }
 
@@ -380,35 +300,6 @@ function afficherEnseignants(liste_a_afficher, lieuRecherche) {
 
 }
 
-function appliquerFiltres() {
-
-    const matiere = document.getElementById("filtreMatiere").value.trim().toLowerCase();
-    const niveau = (document.getElementById("filtreNiveau").value === "autre"
-        ? document.getElementById("niveauAutre").value
-        : document.getElementById("filtreNiveau").value).trim().toLowerCase();
-    const lieuOriginal = document.getElementById("filtreLieu").value.trim();
-    const lieu = lieuOriginal.toLowerCase();
-
-    const filtres = tousLesEnseignants.filter((item) => {
-        const p = item.data;
-        const matOk = !matiere || (p.matiere || "").toLowerCase().includes(matiere);
-        const niveauOk = !niveau || (p.niveau || "").toLowerCase().includes(niveau);
-        const lieuOk = !lieu || (p.ville || "").toLowerCase().includes(lieu);
-        return matOk && niveauOk && lieuOk;
-    });
-
-    afficherEnseignants(filtres, lieuOriginal);
-
-}
-
-function remplirLieux() {
-    const type = document.getElementById("typeLieu").value;
-    const liste_lieux = type === "commune" ? COMMUNES : VILLES;
-    const selectLieu = document.getElementById("filtreLieu");
-    const valeurActuelle = selectLieu.value;
-    selectLieu.innerHTML = `<option value="">Choisir...</option>` + liste_lieux.map(l => `<option ${l === valeurActuelle ? "selected" : ""}>${l}</option>`).join("");
-}
-
 async function chargerEnseignants() {
 
     try {
@@ -416,82 +307,20 @@ async function chargerEnseignants() {
         const snapshot = await getDocs(query(collection(db, "enseignants"), where("verification", "==", true)));
 
         if (snapshot.empty) {
-            liste.innerHTML = `<div class="empty">Aucun enseignant approuvé pour le moment.</div>`;
+            liste.innerHTML = `<div class="empty">Aucun enseignant inscrit pour le moment.</div>`;
             return;
         }
 
-        tousLesEnseignants = [];
+        const tousLesEnseignants = [];
         snapshot.forEach((docSnap) => {
             tousLesEnseignants.push({ id: docSnap.id, data: docSnap.data() });
         });
 
-        // Pré-remplissage des filtres depuis l'URL (venant de la page d'accueil)
-        const params = new URLSearchParams(window.location.search);
-
-        if (params.get("matiere")) document.getElementById("filtreMatiere").value = params.get("matiere");
-
-        if (params.get("niveau")) {
-            const selectNiveau = document.getElementById("filtreNiveau");
-            const correspond = Array.from(selectNiveau.options).some(o => o.value === params.get("niveau"));
-            if (correspond) {
-                selectNiveau.value = params.get("niveau");
-            } else {
-                selectNiveau.value = "autre";
-                document.getElementById("niveauAutre").style.display = "block";
-                document.getElementById("niveauAutre").value = params.get("niveau");
-            }
-        }
-
-        if (params.get("ville")) {
-            if (COMMUNES.includes(params.get("ville"))) {
-                document.getElementById("typeLieu").value = "commune";
-            }
-            remplirLieux();
-            document.getElementById("filtreLieu").value = params.get("ville");
-        }
-
-        // Si on arrive depuis une recherche (accueil), on masque le formulaire
-        // et on affiche directement les résultats correspondants.
-        const rechercheDepuisAccueil = params.get("matiere") || params.get("niveau") || params.get("ville");
-
-        if (rechercheDepuisAccueil) {
-            document.getElementById("barreFiltres").style.display = "none";
-            document.getElementById("modifierRecherche").style.display = "block";
-            document.getElementById("titrePage").textContent = "Résultats de votre recherche";
-            document.getElementById("sousTitrePage").textContent = "Voici les enseignants qui correspondent à vos critères. Cliquez sur un profil pour réserver.";
-        }
-
-        appliquerFiltres();
+        afficherEnseignants(tousLesEnseignants);
 
     } catch (error) {
         liste.innerHTML = `<div class="empty">Erreur lors du chargement : ${error.message}</div>`;
     }
-
-}
-
-document.getElementById("lienModifierRecherche").addEventListener("click", (e) => {
-    e.preventDefault();
-    document.getElementById("barreFiltres").style.display = "grid";
-    document.getElementById("modifierRecherche").style.display = "none";
-    document.getElementById("titrePage").textContent = "Nos enseignants";
-    document.getElementById("sousTitrePage").textContent = "Choisissez le professeur qui correspond le mieux à vos besoins.";
-});
-
-remplirLieux();
-document.getElementById("typeLieu").addEventListener("change", remplirLieux);
-
-document.getElementById("filtreNiveau").addEventListener("change", () => {
-    document.getElementById("niveauAutre").style.display = document.getElementById("filtreNiveau").value === "autre" ? "block" : "none";
-});
-
-document.getElementById("btnFiltrer").addEventListener("click", appliquerFiltres);
-
-// Dès que l'utilisateur choisit sa ville ou sa commune, on filtre directement
-document.getElementById("filtreLieu").addEventListener("change", () => {
-    if (document.getElementById("filtreLieu").value) {
-        appliquerFiltres();
-    }
-});
 
 }
 
