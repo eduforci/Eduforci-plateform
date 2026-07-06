@@ -514,7 +514,14 @@ ${enseignant.disponibilite === "Disponible"
 
     </div>
 
-    <button onclick="window.open('${construireLienWhatsapp(enseignant, teacherDocId)}', '_blank')">📲 Réserver via WhatsApp</button>
+    <a id="btnWhatsapp"
+   href="#"
+   target="_blank"
+   style="display:block;text-decoration:none;">
+    <button type="button">
+        📲 Réserver via WhatsApp
+    </button>
+</a>
 
     <button id="btnFavori" style="background:white;color:#0B63F6;border:2px solid #0B63F6;margin-top:12px;">🤍 Ajouter aux favoris</button>
 
@@ -572,7 +579,8 @@ ${enseignant.disponibilite === "Disponible"
 
     attacherEvenements();
     chargerAvisEtNote();
-
+    document.getElementById("btnWhatsapp").href =
+    construireLienWhatsapp(enseignant, teacherDocId);
     onAuthStateChanged(auth, (user) => {
         if (user) {
             parentConnecte = user;
