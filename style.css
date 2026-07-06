@@ -699,7 +699,7 @@ width:320px;
 
 height:100vh;
 
-background:#fff;
+background:linear-gradient(rgba(5,32,78,.90),rgba(5,32,78,.90)),url("hero.jpg") center center/cover no-repeat;
 
 padding:30px;
 
@@ -721,7 +721,7 @@ right:0;
 
 .side-menu h2{
 
-color:#0B63F6;
+color:#FDB813;
 
 margin-bottom:20px;
 
@@ -731,7 +731,7 @@ margin-bottom:20px;
 
 margin:25px 0 10px;
 
-color:#153A73;
+color:#FDB813;
 
 }
 
@@ -743,9 +743,21 @@ padding:12px 0;
 
 text-decoration:none;
 
-color:#444;
+color:#eef2fb;
 
 font-weight:500;
+
+}
+
+.side-menu a:hover{
+
+color:#FDB813;
+
+}
+
+.side-menu hr{
+
+border-color:rgba(255,255,255,.2);
 
 }
 
@@ -762,6 +774,8 @@ cursor:pointer;
 float:right;
 
 margin-bottom:20px;
+
+color:#fff;
 
 }
 /* ===========================
