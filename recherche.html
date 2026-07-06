@@ -133,32 +133,16 @@ background:#084ec7;
 <div class="search-box">
 
 <select id="matiere">
-<option value="">Toutes les matières</option>
-<option>Mathématiques</option>
-<option>Anglais</option>
-<option>Français</option>
-<option>Physique-Chimie</option>
-<option>SVT</option>
-<option>Histoire-Géographie</option>
+    <option value="">Toutes les matières</option>
 </select>
-
+  
 <select id="niveau">
-<option value="">Tous les niveaux</option>
-<option>Primaire</option>
-<option>Collège</option>
-<option>Lycée</option>
-<option>Université</option>
+    <option value="">Tous les niveaux</option>
 </select>
 
   <select id="ville">
-<option value="">Toutes les villes</option>
-<option>Abidjan</option>
-<option>Bouaké</option>
-<option>Yamoussoukro</option>
-<option>San Pedro</option>
-<option>Korhogo</option>
-<option>Daloa</option>
-</select>
+    <option value="">Toutes les villes</option>
+  </select>
 
 <button id="btnRecherche">
 🔍 Rechercher
@@ -201,7 +185,46 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const liste = document.getElementById("listeEnseignants");
+async function chargerFiltres() {
 
+    const matiereSelect = document.getElementById("matiere");
+    const niveauSelect = document.getElementById("niveau");
+    const villeSelect = document.getElementById("ville");
+
+    const matieres = new Set();
+    const niveaux = new Set();
+    const villes = new Set();
+
+    const q = query(
+        collection(db, "enseignants"),
+        where("verification", "==", true)
+    );
+
+    const snapshot = await getDocs(q);
+
+    snapshot.forEach((docSnap) => {
+
+        const prof = docSnap.data();
+
+        if (prof.matiere) matieres.add(prof.matiere);
+        if (prof.niveau) niveaux.add(prof.niveau);
+        if (prof.ville) villes.add(prof.ville);
+
+    });
+
+    [...matieres].sort().forEach((m) => {
+        matiereSelect.innerHTML += `<option value="${m}">${m}</option>`;
+    });
+
+    [...niveaux].sort().forEach((n) => {
+        niveauSelect.innerHTML += `<option value="${n}">${n}</option>`;
+    });
+
+    [...villes].sort().forEach((v) => {
+        villeSelect.innerHTML += `<option value="${v}">${v}</option>`;
+    });
+
+    }
 async function chargerEnseignants() {
 
     liste.innerHTML = "";
@@ -264,7 +287,8 @@ async function chargerEnseignants() {
     chargerEnseignants();
 });
 
-chargerEnseignants();
+await chargerFiltres();
+await chargerEnseignants();
 </script>
 </body>
 
