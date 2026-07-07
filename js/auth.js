@@ -78,7 +78,9 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
     await sendEmailVerification(user);
     await signOut(auth);
 
-    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu (pensez à vérifier vos spams) avant de vous connecter.");
+    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu avant de vous connecter.
+
+⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail : c'est souvent là qu'il atterrit la première fois.");
 
     window.location.href = "connexion-parent.html";
 
@@ -117,7 +119,9 @@ async function connexionParent(email, motDePasse) {
 
       await signOut(auth);
 
-      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter (pensez à vérifier vos spams).");
+      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter.
+
+⚠️ Pensez à regarder dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail.");
 
       return;
 
@@ -215,7 +219,9 @@ disponibilite: "Disponible",
     await sendEmailVerification(user);
     await signOut(auth);
 
-    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu (pensez à vérifier vos spams) avant de vous connecter.");
+    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu avant de vous connecter.
+
+⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail : c'est souvent là qu'il atterrit la première fois.");
 
     window.location.href = "connexion-enseignant.html";
 
@@ -250,7 +256,9 @@ async function connexionEnseignant(email, motDePasse) {
 
       await signOut(auth);
 
-      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter (pensez à vérifier vos spams).");
+      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter.
+
+⚠️ Pensez à regarder dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail.");
 
       return;
 
@@ -330,7 +338,9 @@ async function creerCompteEtablissement(
     await sendEmailVerification(user);
     await signOut(auth);
 
-    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu (pensez à vérifier vos spams) avant de vous connecter.");
+    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu avant de vous connecter.
+
+⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail : c'est souvent là qu'il atterrit la première fois.");
 
     window.location.href = "connexion-etablissement.html";
 
@@ -366,7 +376,9 @@ async function connexionEtablissement(email, motDePasse) {
 
       await signOut(auth);
 
-      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter (pensez à vérifier vos spams).");
+      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter.
+
+⚠️ Pensez à regarder dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail.");
 
       return;
 
@@ -425,4 +437,4 @@ export {
   connexionEtablissement,
   deconnexion
 };
-      
+  
