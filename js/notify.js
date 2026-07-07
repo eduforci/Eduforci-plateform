@@ -295,7 +295,7 @@
     }
 
     function afficherPopup(message, typeFinal) {
-        window.Swal.fire({
+        return window.Swal.fire({
             icon: ICONES_SWAL[typeFinal] || "info",
             title: TITRES[typeFinal] || TITRES.info,
             text: message,
@@ -314,21 +314,29 @@
 
         const utiliserPopup = typeFinal === "succes" || typeFinal === "erreur";
 
-        if (utiliserPopup) {
-            if (sweetAlertPret && window.Swal) {
-                afficherPopup(messageClair, typeFinal);
+        return new Promise((resoudre) => {
+
+            if (utiliserPopup) {
+                if (sweetAlertPret && window.Swal) {
+                    afficherPopup(messageClair, typeFinal).then(resoudre);
+                } else {
+                    filesAttente.push(() => afficherPopup(messageClair, typeFinal).then(resoudre));
+                    // Si SweetAlert2 met du temps (ou ne charge pas), on affiche
+                    // quand même un toast tout de suite pour ne jamais faire
+                    // attendre l'utilisateur sans réponse visuelle.
+                    setTimeout(() => {
+                        if (!sweetAlertPret) {
+                            afficherToast(messageClair, typeFinal);
+                            setTimeout(resoudre, DUREE_AFFICHAGE[typeFinal] || 4500);
+                        }
+                    }, 1200);
+                }
             } else {
-                filesAttente.push(() => afficherPopup(messageClair, typeFinal));
-                // Si SweetAlert2 met du temps (ou ne charge pas), on affiche
-                // quand même un toast tout de suite pour ne jamais faire
-                // attendre l'utilisateur sans réponse visuelle.
-                setTimeout(() => {
-                    if (!sweetAlertPret) afficherToast(messageClair, typeFinal);
-                }, 1200);
+                afficherToast(messageClair, typeFinal);
+                setTimeout(resoudre, DUREE_AFFICHAGE[typeFinal] || 4500);
             }
-        } else {
-            afficherToast(messageClair, typeFinal);
-        }
+
+        });
     }
 
     // Écran de chargement plein écran, réutilisable ailleurs dans le site
@@ -357,7 +365,7 @@
     // une API moderne en plus du remplacement d'alert().
     window.__nativeAlert = window.alert;
     window.alert = function (message) {
-        notifier(message);
+        return notifier(message);
     };
     window.notify = notifier;
     window.showLoading = showLoading;
