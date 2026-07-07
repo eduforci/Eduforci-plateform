@@ -98,13 +98,22 @@ background:#0d2850;
 <input type="password" id="password" placeholder="Mot de passe" required>
 
 <button type="submit">Se connecter</button>
+    <div style="text-align:center;margin-top:15px;">
+    <a href="#" id="forgotPassword" style="text-decoration:none;color:#153A73;font-weight:500;">
+        Mot de passe oublié ?
+    </a>
+    </div>
 
 </form>
 
 <script type="module">
 
 import { auth, db } from "./js/firebase.js";
-import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const form = document.getElementById("formConnexionAdmin");
@@ -137,6 +146,30 @@ form.addEventListener("submit", async (e) => {
 
 });
 
+    document.getElementById("forgotPassword").addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        alert("Veuillez saisir votre adresse e-mail.");
+        return;
+    }
+
+    try {
+
+        await sendPasswordResetEmail(auth, email);
+
+        alert("Un e-mail de réinitialisation a été envoyé. Vérifiez également votre dossier Spam.");
+
+    } catch (error) {
+
+        alert(error.code + "\n\n" + error.message);
+
+    }
+
+});
 </script>
 
 </body>
