@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Demander un enseignant | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;padding:14px;margin-bottom:10px;border-radius:10px;text-decoration:none;color:white;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:700px;}
+
+.welcome{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+
+label{display:block;margin:15px 0 8px;font-weight:600;color:#153A73;}
+input,select,textarea{width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+textarea{resize:vertical;min-height:100px;}
+
+button{width:100%;margin-top:25px;padding:15px;background:#0B63F6;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:600;cursor:pointer;}
+button:hover{background:#084ec7;}
+
+.note-info{background:#eaf1ff;color:#0B63F6;padding:14px 18px;border-radius:10px;font-size:13.5px;margin-bottom:20px;}
+
+</style>
+
+</head>
+
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+
+<img src="logo.png" alt="EDUFORCI">
+
+<a href="dashboard-etablissement.html">🏠 Tableau de bord</a>
+
+<a href="publier-offre.html">📢 Publier une offre</a>
+
+<a href="recherche-enseignant-etablissement.html">👨‍🏫 Rechercher un enseignant</a>
+
+<a href="demande-mission-etablissement.html" class="active">🎯 Demander un enseignant</a>
+
+<a href="mes-missions-etablissement.html">📋 Mes demandes</a>
+
+<a href="candidatures-etablissement.html">📩 Candidatures reçues</a>
+
+<a href="mon-etablissement.html">🏫 Mon établissement</a>
+
+<a href="parametres-etablissement.html">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<div class="welcome">
+
+<h1 style="color:#153A73;margin-bottom:10px;">🎯 Demander un enseignant</h1>
+<p style="color:#666;margin-bottom:20px;">Décrivez votre besoin, l'équipe EDUFORCI vous proposera des enseignants compatibles.</p>
+
+<div class="note-info">🔒 Par sécurité, aucune coordonnée n'est jamais échangée directement entre vous et l'enseignant : c'est EDUFORCI qui gère toute la mise en relation.</div>
+
+<label>Matière</label>
+<input type="text" id="matiere" placeholder="Ex : Mathématiques" required>
+
+<label>Niveau</label>
+<select id="niveau" required>
+<option value="">Choisir...</option>
+<option>Primaire</option>
+<option>Collège</option>
+<option>Lycée</option>
+<option>Université</option>
+</select>
+
+<label>Commune / Ville</label>
+<input type="text" id="commune" placeholder="Ex : Cocody" required>
+
+<label>Nombre d'heures (par semaine)</label>
+<input type="text" id="nombreHeures" placeholder="Ex : 6h/semaine">
+
+<label>Salaire proposé</label>
+<input type="text" id="remuneration" placeholder="Ex : 150 000 FCFA / mois">
+
+<label>Date souhaitée de début</label>
+<input type="date" id="dateSouhaitee">
+
+<label>Détails complémentaires</label>
+<textarea id="description" placeholder="Précisez vos attentes, horaires, contraintes..."></textarea>
+
+<button id="btnEnvoyer">✅ Envoyer la demande</button>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let etablissementConnecte = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-etablissement.html";
+        return;
+    }
+
+    etablissementConnecte = user;
+
+});
+
+document.getElementById("btnEnvoyer").addEventListener("click", async () => {
+
+    if (!etablissementConnecte) {
+        alert("Veuillez vous connecter pour envoyer une demande.");
+        return;
+    }
+
+    const matiere = document.getElementById("matiere").value.trim();
+    const niveau = document.getElementById("niveau").value;
+    const commune = document.getElementById("commune").value.trim();
+    const nombreHeures = document.getElementById("nombreHeures").value.trim();
+    const remuneration = document.getElementById("remuneration").value.trim();
+    const dateSouhaitee = document.getElementById("dateSouhaitee").value;
+    const description = document.getElementById("description").value.trim();
+
+    if (!matiere || !niveau || !commune) {
+        alert("Merci de remplir au moins la matière, le niveau et la commune.");
+        return;
+    }
+
+    try {
+
+        const etabSnap = await getDoc(doc(db, "etablissements", etablissementConnecte.uid));
+        const etabNom = etabSnap.exists() ? etabSnap.data().nom : "Établissement";
+
+        await addDoc(collection(db, "missions"), {
+            demandeurType: "etablissement",
+            demandeurId: etablissementConnecte.uid,
+            demandeurNom: etabNom,
+            matiere: matiere,
+            niveau: niveau,
+            commune: commune,
+            nombreHeures: nombreHeures,
+            remuneration: remuneration,
+            dateSouhaitee: dateSouhaitee,
+            description: description,
+            statut: "en_attente",
+            enseignantsProposes: [],
+            enseignantRetenuId: null,
+            enseignantRetenuNom: null,
+            dateCreation: new Date().toISOString()
+        });
+
+        await alert("Votre demande a été envoyée avec succès ! L'équipe EDUFORCI va identifier des enseignants compatibles et vous tiendra informé.");
+
+        window.location.href = "mes-missions-etablissement.html";
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const { signOut } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js");
+    await signOut(auth);
+    window.location.href = "connexion-etablissement.html";
+});
+
+</script>
+
+</body>
+
+</html>

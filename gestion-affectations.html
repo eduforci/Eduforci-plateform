@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gestion des affectations | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:270px;height:100vh;background:#153A73;color:#fff;position:fixed;left:0;top:0;padding:30px 20px;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:10px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:270px;width:100%;padding:35px;}
+
+h1{color:#153A73;margin-bottom:6px;}
+.sous-titre{color:#666;margin-bottom:25px;}
+
+.filtres-statut{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:25px;}
+.filtres-statut button{padding:10px 18px;border:1px solid #ddd;background:white;border-radius:30px;font-weight:600;font-size:13px;cursor:pointer;color:#555;}
+.filtres-statut button.active{background:#0B63F6;color:white;border-color:#0B63F6;}
+
+.mission-card{background:white;border-radius:20px;padding:25px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:20px;}
+
+.mission-entete{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.mission-entete h3{color:#153A73;}
+.mission-entete span.origine{font-size:13px;color:#999;}
+
+.badge-statut{display:inline-block;padding:6px 14px;border-radius:20px;font-size:12.5px;font-weight:600;white-space:nowrap;}
+.statut-en_attente{background:#fff4e0;color:#e08b00;}
+.statut-proposition_envoyee{background:#eaf1ff;color:#0B63F6;}
+.statut-enseignant_disponible{background:#eafaf0;color:#1f8a3d;}
+.statut-enseignant_retenu{background:#e6f7ec;color:#28a745;}
+.statut-terminee{background:#eee;color:#666;}
+
+.details-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;font-size:14px;color:#333;}
+.details-grille div strong{display:block;color:#153A73;font-size:12.5px;margin-bottom:2px;}
+
+.description-demande{background:#f8f9fc;padding:12px 15px;border-radius:10px;font-size:14px;color:#555;margin-bottom:16px;}
+
+.section-titre{font-weight:600;color:#153A73;margin:16px 0 10px;font-size:14.5px;}
+
+.zone-proposition{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.zone-proposition input{flex:1;min-width:140px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;}
+.zone-proposition button{padding:10px 18px;background:#153A73;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;}
+
+.candidats-recherche{display:none;flex-direction:column;gap:8px;margin-bottom:14px;max-height:220px;overflow-y:auto;}
+.candidat-ligne{display:flex;align-items:center;justify-content:space-between;background:#f8f9fc;padding:10px 14px;border-radius:8px;font-size:13.5px;}
+.candidat-ligne button{padding:6px 12px;background:#0B63F6;color:white;border:none;border-radius:6px;font-size:12.5px;cursor:pointer;font-weight:600;}
+.candidat-ligne button:disabled{background:#ccc;cursor:not-allowed;}
+
+.proposes-liste{display:flex;flex-direction:column;gap:8px;}
+.propose-ligne{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#f8f9fc;padding:10px 14px;border-radius:8px;font-size:13.5px;}
+.reponse-en_attente{color:#e08b00;font-weight:600;}
+.reponse-disponible{color:#28a745;font-weight:600;}
+.reponse-indisponible{color:#d93025;font-weight:600;}
+.btn-retenir{padding:7px 14px;background:#28a745;color:white;border:none;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;}
+.btn-retenir:hover{background:#1f7a35;}
+
+.btn-terminer{margin-top:14px;padding:10px 18px;background:#153A73;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13.5px;}
+
+.empty{background:white;padding:50px 20px;border-radius:20px;text-align:center;color:#999;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+
+</style>
+
+</head>
+
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+
+<img src="logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+
+<a href="gestion-affectations.html" class="active">🎯 Affectations</a>
+
+<a href="reservations-admin.html">📅 Réservations</a>
+
+<a href="offres-admin.html">📢 Offres d'emploi</a>
+
+<a href="candidatures-admin.html">📄 Candidatures</a>
+
+<a href="paiements-admin.html">💳 Paiements</a>
+
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<h1>🎯 Gestion des affectations</h1>
+<p class="sous-titre">Demandes d'établissements et de parents. Aucune coordonnée n'est jamais échangée directement : vous restez l'intermédiaire pour chaque mise en relation.</p>
+
+<div class="filtres-statut" id="filtresStatut">
+<button data-filtre="tous" class="active">Toutes</button>
+<button data-filtre="en_attente">En attente</button>
+<button data-filtre="proposition_envoyee">Proposition envoyée</button>
+<button data-filtre="enseignant_disponible">Enseignant disponible</button>
+<button data-filtre="enseignant_retenu">Enseignant retenu</button>
+<button data-filtre="terminee">Terminées</button>
+</div>
+
+<div id="listeMissions"></div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, query, where, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const LIBELLES_STATUT = {
+    en_attente: "⏳ En attente",
+    proposition_envoyee: "📨 Proposition envoyée",
+    enseignant_disponible: "🟢 Enseignant disponible",
+    enseignant_retenu: "✅ Enseignant retenu",
+    terminee: "🏁 Terminée"
+};
+
+let toutesLesMissions = [];
+let tousLesEnseignants = [];
+let filtreActuel = "tous";
+
+function formaterDate(iso) {
+    if (!iso) return "-";
+    try { return new Date(iso).toLocaleDateString("fr-FR"); } catch { return iso; }
+}
+
+async function chargerEnseignants() {
+    const snap = await getDocs(query(collection(db, "enseignants"), where("verification", "==", true)));
+    tousLesEnseignants = [];
+    snap.forEach((docSnap) => {
+        const d = docSnap.data();
+        tousLesEnseignants.push({ id: docSnap.id, nom: d.nom || "Enseignant", matiere: d.matiere || "", ville: d.ville || "" });
+    });
+}
+
+async function chargerMissions() {
+
+    const conteneur = document.getElementById("listeMissions");
+    conteneur.innerHTML = "<div class='empty'>Chargement...</div>";
+
+    try {
+
+        const snap = await getDocs(query(collection(db, "missions"), orderBy("dateCreation", "desc")));
+
+        toutesLesMissions = [];
+        snap.forEach((docSnap) => {
+            toutesLesMissions.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        afficherMissions();
+
+    } catch (error) {
+        conteneur.innerHTML = `<div class="empty">Erreur lors du chargement : ${error.message}</div>`;
+    }
+
+}
+
+function afficherMissions() {
+
+    const conteneur = document.getElementById("listeMissions");
+
+    const missions = filtreActuel === "tous"
+        ? toutesLesMissions
+        : toutesLesMissions.filter(m => m.statut === filtreActuel);
+
+    if (missions.length === 0) {
+        conteneur.innerHTML = `<div class="empty">Aucune demande pour le moment${filtreActuel !== "tous" ? " dans ce statut" : ""}.</div>`;
+        return;
+    }
+
+    conteneur.innerHTML = "";
+
+    missions.forEach((m) => {
+
+        const carte = document.createElement("div");
+        carte.className = "mission-card";
+
+        const proposes = m.enseignantsProposes || [];
+
+        const listeProposesHTML = proposes.length === 0
+            ? `<p style="color:#999;font-size:13.5px;">Aucun enseignant proposé pour le moment.</p>`
+            : `<div class="proposes-liste">${proposes.map(p => `
+                <div class="propose-ligne">
+                    <span>👤 ${p.nom}${p.matiere ? " — " + p.matiere : ""}</span>
+                    <span class="reponse-${p.reponse}">${
+                        p.reponse === "disponible" ? "🟢 Disponible" :
+                        p.reponse === "indisponible" ? "🔴 Indisponible" :
+                        "⏳ En attente de réponse"
+                    }</span>
+                    ${(p.reponse === "disponible" && !m.enseignantRetenuId) ? `<button class="btn-retenir" data-mission-id="${m.id}" data-ens-id="${p.id}" data-ens-nom="${p.nom}">✅ Retenir cet enseignant</button>` : ""}
+                </div>
+            `).join("")}</div>`;
+
+        const zoneProposition = (!m.enseignantRetenuId && m.statut !== "terminee") ? `
+            <div class="section-titre">Proposer à des enseignants compatibles</div>
+            <div class="zone-proposition">
+                <input type="text" placeholder="Filtrer par matière ou ville..." class="rechercheCandidats" data-mission-id="${m.id}">
+                <button class="btnRechercherCandidats" data-mission-id="${m.id}">🔍 Rechercher</button>
+            </div>
+            <div class="candidats-recherche" id="candidats-${m.id}"></div>
+        ` : "";
+
+        const boutonTerminer = (m.enseignantRetenuId && m.statut !== "terminee") ? `
+            <button class="btn-terminer" data-mission-id="${m.id}">🏁 Marquer l'affectation comme terminée</button>
+        ` : "";
+
+        const infoRetenu = m.enseignantRetenuId ? `
+            <div class="description-demande" style="background:#e6f7ec;color:#1f7a35;font-weight:600;">
+                ✅ Enseignant retenu : ${m.enseignantRetenuNom}
+            </div>
+        ` : "";
+
+        carte.innerHTML = `
+            <div class="mission-entete">
+                <div>
+                    <h3>${m.matiere || "Matière non précisée"} — ${m.niveau || "-"}</h3>
+                    <span class="origine">${m.demandeurType === "etablissement" ? "🏫" : "👨‍👩‍👧"} Demande de ${m.demandeurNom || "—"} · ${formaterDate(m.dateCreation)}</span>
+                </div>
+                <span class="badge-statut statut-${m.statut}">${LIBELLES_STATUT[m.statut] || m.statut}</span>
+            </div>
+
+            <div class="details-grille">
+                <div><strong>Commune</strong>${m.commune || "-"}</div>
+                <div><strong>Heures</strong>${m.nombreHeures || "-"}</div>
+                <div><strong>Rémunération</strong>${m.remuneration || "À discuter"}</div>
+                <div><strong>Date souhaitée</strong>${formaterDate(m.dateSouhaitee)}</div>
+            </div>
+
+            ${m.description ? `<div class="description-demande">${m.description}</div>` : ""}
+
+            ${infoRetenu}
+
+            <div class="section-titre">Enseignants proposés</div>
+            ${listeProposesHTML}
+
+            ${zoneProposition}
+
+            ${boutonTerminer}
+        `;
+
+        conteneur.appendChild(carte);
+
+    });
+
+    // Recherche de candidats compatibles
+    document.querySelectorAll(".btnRechercherCandidats").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const missionId = btn.dataset.missionId;
+            const input = document.querySelector(`.rechercheCandidats[data-mission-id="${missionId}"]`);
+            const terme = input.value.trim().toLowerCase();
+            const zone = document.getElementById(`candidats-${missionId}`);
+            const mission = toutesLesMissions.find(x => x.id === missionId);
+            const dejaProposesIds = (mission.enseignantsProposes || []).map(p => p.id);
+
+            const resultats = tousLesEnseignants.filter(e =>
+                !terme || e.matiere.toLowerCase().includes(terme) || e.ville.toLowerCase().includes(terme)
+            );
+
+            if (resultats.length === 0) {
+                zone.style.display = "flex";
+                zone.innerHTML = `<p style="color:#999;font-size:13.5px;">Aucun enseignant ne correspond.</p>`;
+                return;
+            }
+
+            zone.style.display = "flex";
+            zone.innerHTML = resultats.map(e => `
+                <div class="candidat-ligne">
+                    <span>👤 ${e.nom} — ${e.matiere || "-"} (${e.ville || "-"})</span>
+                    <button class="btnProposer" data-mission-id="${missionId}" data-ens-id="${e.id}" data-ens-nom="${e.nom}" data-ens-matiere="${e.matiere}" ${dejaProposesIds.includes(e.id) ? "disabled" : ""}>
+                        ${dejaProposesIds.includes(e.id) ? "Déjà proposé" : "Proposer"}
+                    </button>
+                </div>
+            `).join("");
+
+            document.querySelectorAll(".btnProposer").forEach((btnProposer) => {
+                btnProposer.addEventListener("click", async () => {
+                    await proposerEnseignant(
+                        btnProposer.dataset.missionId,
+                        btnProposer.dataset.ensId,
+                        btnProposer.dataset.ensNom,
+                        btnProposer.dataset.ensMatiere
+                    );
+                });
+            });
+
+        });
+    });
+
+    // Retenir un enseignant
+    document.querySelectorAll(".btn-retenir").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            await retenirEnseignant(btn.dataset.missionId, btn.dataset.ensId, btn.dataset.ensNom);
+        });
+    });
+
+    // Terminer une affectation
+    document.querySelectorAll(".btn-terminer").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            await terminerAffectation(btn.dataset.missionId);
+        });
+    });
+
+}
+
+async function proposerEnseignant(missionId, ensId, ensNom, ensMatiere) {
+
+    try {
+
+        const mission = toutesLesMissions.find(x => x.id === missionId);
+        const proposes = mission.enseignantsProposes || [];
+
+        if (proposes.some(p => p.id === ensId)) return;
+
+        proposes.push({ id: ensId, nom: ensNom, matiere: ensMatiere, reponse: "en_attente" });
+
+        await updateDoc(doc(db, "missions", missionId), {
+            enseignantsProposes: proposes,
+            statut: "proposition_envoyee"
+        });
+
+        await notify("Mission proposée à " + ensNom + ".", "succes");
+        await chargerMissions();
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+async function retenirEnseignant(missionId, ensId, ensNom) {
+
+    try {
+
+        await updateDoc(doc(db, "missions", missionId), {
+            enseignantRetenuId: ensId,
+            enseignantRetenuNom: ensNom,
+            statut: "enseignant_retenu"
+        });
+
+        await notify(ensNom + " a été retenu(e) pour cette mission. Les autres propositions sont désormais verrouillées.", "succes");
+        await chargerMissions();
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+async function terminerAffectation(missionId) {
+
+    try {
+
+        await updateDoc(doc(db, "missions", missionId), {
+            statut: "terminee"
+        });
+
+        await notify("Affectation marquée comme terminée.", "succes");
+        await chargerMissions();
+
+    } catch (error) {
+        alert(error.message);
+    }
+
+}
+
+document.getElementById("filtresStatut").addEventListener("click", (e) => {
+    if (e.target.tagName !== "BUTTON") return;
+    document.querySelectorAll("#filtresStatut button").forEach(b => b.classList.remove("active"));
+    e.target.classList.add("active");
+    filtreActuel = e.target.dataset.filtre;
+    afficherMissions();
+});
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    await chargerEnseignants();
+    await chargerMissions();
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+
+</html>
