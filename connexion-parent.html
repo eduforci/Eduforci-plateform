@@ -172,7 +172,10 @@ color:#0B63F6;
 </form>
   <script type="module">
 
-import { connexionParent } from "./js/auth.js";
+import {
+  connexionParent,
+  motDePasseOublie
+} from "./js/auth.js";
 
 const form = document.getElementById("formConnexion");
 
@@ -186,7 +189,20 @@ form.addEventListener("submit", async (e) => {
     await connexionParent(email, password);
 
 });
+document.getElementById("forgotPassword").addEventListener("click", async (e) => {
 
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        alert("Veuillez saisir votre adresse e-mail.");
+        return;
+    }
+
+    await motDePasseOublie(email);
+
+});
 </script>
 </body>
 
