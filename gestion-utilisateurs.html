@@ -450,7 +450,8 @@ async function chargerUtilisateurs() {
         });
 
     } catch (error) {
-        alert(error.message);
+    console.error(error);
+    alert("Erreur : " + error.message);
     }
 
 }
