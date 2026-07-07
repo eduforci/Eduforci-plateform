@@ -118,7 +118,16 @@ async function connexionParent(email, motDePasse) {
 
       await signOut(auth);
 
-      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter.\n\n⚠️ Pensez à regarder dans le dossier \"Spam\" ou \"Courrier indésirable\" de votre boîte mail.");
+      await notify(
+`Votre adresse e-mail n'est pas encore confirmée.
+
+Un lien de confirmation vient de vous être envoyé à ${user.email}.
+
+⚠️ Pensez à vérifier également votre dossier Spam ou Courrier indésirable.
+
+Après avoir confirmé votre adresse e-mail, revenez vous connecter.`,
+"avertissement"
+);
 
       return;
 
