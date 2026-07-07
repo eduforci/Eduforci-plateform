@@ -395,6 +395,43 @@ async function connexionEtablissement(email, motDePasse) {
 
 }
 // ======================================
+// CONNEXION ADMIN
+// ======================================
+
+async function connexionAdmin(email, motDePasse) {
+
+  try {
+
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      motDePasse
+    );
+
+    const user = userCredential.user;
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+
+      await signOut(auth);
+
+      alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+
+      return;
+
+    }
+
+    window.location.href = "dashboard-admin.html";
+
+  } catch (error) {
+
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
+}
+// ======================================
 // MOT DE PASSE OUBLIÉ
 // ======================================
 
@@ -447,7 +484,7 @@ export {
   connexionEnseignant,
   creerCompteEtablissement,
   connexionEtablissement,
+  connexionAdmin,
   motDePasseOublie,
   deconnexion
 };
-      
