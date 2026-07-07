@@ -80,6 +80,7 @@
     display:flex;
     flex-direction:column;
     gap:12px;
+    width:min(380px,calc(100vw - 40px));
     max-width:min(380px,calc(100vw - 40px));
     font-family:'Poppins',sans-serif;
 }
@@ -88,6 +89,7 @@
         top:14px;
         right:14px;
         left:14px;
+        width:auto;
         max-width:none;
     }
 }
@@ -105,6 +107,8 @@
     transform:translateX(40px);
     animation:eduforciToastIn .35s ease forwards;
     pointer-events:auto;
+    width:100%;
+    box-sizing:border-box;
 }
 .eduforci-toast.sortie{
     animation:eduforciToastOut .3s ease forwards;
@@ -129,6 +133,7 @@
 }
 .eduforci-toast .texte{
     flex:1;
+    min-width:0;
     font-size:14.5px;
     line-height:1.45;
     white-space:pre-line;
@@ -360,3 +365,4 @@
 
 })();
 
+            
