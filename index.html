@@ -238,11 +238,11 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 </div>
 </a>
 
-<a href="mailto:contact@eduforci.com" style="text-decoration:none;color:inherit;">
+<a href="mailto:eduforci.formation@gmail.com" style="text-decoration:none;color:inherit;">
 <div class="contact-card">
 <i class="fas fa-envelope"></i>
 <h3>Email</h3>
-<p>contact@eduforci.com</p>
+<p>eduforci.formation@gmail.com</p>
 </div>
 </a>
 
@@ -329,7 +329,7 @@ async function chargerEnseignantsAccueil() {
         snapshot.forEach((docSnap) => enseignants.push({ id: docSnap.id, ...docSnap.data() }));
 
         // On met en avant les enseignants disponibles, puis on limite à 4 profils
-        enseignants.sort((a, b) => (b.disponible === true) - (a.disponible === true));
+        enseignants.sort((a, b) => (b.disponible !== false) - (a.disponible !== false));
         const aAfficher = enseignants.slice(0, 4);
 
         conteneur.innerHTML = "";
@@ -445,7 +445,7 @@ chargerEnseignantsAccueil();
 <div>
 <h4 style="color:#fff;margin-bottom:14px;font-size:16px;">Contact</h4>
 <p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-phone"></i> +225 07 47 32 73 09</p>
-<p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-envelope"></i> contact@eduforci.com</p>
+<p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-envelope"></i> eduforci.formation@gmail.com</p>
 <p style="font-size:14px;color:#b7c6e6;"><i class="fas fa-map-marker-alt"></i> Côte d'Ivoire</p>
 </div>
 
