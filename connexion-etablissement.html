@@ -120,7 +120,7 @@ Se connecter
 
 <div class="links">
 
-<a href="#">Mot de passe oublié ?</a>
+<a href="#" id="forgotPassword">Mot de passe oublié ?</a>
 
 <a href="inscription-etablissement.html">Créer un compte Établissement</a>
 
@@ -129,7 +129,10 @@ Se connecter
 </form>
 <script type="module">
 
-import { connexionEtablissement } from "./js/auth.js";
+import {
+  connexionEtablissement,
+  motDePasseOublie
+} from "./js/auth.js";
 
 const form = document.getElementById("formConnexion");
 
@@ -144,6 +147,20 @@ form.addEventListener("submit", async (e) => {
 
 });
 
+    document.getElementById("forgotPassword").addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        alert("Veuillez saisir votre adresse e-mail.");
+        return;
+    }
+
+    await motDePasseOublie(email);
+
+});
 </script>
 </body>
 </html>
