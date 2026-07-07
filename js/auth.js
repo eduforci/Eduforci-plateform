@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
@@ -393,6 +394,29 @@ async function connexionEtablissement(email, motDePasse) {
   }
 
 }
+// ======================================
+// MOT DE PASSE OUBLIÉ
+// ======================================
+
+async function motDePasseOublie(email) {
+
+  try {
+
+    await sendPasswordResetEmail(auth, email);
+
+    alert(
+      "Un e-mail de réinitialisation a été envoyé à " +
+      email +
+      ". Vérifiez également le dossier Spam."
+    );
+
+  } catch (error) {
+
+    alert(error.code + "\n\n" + error.message);
+
+  }
+
+}
 
 // ======================================
 // DÉCONNEXION
@@ -423,6 +447,7 @@ export {
   connexionEnseignant,
   creerCompteEtablissement,
   connexionEtablissement,
+  motDePasseOublie,
   deconnexion
 };
       
