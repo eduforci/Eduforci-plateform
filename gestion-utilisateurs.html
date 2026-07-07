@@ -324,9 +324,7 @@ async function chargerUtilisateurs() {
     try {
 
         const snap = await getDocs(collection(db, type));
-        
-alert("Collection : " + type);
-alert("Nombre de documents : " + snap.size);
+alert("Collection : " + type + "\nDocuments trouvés : " + snap.size);
         if (snap.empty) {
             messageVide.style.display = "block";
             return;
