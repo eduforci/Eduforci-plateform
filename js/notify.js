@@ -76,14 +76,17 @@
     position:fixed;
     top:20px;
     right:20px;
+    left:20px;
     z-index:999999;
     display:flex;
     flex-direction:column;
     gap:12px;
-    width:min(380px,calc(100vw - 40px));
-    max-width:min(380px,calc(100vw - 40px));
+    width:calc(100% - 40px);
+    max-width:450px;
+    margin:auto;
     font-family:'Poppins',sans-serif;
 }
+    
 @media (max-width:480px){
     #${CONTAINER_ID}{
         top:14px;
@@ -109,6 +112,8 @@
     pointer-events:auto;
     width:100%;
     box-sizing:border-box;
+    max-height:70vh;
+    overflow-y:auto;
 }
 .eduforci-toast.sortie{
     animation:eduforciToastOut .3s ease forwards;
