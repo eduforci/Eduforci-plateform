@@ -99,6 +99,9 @@ background:#0d2850;
 
 <button type="submit">Se connecter</button>
     <div style="text-align:center;margin-top:15px;">
+    <a href="#" id="forgotPassword">Mot de passe oublié ?</a>
+    </div>
+    <div style="text-align:center;margin-top:15px;">
     <a href="#" id="forgotPassword" style="text-decoration:none;color:#153A73;font-weight:500;">
         Mot de passe oublié ?
     </a>
@@ -108,13 +111,10 @@ background:#0d2850;
 
 <script type="module">
 
-import { auth, db } from "./js/firebase.js";
 import {
-    signInWithEmailAndPassword,
-    sendPasswordResetEmail,
-    signOut
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+  connexionAdmin,
+  motDePasseOublie
+} from "./js/auth.js";
 
 const form = document.getElementById("formConnexionAdmin");
 
@@ -122,30 +122,12 @@ form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
-    try {
-
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        const adminSnap = await getDoc(doc(db, "admins", user.uid));
-
-        if (!adminSnap.exists()) {
-            await signOut(auth);
-            alert("Accès refusé : ce compte n'a pas les droits administrateur.");
-            return;
-        }
-
-        window.location.href = "dashboard-admin.html";
-
-    } catch (error) {
-        alert(error.code + "\n\n" + error.message);
-    }
+    await connexionAdmin(email, password);
 
 });
-
     document.getElementById("forgotPassword").addEventListener("click", async (e) => {
 
     e.preventDefault();
@@ -168,6 +150,20 @@ form.addEventListener("submit", async (e) => {
         alert(error.code + "\n\n" + error.message);
 
     }
+
+});
+    document.getElementById("forgotPassword").addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        alert("Veuillez saisir votre adresse e-mail.");
+        return;
+    }
+
+    await motDePasseOublie(email);
 
 });
 </script>
