@@ -3,6 +3,7 @@ import { auth, db } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
@@ -74,9 +75,12 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
 
     });
 
-    alert("Compte Parent créé avec succès !");
+    await sendEmailVerification(user);
+    await signOut(auth);
 
-    window.location.href = "dashboard-parent.html";
+    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu (pensez à vérifier vos spams) avant de vous connecter.");
+
+    window.location.href = "connexion-parent.html";
 
   } catch (error) {
 
@@ -101,6 +105,23 @@ async function connexionParent(email, motDePasse) {
     );
 
     const user = userCredential.user;
+
+    if (!user.emailVerified) {
+
+      try {
+        await sendEmailVerification(user);
+      } catch (erreurEnvoi) {
+        // On ignore un éventuel blocage anti-spam de Firebase (trop de tentatives) :
+        // le message ci-dessous reste valable même si le renvoi échoue.
+      }
+
+      await signOut(auth);
+
+      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter (pensez à vérifier vos spams).");
+
+      return;
+
+    }
 
     const parentSnap = await getDoc(doc(db, "parents", user.uid));
 
@@ -191,9 +212,12 @@ disponibilite: "Disponible",
 
 });
 
-    alert("Compte Enseignant créé avec succès !");
+    await sendEmailVerification(user);
+    await signOut(auth);
 
-    window.location.href = "dashboard-enseignant.html";
+    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu (pensez à vérifier vos spams) avant de vous connecter.");
+
+    window.location.href = "connexion-enseignant.html";
 
   } catch (error) {
 
@@ -217,6 +241,20 @@ async function connexionEnseignant(email, motDePasse) {
     );
 
     const user = userCredential.user;
+
+    if (!user.emailVerified) {
+
+      try {
+        await sendEmailVerification(user);
+      } catch (erreurEnvoi) {}
+
+      await signOut(auth);
+
+      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter (pensez à vérifier vos spams).");
+
+      return;
+
+    }
 
     const enseignantSnap = await getDoc(doc(db, "enseignants", user.uid));
 
@@ -289,9 +327,12 @@ async function creerCompteEtablissement(
 
     });
 
-    alert("Compte Établissement créé avec succès !");
+    await sendEmailVerification(user);
+    await signOut(auth);
 
-    window.location.href = "dashboard-etablissement.html";
+    alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu (pensez à vérifier vos spams) avant de vous connecter.");
+
+    window.location.href = "connexion-etablissement.html";
 
   } catch (error) {
 
@@ -316,6 +357,20 @@ async function connexionEtablissement(email, motDePasse) {
     );
 
     const user = userCredential.user;
+
+    if (!user.emailVerified) {
+
+      try {
+        await sendEmailVerification(user);
+      } catch (erreurEnvoi) {}
+
+      await signOut(auth);
+
+      alert("Votre adresse e-mail n'est pas encore confirmée. Un lien de confirmation vient de vous être envoyé à " + email + ". Merci de cliquer dessus avant de vous connecter (pensez à vérifier vos spams).");
+
+      return;
+
+    }
 
     const etablissementSnap = await getDoc(doc(db, "etablissements", user.uid));
 
@@ -370,3 +425,4 @@ export {
   connexionEtablissement,
   deconnexion
 };
+      
