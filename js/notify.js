@@ -132,12 +132,14 @@
     margin-top:1px;
 }
 .eduforci-toast .texte{
-    flex:1;
-    min-width:0;
-    font-size:14.5px;
-    line-height:1.45;
-    white-space:pre-line;
-    word-break:break-word;
+    flex:1 !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:200px !important;
+    display:block !important;
+    white-space:normal !important;
+    word-break:normal !important;
+    overflow-wrap:break-word !important;
 }
 .eduforci-toast .fermer{
     background:none;
