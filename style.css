@@ -411,7 +411,7 @@ margin-bottom:40px;
 
 .teachers-preview-title h2{
 
-color:#153A73;
+color:#FDB813;
 
 font-size:32px;
 
@@ -421,7 +421,7 @@ margin-bottom:10px;
 
 .teachers-preview-title p{
 
-color:#666;
+color:#0B63F6;
 
 }
 
@@ -536,6 +536,51 @@ color:#555;
 margin-bottom:6px;
 
 }
+
+.teacher-badges{
+
+display:flex;
+
+flex-wrap:wrap;
+
+justify-content:center;
+
+gap:8px;
+
+margin:6px 0 16px;
+
+}
+
+.teacher-badges .badge-item{
+
+display:inline-flex;
+
+align-items:center;
+
+gap:6px;
+
+padding:6px 13px;
+
+border-radius:20px;
+
+font-size:12.5px;
+
+font-weight:600;
+
+white-space:nowrap;
+
+}
+
+.teacher-badges .badge-item i{
+
+font-size:11px;
+
+}
+
+.badge-matiere{background:#eaf1ff;color:#0B63F6;}
+.badge-lieu{background:#eafaf0;color:#1f8a3d;}
+.badge-tarif{background:#fff4e0;color:#b9720b;}
+.badge-avis{background:#fff9e6;color:#b8860b;}
 
 .teacher-card p i{
 

@@ -286,10 +286,12 @@ function afficherEnseignants(liste_a_afficher) {
             <div class="avatar-circle">${prof.photo ? `<img src="${prof.photo}" alt="${prof.nom || 'Enseignant'}">` : initiales}</div>
             <h2>${prof.nom || "Enseignant"}</h2>
             <span class="badge ${prof.verification ? "" : "attente"}">${prof.verification ? "✔ Profil vérifié" : "⏳ En attente de vérification"}</span>
-            <p><strong>📚 Matière :</strong> ${prof.matiere || "-"}</p>
-            <p><strong>📍 Ville :</strong> ${prof.ville || "-"}</p>
+            <div class="teacher-badges">
+                <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${prof.matiere || "-"}</span>
+                <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${prof.ville || "-"}</span>
+                <span class="badge-item badge-tarif"><i class="fas fa-coins"></i> ${formaterTarif(prof.tarif)}</span>
+            </div>
             <p><strong>🎓 Niveau :</strong> ${prof.niveau || "-"}</p>
-            <p><strong>💰 Tarif :</strong> ${formaterTarif(prof.tarif)}</p>
             <p style="color:${prof.disponible ? "#28a745" : "#d93025"};"><strong>${prof.disponible ? "🟢 Disponible" : "🔴 Non disponible"}</strong></p>
             <button onclick="location.href='profil-enseignant.html?id=${docId}'">Voir le profil</button>
         `;

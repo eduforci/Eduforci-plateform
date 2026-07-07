@@ -120,6 +120,16 @@ input:checked + .slider:before{transform:translateX(26px);}
 <label>Années d'expérience</label>
 <input id="experience" type="number" min="0" placeholder="Ex : 3">
 
+<label>Tarif horaire</label>
+<div style="display:flex;align-items:center;gap:10px;">
+<input id="tarif" type="number" min="0" placeholder="Ex : 3000" style="flex:1;">
+<span style="font-size:14px;color:#555;white-space:nowrap;">FCFA / heure</span>
+</div>
+<label style="display:flex;align-items:center;gap:10px;font-weight:500;margin-top:10px;color:#333;">
+<input type="checkbox" id="tarifADiscuter" style="width:auto;">
+Je préfère laisser "Tarif à discuter" (je fixerai le prix avec chaque parent)
+</label>
+
 <div class="statut-row">
 <div>
 <div class="label-statut">🟢 Statut de disponibilité</div>
@@ -188,6 +198,10 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("matiere").value = data.matiere || "";
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
+        const tarifActuel = Number(data.tarif) || 0;
+        document.getElementById("tarifADiscuter").checked = tarifActuel <= 0;
+        document.getElementById("tarif").value = tarifActuel > 0 ? tarifActuel : "";
+        document.getElementById("tarif").disabled = tarifActuel <= 0;
         document.getElementById("numeroWave").value = data.numeroWave || "";
         document.getElementById("toggleDisponible").checked = data.disponible !== false;
         afficherAvatar(data.photo || "");
@@ -195,6 +209,8 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         document.getElementById("email").value = user.email || "";
         document.getElementById("toggleDisponible").checked = true;
+        document.getElementById("tarifADiscuter").checked = true;
+        document.getElementById("tarif").disabled = true;
         afficherAvatar("");
         mettreAJourEtatTexte();
     }
@@ -214,6 +230,12 @@ function mettreAJourEtatTexte() {
 }
 
 document.getElementById("toggleDisponible").addEventListener("change", mettreAJourEtatTexte);
+
+document.getElementById("tarifADiscuter").addEventListener("change", function () {
+    const champTarif = document.getElementById("tarif");
+    champTarif.disabled = this.checked;
+    if (this.checked) champTarif.value = "";
+});
 
 document.getElementById("btnChangerPhoto").addEventListener("click", () => {
     document.getElementById("inputPhoto").click();
@@ -283,6 +305,15 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
 
     if (!uid) return;
 
+    const discuterTarif = document.getElementById("tarifADiscuter").checked;
+    const tarifSaisi = Number(document.getElementById("tarif").value) || 0;
+
+    if (!discuterTarif && tarifSaisi <= 0) {
+        msgErr.textContent = "Merci d'indiquer un tarif ou de cocher \"Tarif à discuter\".";
+        msgErr.style.display = "block";
+        return;
+    }
+
     try {
 
         nomActuel = document.getElementById("nom").value.trim();
@@ -293,6 +324,7 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
             matiere: document.getElementById("matiere").value.trim(),
             niveau: document.getElementById("niveau").value,
             experience: document.getElementById("experience").value,
+            tarif: discuterTarif ? 0 : tarifSaisi,
             numeroWave: document.getElementById("numeroWave").value.trim(),
             disponible: document.getElementById("toggleDisponible").checked
         }, { merge: true });

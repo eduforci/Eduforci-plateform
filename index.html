@@ -347,10 +347,12 @@ async function chargerEnseignantsAccueil() {
                 <div class="avatar-circle">${prof.photo ? `<img src="${prof.photo}" alt="${prof.nom || 'Enseignant'}">` : initiales}</div>
                 <h4>${prof.nom || "Enseignant"}</h4>
                 <span class="badge">${prof.verification ? "✔ Vérifié" : "⏳ En attente"}</span>
-                <p><i class="fas fa-book"></i> ${prof.matiere || "-"}</p>
-                <p><i class="fas fa-map-marker-alt"></i> ${prof.ville || "-"}</p>
-                <p><i class="fas fa-coins"></i> ${tarif}</p>
-                <p class="rating"><i class="fas fa-star"></i> ${note}</p>
+                <div class="teacher-badges">
+                    <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${prof.matiere || "-"}</span>
+                    <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${prof.ville || "-"}</span>
+                    <span class="badge-item badge-tarif"><i class="fas fa-coins"></i> ${tarif}</span>
+                    <span class="badge-item badge-avis"><i class="fas fa-star"></i> ${note}</span>
+                </div>
                 <a class="btn-teacher" href="profil-enseignant.html?id=${prof.id}">Voir le profil</a>
                 <a class="btn-whatsapp" target="_blank" rel="noopener" href="${construireLienWhatsapp(prof.nom || "cet enseignant", prof.matiere || "")}">
                 <i class="fab fa-whatsapp"></i> Réserver via WhatsApp
