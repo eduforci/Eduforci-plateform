@@ -110,19 +110,26 @@ width:90%;
 max-width:1100px;
 
 color:#fff;
-
 }
-
 .hero h1{
-
-font-size:58px;
-
-font-weight:700;
-
-margin-bottom:20px;
-
+    font-size:58px;
+    font-weight:700;
+    margin-bottom:20px;
+    color:#FFFFFF;
+    text-shadow:0 3px 10px rgba(0,0,0,.4);
+    animation:flotter 3s ease-in-out infinite;
 }
-
+@keyframes flotter{
+    0%{
+        transform:translateY(0);
+    }
+    50%{
+        transform:translateY(-8px);
+    }
+    100%{
+        transform:translateY(0);
+    }
+}
 .hero p{
     font-size:22px;
     color:#FDB813;
