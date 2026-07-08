@@ -100,7 +100,7 @@ let tousLesEnseignants = [];
 const NUMERO_WHATSAPP = "2250747327309";
 
 function construireLienWhatsapp(ens) {
-    const tarif = Number(ens.tarif) > 0 ? Number(ens.tarif).toLocaleString("fr-FR") + " FCFA/h" : "tarif à discuter";
+    const tarif = Number(ens.tarif) > 0 ? Number(ens.tarif).toLocaleString("fr-FR") + " FCFA/" + (ens.tarifType === "mois" ? "mois" : "h") : "tarif à discuter";
     const texte = `Bonjour, je représente l'établissement ${etablissementNom} et je suis intéressé(e) par ${ens.nom || "cet enseignant"} (${ens.matiere || "-"}), basé à ${ens.ville || "-"} (Réf : ${ens.identifiant || "-"}). Tarif indiqué : ${tarif}. Pouvez-vous m'aider à le/la réserver ?`;
     return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(texte)}`;
 }
@@ -119,7 +119,7 @@ function afficherListe(liste) {
 
         const initiales = (ens.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
-        const tarif = Number(ens.tarif) > 0 ? Number(ens.tarif).toLocaleString("fr-FR") + " FCFA/h" : "Tarif à discuter";
+        const tarif = Number(ens.tarif) > 0 ? Number(ens.tarif).toLocaleString("fr-FR") + " FCFA/" + (ens.tarifType === "mois" ? "mois" : "h") : "Tarif à discuter";
 
         const card = document.createElement("div");
         card.className = "teacher-card";

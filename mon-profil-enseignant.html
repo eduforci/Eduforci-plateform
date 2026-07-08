@@ -122,15 +122,33 @@ input:checked + .slider:before{transform:translateX(26px);}
 <label>Années d'expérience</label>
 <input id="experience" type="number" min="0" placeholder="Ex : 3">
 
-<label>Tarif horaire</label>
-<div style="display:flex;align-items:center;gap:10px;">
-<input id="tarif" type="number" min="0" placeholder="Ex : 3000" style="flex:1;">
+<label>Tarif</label>
+<div style="display:flex;flex-direction:column;gap:10px;">
+
+<label style="display:flex;align-items:center;gap:10px;font-weight:500;margin:0;color:#333;">
+<input type="radio" name="tarifType" id="tarifTypeHeure" value="heure" style="width:auto;">
+<span style="flex:1;">Tarif à l'heure</span>
+</label>
+<div id="zoneTarifHeure" style="display:flex;align-items:center;gap:10px;margin-left:28px;">
+<input id="tarifHeure" type="number" min="0" placeholder="Ex : 3000" style="flex:1;">
 <span style="font-size:14px;color:#555;white-space:nowrap;">FCFA / heure</span>
 </div>
-<label style="display:flex;align-items:center;gap:10px;font-weight:500;margin-top:10px;color:#333;">
-<input type="checkbox" id="tarifADiscuter" style="width:auto;">
-Je préfère laisser "Tarif à discuter" (je fixerai le prix avec chaque parent)
+
+<label style="display:flex;align-items:center;gap:10px;font-weight:500;margin:0;color:#333;">
+<input type="radio" name="tarifType" id="tarifTypeMois" value="mois" style="width:auto;">
+<span style="flex:1;">Tarif au mois</span>
 </label>
+<div id="zoneTarifMois" style="display:flex;align-items:center;gap:10px;margin-left:28px;">
+<input id="tarifMois" type="number" min="0" placeholder="Ex : 80000" style="flex:1;">
+<span style="font-size:14px;color:#555;white-space:nowrap;">FCFA / mois</span>
+</div>
+
+<label style="display:flex;align-items:center;gap:10px;font-weight:500;margin:0;color:#333;">
+<input type="radio" name="tarifType" id="tarifTypeDiscuter" value="discuter" style="width:auto;">
+Tarif à discuter (je fixerai le prix avec chaque parent/établissement)
+</label>
+
+</div>
 
 <div class="statut-row">
 <div>
@@ -201,9 +219,13 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
         const tarifActuel = Number(data.tarif) || 0;
-        document.getElementById("tarifADiscuter").checked = tarifActuel <= 0;
-        document.getElementById("tarif").value = tarifActuel > 0 ? tarifActuel : "";
-        document.getElementById("tarif").disabled = tarifActuel <= 0;
+        const tarifType = data.tarifType || (tarifActuel > 0 ? "heure" : "discuter");
+        document.getElementById("tarifTypeHeure").checked = tarifType === "heure";
+        document.getElementById("tarifTypeMois").checked = tarifType === "mois";
+        document.getElementById("tarifTypeDiscuter").checked = tarifType === "discuter";
+        document.getElementById("tarifHeure").value = tarifType === "heure" && tarifActuel > 0 ? tarifActuel : "";
+        document.getElementById("tarifMois").value = tarifType === "mois" && tarifActuel > 0 ? tarifActuel : "";
+        mettreAJourZonesTarif();
         document.getElementById("numeroWave").value = data.numeroWave || "";
         document.getElementById("toggleDisponible").checked = data.disponible !== false;
         afficherAvatar(data.photo || "");
@@ -211,8 +233,8 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         document.getElementById("email").value = user.email || "";
         document.getElementById("toggleDisponible").checked = true;
-        document.getElementById("tarifADiscuter").checked = true;
-        document.getElementById("tarif").disabled = true;
+        document.getElementById("tarifTypeDiscuter").checked = true;
+        mettreAJourZonesTarif();
         afficherAvatar("");
         mettreAJourEtatTexte();
     }
@@ -233,10 +255,16 @@ function mettreAJourEtatTexte() {
 
 document.getElementById("toggleDisponible").addEventListener("change", mettreAJourEtatTexte);
 
-document.getElementById("tarifADiscuter").addEventListener("change", function () {
-    const champTarif = document.getElementById("tarif");
-    champTarif.disabled = this.checked;
-    if (this.checked) champTarif.value = "";
+function mettreAJourZonesTarif() {
+    const type = document.querySelector('input[name="tarifType"]:checked')?.value || "discuter";
+    document.getElementById("zoneTarifHeure").style.display = type === "heure" ? "flex" : "none";
+    document.getElementById("zoneTarifMois").style.display = type === "mois" ? "flex" : "none";
+    document.getElementById("tarifHeure").disabled = type !== "heure";
+    document.getElementById("tarifMois").disabled = type !== "mois";
+}
+
+document.querySelectorAll('input[name="tarifType"]').forEach((radio) => {
+    radio.addEventListener("change", mettreAJourZonesTarif);
 });
 
 document.getElementById("btnChangerPhoto").addEventListener("click", () => {
@@ -307,14 +335,22 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
 
     if (!uid) return;
 
-    const discuterTarif = document.getElementById("tarifADiscuter").checked;
-    const tarifSaisi = Number(document.getElementById("tarif").value) || 0;
+    const typeTarif = document.querySelector('input[name="tarifType"]:checked')?.value || "discuter";
+    const tarifHeureSaisi = Number(document.getElementById("tarifHeure").value) || 0;
+    const tarifMoisSaisi = Number(document.getElementById("tarifMois").value) || 0;
 
-    if (!discuterTarif && tarifSaisi <= 0) {
-        msgErr.textContent = "Merci d'indiquer un tarif ou de cocher \"Tarif à discuter\".";
+    if (typeTarif === "heure" && tarifHeureSaisi <= 0) {
+        msgErr.textContent = "Merci d'indiquer un tarif horaire ou de choisir une autre option.";
         msgErr.style.display = "block";
         return;
     }
+    if (typeTarif === "mois" && tarifMoisSaisi <= 0) {
+        msgErr.textContent = "Merci d'indiquer un tarif mensuel ou de choisir une autre option.";
+        msgErr.style.display = "block";
+        return;
+    }
+
+    const tarifFinal = typeTarif === "heure" ? tarifHeureSaisi : (typeTarif === "mois" ? tarifMoisSaisi : 0);
 
     try {
 
@@ -326,7 +362,8 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
             matiere: document.getElementById("matiere").value.trim(),
             niveau: document.getElementById("niveau").value,
             experience: document.getElementById("experience").value,
-            tarif: discuterTarif ? 0 : tarifSaisi,
+            tarif: tarifFinal,
+            tarifType: typeTarif,
             numeroWave: document.getElementById("numeroWave").value.trim(),
             disponible: document.getElementById("toggleDisponible").checked
         }, { merge: true });

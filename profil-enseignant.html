@@ -289,10 +289,10 @@ let ENSEIGNANT_NOM = null;
 let enseignant = null;
 let parentConnecte = null;
 
-function formaterTarif(tarif) {
+function formaterTarif(tarif, tarifType) {
     const nombre = Number(tarif);
     if (!nombre || nombre <= 0) return "Tarif à discuter";
-    return nombre.toLocaleString("fr-FR") + " FCFA / heure";
+    return nombre.toLocaleString("fr-FR") + " FCFA / " + (tarifType === "mois" ? "mois" : "heure");
 }
 
 function construireDisponibiliteHTML() {
@@ -371,7 +371,7 @@ async function actualiserBoutonFavori() {
 
 function construireLienWhatsapp(prof, docId) {
     const NUMERO_WHATSAPP = "2250747327309";
-    const texte = `Bonjour, je suis intéressé(e) par les cours de ${prof.nom || "cet enseignant"} (${prof.matiere || "-"}), basé à ${prof.ville || "-"} (Réf : ${prof.identifiant || docId}). Tarif indiqué : ${formaterTarif(prof.tarif)}. Pouvez-vous m'aider à réserver ?`;
+    const texte = `Bonjour, je suis intéressé(e) par les cours de ${prof.nom || "cet enseignant"} (${prof.matiere || "-"}), basé à ${prof.ville || "-"} (Réf : ${prof.identifiant || docId}). Tarif indiqué : ${formaterTarif(prof.tarif, prof.tarifType)}. Pouvez-vous m'aider à réserver ?`;
     return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(texte)}`;
 }
 
@@ -505,7 +505,7 @@ async function chargerProfil() {
 
     <p><strong>⭐ Note :</strong> <span id="zoneNote">...</span></p>
 
-    <p><strong>💰 Tarif :</strong> ${formaterTarif(enseignant.tarif)}</p>
+    <p><strong>💰 Tarif :</strong> ${formaterTarif(enseignant.tarif, enseignant.tarifType)}</p>
 
     <p><strong>📅 Statut :</strong> <span style="color:${enseignant.disponible !== false ? "#28a745" : "#d93025"};font-weight:600;">
 ${enseignant.disponible !== false

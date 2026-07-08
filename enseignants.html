@@ -258,10 +258,10 @@ import { collection, query, where, getDocs } from "https://www.gstatic.com/fireb
 
 const liste = document.getElementById("listeEnseignants");
 
-function formaterTarif(tarif) {
+function formaterTarif(tarif, tarifType) {
     const nombre = Number(tarif);
     if (!nombre || nombre <= 0) return "Tarif à discuter";
-    return nombre.toLocaleString("fr-FR") + " FCFA / heure";
+    return nombre.toLocaleString("fr-FR") + " FCFA / " + (tarifType === "mois" ? "mois" : "heure");
 }
 
 function afficherEnseignants(liste_a_afficher) {
@@ -289,7 +289,7 @@ function afficherEnseignants(liste_a_afficher) {
             <div class="teacher-badges">
                 <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${prof.matiere || "-"}</span>
                 <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${prof.ville || "-"}</span>
-                <span class="badge-item badge-tarif"><i class="fas fa-coins"></i> ${formaterTarif(prof.tarif)}</span>
+                <span class="badge-item badge-tarif"><i class="fas fa-coins"></i> ${formaterTarif(prof.tarif, prof.tarifType)}</span>
             </div>
             <p><strong>🎓 Niveau :</strong> ${prof.niveau || "-"}</p>
             <p style="color:${prof.disponible !== false ? "#28a745" : "#d93025"};"><strong>${prof.disponible !== false ? "🟢 Disponible" : "🔴 Non disponible"}</strong></p>

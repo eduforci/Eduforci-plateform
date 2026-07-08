@@ -283,10 +283,10 @@ const teacherDocId = params.get("id");
 let parentConnecte = null;
 let enseignant = null;
 
-function formaterTarif(tarif) {
+function formaterTarif(tarif, tarifType) {
     const nombre = Number(tarif);
     if (!nombre || nombre <= 0) return "Tarif à discuter";
-    return nombre.toLocaleString("fr-FR") + " FCFA / heure";
+    return nombre.toLocaleString("fr-FR") + " FCFA / " + (tarifType === "mois" ? "mois" : "heure");
 }
 
 async function chargerEnseignant() {
@@ -320,13 +320,13 @@ async function chargerEnseignant() {
         <p><strong>ID :</strong> ${enseignant.identifiant || "-"}</p>
         <p>📚 ${enseignant.matiere || "-"}</p>
         <p>📍 ${enseignant.ville || "-"}</p>
-        <p>💰 ${formaterTarif(enseignant.tarif)}</p>
+        <p>💰 ${formaterTarif(enseignant.tarif, enseignant.tarifType)}</p>
         <p style="color:${enseignant.disponible ? "green" : "#d93025"};"><strong>${enseignant.disponible ? "🟢 Disponible" : "🔴 Non disponible actuellement"}</strong></p>
     `;
 
     document.getElementById("recapNom").textContent = enseignant.nom || "-";
     document.getElementById("recapMatiere").textContent = enseignant.matiere || "-";
-    document.getElementById("recapTarif").textContent = formaterTarif(enseignant.tarif);
+    document.getElementById("recapTarif").textContent = formaterTarif(enseignant.tarif, enseignant.tarifType);
 
     document.getElementById("carteFormulaire").style.display = "block";
 
@@ -376,7 +376,7 @@ document.getElementById("btnConfirmer").addEventListener("click", async () => {
             enseignantNom: enseignant.nom || "-",
             enseignantId: enseignant.identifiant || "-",
             matiere: enseignant.matiere || "-",
-            tarif: formaterTarif(enseignant.tarif),
+            tarif: formaterTarif(enseignant.tarif, enseignant.tarifType),
             date: date,
             heure: heure,
             mode: mode,

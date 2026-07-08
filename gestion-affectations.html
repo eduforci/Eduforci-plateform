@@ -340,9 +340,11 @@ async function proposerEnseignant(missionId, ensId, ensNom, ensMatiere) {
         if (proposes.some(p => p.id === ensId)) return;
 
         proposes.push({ id: ensId, nom: ensNom, matiere: ensMatiere, reponse: "en_attente" });
+        const proposesIds = proposes.map(p => p.id);
 
         await updateDoc(doc(db, "missions", missionId), {
             enseignantsProposes: proposes,
+            enseignantsProposesIds: proposesIds,
             statut: "proposition_envoyee"
         });
 

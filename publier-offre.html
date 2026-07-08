@@ -117,6 +117,11 @@ button:hover{
 background:#084ec7;
 }
 
+.matieres-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:5px;}
+.matiere-case{display:flex;align-items:center;gap:8px;background:#f8f9fc;border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:500;color:#333;cursor:pointer;}
+.matiere-case input{width:auto;padding:0;}
+.matiere-case.tout{grid-column:1/-1;background:#eaf1ff;color:#0B63F6;font-weight:600;}
+
 </style>
 
 </head>
@@ -161,15 +166,30 @@ background:#084ec7;
 <input type="text" id="poste" placeholder="Ex : Professeur de Mathématiques" required>
 
 <label>Matière</label>
-<input type="text" id="matiere" placeholder="Ex : Mathématiques" required>
+<div class="matieres-grille" id="matieresGrille">
+<label class="matiere-case tout"><input type="checkbox" id="matiereTout" value="__tout__"> Toutes les matières</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Mathématiques"> Mathématiques</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Anglais"> Anglais</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="PC"> PC</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="SVT"> SVT</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Français"> Français</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="EPS"> EPS</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="EDHC"> EDHC</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Musique"> Musique</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Arts plastiques"> Arts plastiques</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Philosophie"> Philosophie</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Allemand"> Allemand</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Espagnol"> Espagnol</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="HG"> HG</label>
+</div>
 
 <label>Niveau</label>
 <select id="niveau" required>
 <option value="">Choisir...</option>
 <option>Primaire</option>
-<option>Collège</option>
-<option>Lycée</option>
-<option>Université</option>
+<option>1er cycle</option>
+<option>2nd cycle</option>
+<option>Universitaire</option>
 </select>
 
 <label>Ville</label>
@@ -178,13 +198,16 @@ background:#084ec7;
 <label>Type de contrat</label>
 <select id="typeContrat" required>
 <option value="">Choisir...</option>
-<option>Temps plein</option>
-<option>Temps partiel</option>
+<option>CDD</option>
+<option>CDI</option>
 <option>Vacataire</option>
 </select>
 
 <label>Rémunération proposée</label>
-<input type="text" id="remuneration" placeholder="Ex : 150 000 FCFA / mois">
+<div style="display:flex;align-items:center;gap:10px;">
+<input type="number" id="remuneration" min="0" placeholder="Ex : 150000" style="flex:1;">
+<span style="font-size:14px;color:#555;white-space:nowrap;">FCFA / mois</span>
+</div>
 
 <label>Description du poste</label>
 <textarea id="description" placeholder="Décrivez les missions, exigences, horaires..." required></textarea>
@@ -202,6 +225,26 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/f
 import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let etablissementConnecte = null;
+
+const TOUTES_LES_MATIERES = ["Mathématiques","Anglais","PC","SVT","Français","EPS","EDHC","Musique","Arts plastiques","Philosophie","Allemand","Espagnol","HG"];
+
+const caseTout = document.getElementById("matiereTout");
+const casesMatiere = document.querySelectorAll(".matiere-item");
+
+caseTout.addEventListener("change", () => {
+    casesMatiere.forEach(c => c.checked = caseTout.checked);
+});
+
+casesMatiere.forEach(c => {
+    c.addEventListener("change", () => {
+        caseTout.checked = Array.from(casesMatiere).every(x => x.checked);
+    });
+});
+
+function matieresSelectionnees() {
+    if (caseTout.checked) return TOUTES_LES_MATIERES.slice();
+    return Array.from(casesMatiere).filter(c => c.checked).map(c => c.value);
+}
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -222,15 +265,17 @@ document.getElementById("btnPublier").addEventListener("click", async () => {
     }
 
     const poste = document.getElementById("poste").value.trim();
-    const matiere = document.getElementById("matiere").value.trim();
+    const matieres = matieresSelectionnees();
+    const matiere = matieres.join(", ");
     const niveau = document.getElementById("niveau").value;
     const ville = document.getElementById("ville").value.trim();
     const typeContrat = document.getElementById("typeContrat").value;
-    const remuneration = document.getElementById("remuneration").value.trim();
+    const montantRemuneration = document.getElementById("remuneration").value.trim();
+    const remuneration = montantRemuneration ? `${Number(montantRemuneration).toLocaleString("fr-FR")} FCFA / mois` : "";
     const description = document.getElementById("description").value.trim();
 
-    if (!poste || !matiere || !niveau || !ville || !typeContrat || !description) {
-        alert("Merci de remplir tous les champs obligatoires.");
+    if (!poste || matieres.length === 0 || !niveau || !ville || !typeContrat || !description) {
+        alert("Merci de remplir tous les champs obligatoires (dont au moins une matière).");
         return;
     }
 
@@ -244,6 +289,7 @@ document.getElementById("btnPublier").addEventListener("click", async () => {
             etablissementNom: etabNom,
             poste: poste,
             matiere: matiere,
+            matieres: matieres,
             niveau: niveau,
             ville: ville,
             typeContrat: typeContrat,

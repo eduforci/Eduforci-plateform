@@ -38,6 +38,11 @@ button:hover{background:#084ec7;}
 
 .note-info{background:#eaf1ff;color:#0B63F6;padding:14px 18px;border-radius:10px;font-size:13.5px;margin-bottom:20px;}
 
+.matieres-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:5px;}
+.matiere-case{display:flex;align-items:center;gap:8px;background:#f8f9fc;border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:500;color:#333;cursor:pointer;}
+.matiere-case input{width:auto;padding:0;}
+.matiere-case.tout{grid-column:1/-1;background:#eaf1ff;color:#0B63F6;font-weight:600;}
+
 </style>
 
 </head>
@@ -79,15 +84,30 @@ button:hover{background:#084ec7;}
 <div class="note-info">🔒 Par sécurité, aucune coordonnée n'est jamais échangée directement entre vous et l'enseignant : c'est EDUFORCI qui gère toute la mise en relation.</div>
 
 <label>Matière</label>
-<input type="text" id="matiere" placeholder="Ex : Mathématiques" required>
+<div class="matieres-grille" id="matieresGrille">
+<label class="matiere-case tout"><input type="checkbox" id="matiereTout" value="__tout__"> Toutes les matières</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Mathématiques"> Mathématiques</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Anglais"> Anglais</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="PC"> PC</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="SVT"> SVT</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Français"> Français</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="EPS"> EPS</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="EDHC"> EDHC</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Musique"> Musique</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Arts plastiques"> Arts plastiques</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Philosophie"> Philosophie</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Allemand"> Allemand</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="Espagnol"> Espagnol</label>
+<label class="matiere-case"><input type="checkbox" class="matiere-item" value="HG"> HG</label>
+</div>
 
 <label>Niveau</label>
 <select id="niveau" required>
 <option value="">Choisir...</option>
 <option>Primaire</option>
-<option>Collège</option>
-<option>Lycée</option>
-<option>Université</option>
+<option>1er cycle</option>
+<option>2nd cycle</option>
+<option>Universitaire</option>
 </select>
 
 <label>Commune / Ville</label>
@@ -97,7 +117,10 @@ button:hover{background:#084ec7;}
 <input type="text" id="nombreHeures" placeholder="Ex : 6h/semaine">
 
 <label>Salaire proposé</label>
-<input type="text" id="remuneration" placeholder="Ex : 150 000 FCFA / mois">
+<div style="display:flex;align-items:center;gap:10px;">
+<input type="number" id="remuneration" min="0" placeholder="Ex : 150000" style="flex:1;">
+<span style="font-size:14px;color:#555;white-space:nowrap;">FCFA / mois</span>
+</div>
 
 <label>Date souhaitée de début</label>
 <input type="date" id="dateSouhaitee">
@@ -119,6 +142,26 @@ import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebas
 
 let etablissementConnecte = null;
 
+const TOUTES_LES_MATIERES = ["Mathématiques","Anglais","PC","SVT","Français","EPS","EDHC","Musique","Arts plastiques","Philosophie","Allemand","Espagnol","HG"];
+
+const caseTout = document.getElementById("matiereTout");
+const casesMatiere = document.querySelectorAll(".matiere-item");
+
+caseTout.addEventListener("change", () => {
+    casesMatiere.forEach(c => c.checked = caseTout.checked);
+});
+
+casesMatiere.forEach(c => {
+    c.addEventListener("change", () => {
+        caseTout.checked = Array.from(casesMatiere).every(x => x.checked);
+    });
+});
+
+function matieresSelectionnees() {
+    if (caseTout.checked) return TOUTES_LES_MATIERES.slice();
+    return Array.from(casesMatiere).filter(c => c.checked).map(c => c.value);
+}
+
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -137,15 +180,17 @@ document.getElementById("btnEnvoyer").addEventListener("click", async () => {
         return;
     }
 
-    const matiere = document.getElementById("matiere").value.trim();
+    const matieres = matieresSelectionnees();
+    const matiere = matieres.join(", ");
     const niveau = document.getElementById("niveau").value;
     const commune = document.getElementById("commune").value.trim();
     const nombreHeures = document.getElementById("nombreHeures").value.trim();
-    const remuneration = document.getElementById("remuneration").value.trim();
+    const montantRemuneration = document.getElementById("remuneration").value.trim();
+    const remuneration = montantRemuneration ? `${Number(montantRemuneration).toLocaleString("fr-FR")} FCFA / mois` : "";
     const dateSouhaitee = document.getElementById("dateSouhaitee").value;
     const description = document.getElementById("description").value.trim();
 
-    if (!matiere || !niveau || !commune) {
+    if (matieres.length === 0 || !niveau || !commune) {
         alert("Merci de remplir au moins la matière, le niveau et la commune.");
         return;
     }
@@ -160,6 +205,7 @@ document.getElementById("btnEnvoyer").addEventListener("click", async () => {
             demandeurId: etablissementConnecte.uid,
             demandeurNom: etabNom,
             matiere: matiere,
+            matieres: matieres,
             niveau: niveau,
             commune: commune,
             nombreHeures: nombreHeures,
@@ -168,6 +214,7 @@ document.getElementById("btnEnvoyer").addEventListener("click", async () => {
             description: description,
             statut: "en_attente",
             enseignantsProposes: [],
+            enseignantsProposesIds: [],
             enseignantRetenuId: null,
             enseignantRetenuNom: null,
             dateCreation: new Date().toISOString()
