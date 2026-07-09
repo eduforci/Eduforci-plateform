@@ -93,15 +93,13 @@ function formaterDate(iso) {
 }
 
 let monUid = null;
-
 async function chargerMissions() {
 
     const conteneur = document.getElementById("listeMissions");
 
     try {
 
-        const q = query(collection(db, "missions"), where("enseignantsProposesIds", "array-contains", monUid));
-        const snap = await getDocs(q);
+        const snap = await getDocs(collection(db, "missions"));
 
         if (snap.empty) {
             conteneur.innerHTML = `<div class="empty">Aucune mission ne vous a été proposée pour le moment.</div>`;
