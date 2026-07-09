@@ -100,6 +100,7 @@ tr:nth-child(even){background:#f8f9fc;}
 textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px solid #ddd;border-radius:10px;font-size:14.5px;resize:vertical;margin-top:6px;}
 
 .actions-footer{padding:22px 28px;border-top:1px solid #eee;}
+.zone-resultats-test{background:#f9f7ff;border:1px solid #e6ddff;border-radius:12px;padding:16px 18px;margin-top:6px;}
 .actions-grille{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px;}
 @media (max-width:560px){.actions-grille{grid-template-columns:1fr;}}
 .btn-action{padding:14px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:white;}
@@ -210,7 +211,6 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <div class="onglet actif" data-onglet="infos">📋 Informations</div>
 <div class="onglet" data-onglet="documents">📄 Documents</div>
 <div class="onglet" data-onglet="verification">📊 Vérification</div>
-<div class="onglet" data-onglet="test">🧪 Test</div>
 <div class="onglet" data-onglet="historique">🕒 Historique</div>
 </div>
 
@@ -270,10 +270,6 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 
 </div>
 
-<div class="onglet-contenu" data-contenu="test">
-<div id="zoneTest"></div>
-</div>
-
 <div class="onglet-contenu" data-contenu="historique">
 <div id="listeHistorique"></div>
 </div>
@@ -285,6 +281,12 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <button class="btn-action btn-modifs" id="btnDemanderModifs">🟠 Demander des modifications</button>
 <button class="btn-action btn-rejeter" id="btnRejeter">🔴 Rejeter la candidature</button>
 </div>
+
+<div class="zone-resultats-test">
+<h3 style="color:#153A73;margin-top:20px;margin-bottom:10px;font-size:15px;">🧪 Déroulement du test de recrutement</h3>
+<div id="zoneTest"></div>
+</div>
+
 <button class="btn-admis" id="btnMarquerAdmis">✅ Marquer comme admis (après test réussi)</button>
 </div>
 

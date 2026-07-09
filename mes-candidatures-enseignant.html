@@ -57,6 +57,14 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .btn-modifier.btn-test{background:#7b2fd6;}
 .btn-modifier.btn-test:hover{background:#5e21a8;}
 
+.bloc-test{background:#f9f7ff;border:1px solid #e6ddff;border-radius:0 0 20px 20px;padding:26px 30px;}
+.bloc-test-titre{color:#153A73;font-weight:700;font-size:16px;margin-bottom:8px;}
+.bloc-test-texte{color:#555;font-size:14px;line-height:1.5;margin-bottom:18px;}
+.bloc-test-infos{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.bloc-test-infos div{background:white;padding:12px 18px;border-radius:12px;flex:1;min-width:90px;text-align:center;}
+.bloc-test-infos .val{color:#7b2fd6;font-weight:700;font-size:15px;}
+.bloc-test-infos .lbl{color:#888;font-size:11.5px;margin-top:2px;}
+
 .etat-vide{padding:50px 30px;text-align:center;}
 .etat-vide .emoji{font-size:44px;margin-bottom:16px;}
 .etat-vide h2{color:#153A73;margin-bottom:10px;}
@@ -195,12 +203,26 @@ function rendreDossier(c) {
             <div class="msg-admin-titre">Message de l'administrateur</div>
             <div class="msg-admin">${c.messageAdmin ? c.messageAdmin : "Aucun message pour le moment."}</div>
 
-            ${statut === "test_autorise" ? `<a href="test-enseignant.html" class="btn-modifier btn-test">🧪 Passer le test de recrutement</a>` : ""}
-
             <a href="candidature-enseignant.html" class="btn-modifier">✏️ Modifier ma candidature</a>
 
         </div>
         ${suiviHtml}
+        ${statut === "test_autorise" ? rendreBlocTest(c) : ""}
+    </div>`;
+}
+
+function rendreBlocTest(c) {
+    const matiere = (Array.isArray(c.matieres) && c.matieres[0]) || "-";
+    return `
+    <div class="bloc-test">
+        <div class="bloc-test-titre">🧪 Test de recrutement</div>
+        <p class="bloc-test-texte">Votre dossier a été validé. Vous pouvez maintenant passer le test de recrutement EDUFORCI.</p>
+        <div class="bloc-test-infos">
+            <div><div class="val">${matiere}</div><div class="lbl">Matière</div></div>
+            <div><div class="val">60 min</div><div class="lbl">Durée</div></div>
+            <div><div class="val">30</div><div class="lbl">Questions</div></div>
+        </div>
+        <a href="test-enseignant.html" class="btn-modifier btn-test">▶ Passer le test de recrutement</a>
     </div>`;
 }
 
