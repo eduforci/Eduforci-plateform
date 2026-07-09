@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma candidature | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:640px;}
+
+.card{background:white;padding:0;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;overflow:hidden;}
+
+.entete{background:#153A73;color:white;padding:26px 30px;text-align:center;}
+.entete h1{font-size:19px;letter-spacing:1px;}
+
+.corps{padding:30px;}
+
+.ligne{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #eee;}
+.ligne:last-child{border-bottom:none;}
+.ligne .cle{color:#888;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.ligne .valeur{color:#153A73;font-weight:600;text-align:right;}
+
+.badge{display:inline-block;padding:8px 16px;border-radius:30px;font-weight:700;font-size:14px;}
+.badge.brouillon{background:#fff8e1;color:#c79000;}
+.badge.soumise{background:#e7f0ff;color:#0B63F6;}
+.badge.en_verification{background:#fff4e0;color:#e08b00;}
+.badge.documents_valides{background:#e6f7ec;color:#28a745;}
+.badge.test_autorise{background:#f2e9ff;color:#7b2fd6;}
+.badge.admis{background:#e6f7ec;color:#28a745;}
+.badge.refuse{background:#fdeaea;color:#d93025;}
+
+.sep{border:none;border-top:1px solid #eee;margin:20px 0;}
+
+.docs-titre{color:#153A73;font-weight:700;margin-bottom:12px;font-size:14px;text-transform:uppercase;letter-spacing:.5px;}
+.doc-item{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:15px;color:#333;}
+
+.msg-admin-titre{color:#153A73;font-weight:700;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.5px;}
+.msg-admin{background:#f4f7fc;padding:16px;border-radius:12px;color:#333;line-height:1.5;font-size:15px;}
+
+.btn-modifier{display:block;width:100%;text-align:center;margin-top:26px;padding:15px;background:#0B63F6;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:16px;}
+.btn-modifier:hover{background:#084ec7;}
+
+.etat-vide{padding:50px 30px;text-align:center;}
+.etat-vide .emoji{font-size:44px;margin-bottom:16px;}
+.etat-vide h2{color:#153A73;margin-bottom:10px;}
+.etat-vide p{color:#666;margin-bottom:24px;line-height:1.5;}
+.etat-vide a{display:inline-block;padding:15px 30px;background:#0B63F6;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;}
+.etat-vide a:hover{background:#084ec7;}
+
+.suivi{padding:30px;}
+.suivi .docs-titre{margin-bottom:16px;}
+.etape-suivi{display:flex;align-items:center;gap:14px;padding:10px 0;}
+.etape-suivi .puce{width:28px;height:28px;border-radius:50%;background:#eee;color:#999;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.etape-suivi.fait .puce{background:#28a745;color:white;}
+.etape-suivi.actuel .puce{background:#0B63F6;color:white;}
+.etape-suivi span.label{color:#666;font-size:14.5px;}
+.etape-suivi.fait span.label, .etape-suivi.actuel span.label{color:#153A73;font-weight:600;}
+
+.chargement{padding:60px;text-align:center;color:#999;}
+
+</style>
+
+</head>
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="missions-proposees-enseignant.html">🎯 Missions proposées</a>
+<a href="mes-candidatures-enseignant.html" class="active">📝 Ma candidature</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div id="chargement" class="card"><div class="chargement">⏳ Chargement de votre dossier...</div></div>
+
+<div id="contenu" style="display:none;"></div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const LIBELLES_STATUT = {
+    brouillon: "🟡 Brouillon",
+    soumise: "🔵 Soumise",
+    en_verification: "🟠 En vérification",
+    documents_valides: "🟢 Documents validés",
+    test_autorise: "🟣 Test autorisé",
+    admis: "✅ Admis",
+    refuse: "❌ Refusé"
+};
+
+const ORDRE_ETAPES = [
+    { cle: "soumise", label: "Dossier soumis" },
+    { cle: "en_verification", label: "Vérification des documents" },
+    { cle: "documents_valides", label: "Documents validés" },
+    { cle: "test_autorise", label: "Test autorisé" },
+    { cle: "admis", label: "Admission finale" }
+];
+
+const LIBELLES_DOC = {
+    cv: "CV",
+    diplome: "Diplôme",
+    pieceIdentite: "Pièce d'identité",
+    photo: "Photo professionnelle"
+};
+
+function rendreEtatVide() {
+    return `
+    <div class="card">
+        <div class="etat-vide">
+            <div class="emoji">📝</div>
+            <h2>Aucune candidature envoyée</h2>
+            <p>Vous n'avez pas encore constitué votre dossier de candidature enseignant.<br>Complétez-le pour rejoindre le corps enseignant EDUFORCI.</p>
+            <a href="candidature-enseignant.html">Créer ma candidature</a>
+        </div>
+    </div>`;
+}
+
+function rendreDossier(c) {
+
+    const statut = c.statut || "brouillon";
+    const nomComplet = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
+    const matieresTxt = Array.isArray(c.matieres) && c.matieres.length ? c.matieres.join(", ") : "-";
+
+    let docsHtml = "";
+    Object.keys(LIBELLES_DOC).forEach((cle) => {
+        const present = c.documents && c.documents[cle] && c.documents[cle].url;
+        docsHtml += `<div class="doc-item">${present ? "✅" : "❌"} ${LIBELLES_DOC[cle]}</div>`;
+    });
+
+    let refusHtml = "";
+    if (statut === "refuse") {
+        docsHtml = `<div class="doc-item">Dossier non retenu. Vous pouvez le modifier et le soumettre à nouveau.</div>`;
+    }
+
+    let suiviHtml = "";
+    if (statut !== "refuse" && statut !== "brouillon") {
+        const indexActuel = ORDRE_ETAPES.findIndex(e => e.cle === statut);
+        suiviHtml = `<div class="suivi"><div class="docs-titre">Suivi du dossier</div>`;
+        ORDRE_ETAPES.forEach((etape, i) => {
+            let classe = "";
+            let puce = i + 1;
+            if (i < indexActuel) { classe = "fait"; puce = "✓"; }
+            else if (i === indexActuel) { classe = "actuel"; }
+            suiviHtml += `<div class="etape-suivi ${classe}"><div class="puce">${puce}</div><span class="label">${etape.label}</span></div>`;
+        });
+        suiviHtml += `</div><hr class="sep" style="margin:0;">`;
+    }
+
+    return `
+    <div class="card">
+        <div class="entete"><h1>MA CANDIDATURE EDUFORCI</h1></div>
+        <div class="corps">
+
+            <div class="ligne"><span class="cle">Nom</span><span class="valeur">${nomComplet}</span></div>
+            <div class="ligne"><span class="cle">Matière(s)</span><span class="valeur">${matieresTxt}</span></div>
+            <div class="ligne"><span class="cle">Statut</span><span class="badge ${statut}">${LIBELLES_STATUT[statut] || statut}</span></div>
+
+            <hr class="sep">
+
+            <div class="docs-titre">Documents</div>
+            ${docsHtml}
+
+            <hr class="sep">
+
+            <div class="msg-admin-titre">Message de l'administrateur</div>
+            <div class="msg-admin">${c.messageAdmin ? c.messageAdmin : "Aucun message pour le moment."}</div>
+
+            <a href="candidature-enseignant.html" class="btn-modifier">✏️ Modifier ma candidature</a>
+
+        </div>
+        ${suiviHtml}
+    </div>`;
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    const contenu = document.getElementById("contenu");
+    const chargement = document.getElementById("chargement");
+
+    try {
+        const snap = await getDoc(doc(db, "candidaturesRecrutement", user.uid));
+
+        contenu.innerHTML = (!snap.exists()) ? rendreEtatVide() : rendreDossier(snap.data());
+
+        chargement.style.display = "none";
+        contenu.style.display = "block";
+
+    } catch (error) {
+        chargement.querySelector(".chargement").textContent = "Erreur lors du chargement : " + error.message;
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>

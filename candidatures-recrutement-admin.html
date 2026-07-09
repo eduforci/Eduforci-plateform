@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recrutement des enseignants | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:270px;height:100vh;background:#153A73;color:#fff;position:fixed;left:0;top:0;padding:30px 20px;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:10px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:270px;width:100%;padding:35px;}
+
+.welcome{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;overflow-x:auto;}
+
+/* --- Cartes de statistiques --- */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-bottom:25px;}
+@media (max-width:1100px){.stats{grid-template-columns:repeat(3,1fr);}}
+@media (max-width:650px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:white;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;cursor:pointer;transition:.2s;border:2px solid transparent;}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-card.actif{border-color:#0B63F6;}
+.stat-card .nb{font-size:28px;font-weight:700;color:#153A73;}
+.stat-card .lbl{color:#666;font-size:13px;margin-top:4px;}
+
+/* --- Barre de recherche / filtres --- */
+.barre-outils{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.barre-outils input[type="text"]{flex:1;min-width:220px;padding:13px 16px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+.barre-outils select{padding:13px 16px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:white;}
+
+/* --- Tableau --- */
+table{width:100%;border-collapse:collapse;min-width:800px;margin-top:20px;}
+th{background:#153A73;color:white;padding:14px;text-align:left;}
+td{padding:12px 14px;border-bottom:1px solid #eee;vertical-align:middle;}
+tr:nth-child(even){background:#f8f9fc;}
+.vide{text-align:center;padding:40px 20px;color:#666;}
+
+.avatar-mini{width:50px;height:50px;border-radius:50%;background:#0B63F6;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;overflow:hidden;flex-shrink:0;}
+.avatar-mini img{width:100%;height:100%;object-fit:cover;}
+
+.badge{display:inline-block;padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:700;white-space:nowrap;}
+.badge.soumise, .badge.en_verification{background:#fff4e0;color:#e08b00;}
+.badge.documents_valides{background:#e6f7ec;color:#28a745;}
+.badge.test_autorise{background:#f2e9ff;color:#7b2fd6;}
+.badge.admis{background:#e6f7ec;color:#28a745;}
+.badge.refuse{background:#fdeaea;color:#d93025;}
+
+.btn-voir{padding:9px 18px;background:#0B63F6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+.btn-voir:hover{background:#084ec7;}
+
+/* --- Modal --- */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,32,78,.6);z-index:100000;align-items:flex-start;justify-content:center;padding:30px 15px;overflow-y:auto;}
+.modal-overlay.ouvert{display:flex;}
+.modal-box{background:white;border-radius:20px;max-width:780px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+
+.modal-entete{background:#153A73;color:white;padding:22px 28px;border-radius:20px 20px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-entete h2{font-size:19px;}
+.modal-entete .fermer{background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;}
+
+.onglets{display:flex;border-bottom:1px solid #eee;overflow-x:auto;}
+.onglet{padding:16px 20px;cursor:pointer;font-weight:600;color:#888;white-space:nowrap;border-bottom:3px solid transparent;font-size:14px;}
+.onglet.actif{color:#0B63F6;border-bottom-color:#0B63F6;}
+
+.onglet-contenu{display:none;padding:26px 28px;}
+.onglet-contenu.actif{display:block;}
+
+.info-ligne{display:flex;padding:10px 0;border-bottom:1px solid #f2f2f2;font-size:14.5px;}
+.info-ligne .cle{width:150px;color:#888;font-weight:600;flex-shrink:0;}
+.info-ligne .val{color:#153A73;font-weight:600;}
+
+.doc-carte{display:flex;justify-content:space-between;align-items:center;padding:16px;border:1px solid #eee;border-radius:12px;margin-bottom:12px;}
+.doc-carte .nom{font-weight:600;color:#153A73;}
+.doc-carte .fichier{color:#888;font-size:13px;margin-top:3px;}
+.doc-carte a{padding:9px 16px;background:#eaf1ff;color:#0B63F6;text-decoration:none;border-radius:8px;font-weight:600;font-size:13px;}
+.doc-carte a:hover{background:#d7e6ff;}
+.doc-carte .manquant{color:#d93025;font-weight:600;font-size:13.5px;}
+
+.verif-item{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:15px;}
+.verif-item input{width:18px;height:18px;}
+
+.score-grille{display:grid;grid-template-columns:1fr 90px;gap:12px 16px;align-items:center;margin-top:6px;}
+.score-grille label{font-size:14px;color:#333;}
+.score-grille input{padding:8px;border:1px solid #ddd;border-radius:8px;text-align:center;}
+.score-total{margin-top:16px;padding:14px;background:#eaf1ff;border-radius:10px;font-weight:700;color:#0B63F6;text-align:center;font-size:16px;}
+
+textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px solid #ddd;border-radius:10px;font-size:14.5px;resize:vertical;margin-top:6px;}
+
+.actions-footer{padding:22px 28px;border-top:1px solid #eee;}
+.actions-grille{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px;}
+@media (max-width:560px){.actions-grille{grid-template-columns:1fr;}}
+.btn-action{padding:14px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:white;}
+.btn-valider-docs{background:#28a745;}
+.btn-valider-docs:hover{background:#1f7a35;}
+.btn-autoriser-test{background:#7b2fd6;}
+.btn-autoriser-test:hover{background:#5e21a8;}
+.btn-modifs{background:#e08b00;}
+.btn-modifs:hover{background:#b56f00;}
+.btn-rejeter{background:#d93025;}
+.btn-rejeter:hover{background:#a8221a;}
+.btn-admis{margin-top:12px;width:100%;padding:12px;background:white;border:2px solid #28a745;color:#28a745;border-radius:10px;font-weight:700;cursor:pointer;font-size:13.5px;}
+.btn-admis:hover{background:#e6f7ec;}
+
+.historique-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #f2f2f2;font-size:14.5px;}
+.historique-item:last-child{border-bottom:none;}
+.historique-item .date{color:#888;white-space:nowrap;font-size:13px;min-width:150px;}
+.historique-item .action{color:#153A73;font-weight:600;}
+.historique-vide{color:#999;padding:10px 0;}
+
+</style>
+
+</head>
+
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+<a href="gestion-affectations.html">🎯 Affectations</a>
+<a href="reservations-admin.html">📅 Réservations</a>
+<a href="offres-admin.html">📢 Offres d'emploi</a>
+<a href="candidatures-admin.html">📄 Candidatures</a>
+<a href="candidatures-recrutement-admin.html" class="active">🧑‍🏫 Recrutement enseignants</a>
+<a href="paiements-admin.html">💳 Paiements</a>
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="welcome">
+<h1>🧑‍🏫 Gestion des candidatures</h1>
+<p style="margin-top:10px;color:#666;">Dossiers de recrutement soumis par les enseignants candidats à la plateforme EDUFORCI.</p>
+</div>
+
+<div class="stats">
+<div class="stat-card" data-filtre="attente"><div class="nb" id="nbAttente">0</div><div class="lbl">🟡 En attente</div></div>
+<div class="stat-card" data-filtre="documents_valides"><div class="nb" id="nbDocValides">0</div><div class="lbl">🟢 Documents validés</div></div>
+<div class="stat-card" data-filtre="test_autorise"><div class="nb" id="nbTestAutorise">0</div><div class="lbl">🟣 Test autorisé</div></div>
+<div class="stat-card" data-filtre="admis"><div class="nb" id="nbAdmis">0</div><div class="lbl">✅ Admis</div></div>
+<div class="stat-card" data-filtre="refuse"><div class="nb" id="nbRefuses">0</div><div class="lbl">❌ Refusés</div></div>
+</div>
+
+<div class="welcome">
+
+<div class="barre-outils">
+<input type="text" id="recherche" placeholder="🔎 Rechercher par nom, matière, ville, téléphone ou identifiant...">
+<select id="filtreStatut">
+<option value="toutes">Toutes</option>
+<option value="attente">En attente</option>
+<option value="documents_valides">Documents validés</option>
+<option value="test_autorise">Test autorisé</option>
+<option value="admis">Admis</option>
+<option value="refuse">Refusés</option>
+</select>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Photo</th>
+<th>Nom</th>
+<th>Matière</th>
+<th>Ville</th>
+<th>Diplôme</th>
+<th>Statut</th>
+<th>Date</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="corpsTableau"></tbody>
+</table>
+
+<div id="messageVide" class="vide" style="display:none;">Aucune candidature ne correspond à votre recherche.</div>
+<div id="chargement" class="vide">⏳ Chargement des candidatures...</div>
+
+</div>
+
+</div>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal-box">
+
+<div class="modal-entete">
+<h2 id="modalTitre">Dossier de candidature</h2>
+<button class="fermer" id="btnFermerModal">✕</button>
+</div>
+
+<div class="onglets">
+<div class="onglet actif" data-onglet="infos">📋 Informations</div>
+<div class="onglet" data-onglet="documents">📄 Documents</div>
+<div class="onglet" data-onglet="verification">📊 Vérification</div>
+<div class="onglet" data-onglet="historique">🕒 Historique</div>
+</div>
+
+<div class="onglet-contenu actif" data-contenu="infos">
+<div class="info-ligne"><span class="cle">Identifiant</span><span class="val" id="infoIdentifiant">-</span></div>
+<div class="info-ligne"><span class="cle">Nom complet</span><span class="val" id="infoNom">-</span></div>
+<div class="info-ligne"><span class="cle">Téléphone</span><span class="val" id="infoTelephone">-</span></div>
+<div class="info-ligne"><span class="cle">Email</span><span class="val" id="infoEmail">-</span></div>
+<div class="info-ligne"><span class="cle">Adresse</span><span class="val" id="infoAdresse">-</span></div>
+<div class="info-ligne"><span class="cle">Matières</span><span class="val" id="infoMatieres">-</span></div>
+<div class="info-ligne"><span class="cle">Niveaux</span><span class="val" id="infoNiveaux">-</span></div>
+<div class="info-ligne"><span class="cle">Diplôme</span><span class="val" id="infoDiplome">-</span></div>
+<div class="info-ligne"><span class="cle">Expérience</span><span class="val" id="infoExperience">-</span></div>
+<div class="info-ligne" style="border-bottom:none;flex-direction:column;"><span class="cle" style="margin-bottom:6px;">Présentation</span><span class="val" id="infoPresentation" style="font-weight:400;color:#333;">-</span></div>
+</div>
+
+<div class="onglet-contenu" data-contenu="documents">
+<div class="doc-carte">
+<div><div class="nom">📄 CV</div><div class="fichier" id="nomFichierCv">-</div></div>
+<div id="lienCv"></div>
+</div>
+<div class="doc-carte">
+<div><div class="nom">🎓 Diplôme</div><div class="fichier" id="nomFichierDiplome">-</div></div>
+<div id="lienDiplome"></div>
+</div>
+<div class="doc-carte">
+<div><div class="nom">🪪 Pièce d'identité</div><div class="fichier" id="nomFichierPieceIdentite">-</div></div>
+<div id="lienPieceIdentite"></div>
+</div>
+<div class="doc-carte">
+<div><div class="nom">🖼️ Photo professionnelle</div><div class="fichier" id="nomFichierPhoto">-</div></div>
+<div id="lienPhoto"></div>
+</div>
+</div>
+
+<div class="onglet-contenu" data-contenu="verification">
+
+<div class="verif-item"><input type="checkbox" id="verifCv"><label for="verifCv">CV conforme</label></div>
+<div class="verif-item"><input type="checkbox" id="verifDiplome"><label for="verifDiplome">Diplôme conforme</label></div>
+<div class="verif-item"><input type="checkbox" id="verifPieceIdentite"><label for="verifPieceIdentite">Pièce conforme</label></div>
+<div class="verif-item"><input type="checkbox" id="verifPhoto"><label for="verifPhoto">Photo conforme</label></div>
+
+<h3 style="color:#153A73;margin-top:22px;margin-bottom:4px;font-size:15px;">⭐ Score administratif (sur 20)</h3>
+<p style="color:#888;font-size:13px;margin-bottom:10px;">Première impression avant le test. Ne décide pas seul de l'admission.</p>
+
+<div class="score-grille">
+<label>Dossier complet</label><input type="number" id="scoreDossierComplet" min="0" max="5" value="0">
+<label>Diplômes cohérents</label><input type="number" id="scoreDiplomesCoherents" min="0" max="5" value="0">
+<label>Expérience</label><input type="number" id="scoreExperience" min="0" max="5" value="0">
+<label>Présentation / CV</label><input type="number" id="scorePresentationCv" min="0" max="5" value="0">
+</div>
+
+<div class="score-total">Score total : <span id="scoreTotalAffiche">0</span> / 20</div>
+
+<h3 style="color:#153A73;margin-top:22px;margin-bottom:4px;font-size:15px;">💬 Commentaire administrateur</h3>
+<textarea id="commentaireAdmin" placeholder="Ex : Merci. Votre dossier est complet. Vous êtes autorisé à passer le test."></textarea>
+
+</div>
+
+<div class="onglet-contenu" data-contenu="historique">
+<div id="listeHistorique"></div>
+</div>
+
+<div class="actions-footer">
+<div class="actions-grille">
+<button class="btn-action btn-valider-docs" id="btnValiderDocs">🟢 Valider les documents</button>
+<button class="btn-action btn-autoriser-test" id="btnAutoriserTest">🟣 Autoriser le test</button>
+<button class="btn-action btn-modifs" id="btnDemanderModifs">🟠 Demander des modifications</button>
+<button class="btn-action btn-rejeter" id="btnRejeter">🔴 Rejeter la candidature</button>
+</div>
+<button class="btn-admis" id="btnMarquerAdmis">✅ Marquer comme admis (après test réussi)</button>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, updateDoc, addDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let candidatures = [];   // liste brute { id, ...data }
+let filtreActuel = "toutes";
+let candidatureOuverteId = null;
+
+const LIBELLES_STATUT = {
+    soumise: "🟠 En vérification",
+    en_verification: "🟠 En vérification",
+    documents_valides: "🟢 Documents validés",
+    test_autorise: "🟣 Test autorisé",
+    admis: "✅ Admis",
+    refuse: "❌ Refusé"
+};
+
+function identifiantCourt(id) {
+    return "CAND-" + id.slice(0, 6).toUpperCase();
+}
+
+function formaterDate(iso) {
+    if (!iso) return "-";
+    try { return new Date(iso).toLocaleDateString("fr-FR"); } catch { return "-"; }
+}
+
+function correspondFiltre(statut, filtre) {
+    if (filtre === "toutes") return true;
+    if (filtre === "attente") return statut === "soumise" || statut === "en_verification";
+    return statut === filtre;
+}
+
+// ==========================================================
+// CHARGEMENT
+// ==========================================================
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    await chargerCandidatures();
+
+});
+
+async function chargerCandidatures() {
+
+    document.getElementById("chargement").style.display = "block";
+
+    try {
+
+        const snap = await getDocs(collection(db, "candidaturesRecrutement"));
+
+        candidatures = [];
+        snap.forEach((docSnap) => {
+            const d = docSnap.data();
+            if (d.statut === "brouillon" || !d.statut) return; // dossiers non soumis : ignorés côté admin
+            candidatures.push({ id: docSnap.id, ...d });
+        });
+
+        mettreAJourStats();
+        appliquerFiltres();
+
+    } catch (error) {
+        document.getElementById("chargement").textContent = "Erreur lors du chargement : " + error.message;
+        return;
+    }
+
+    document.getElementById("chargement").style.display = "none";
+
+}
+
+function mettreAJourStats() {
+    document.getElementById("nbAttente").textContent = candidatures.filter(c => c.statut === "soumise" || c.statut === "en_verification").length;
+    document.getElementById("nbDocValides").textContent = candidatures.filter(c => c.statut === "documents_valides").length;
+    document.getElementById("nbTestAutorise").textContent = candidatures.filter(c => c.statut === "test_autorise").length;
+    document.getElementById("nbAdmis").textContent = candidatures.filter(c => c.statut === "admis").length;
+    document.getElementById("nbRefuses").textContent = candidatures.filter(c => c.statut === "refuse").length;
+}
+
+// ==========================================================
+// RECHERCHE + FILTRES + TABLEAU
+// ==========================================================
+
+function appliquerFiltres() {
+
+    const terme = document.getElementById("recherche").value.trim().toLowerCase();
+    const corps = document.getElementById("corpsTableau");
+    const messageVide = document.getElementById("messageVide");
+    corps.innerHTML = "";
+
+    const resultats = candidatures.filter((c) => {
+
+        if (!correspondFiltre(c.statut, filtreActuel)) return false;
+        if (!terme) return true;
+
+        const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ").toLowerCase();
+        const matieres = (c.matieres || []).join(" ").toLowerCase();
+        const ville = (c.personnel?.ville || "").toLowerCase();
+        const tel = (c.personnel?.telephone || "").toLowerCase();
+        const identifiant = identifiantCourt(c.id).toLowerCase();
+
+        return nom.includes(terme) || matieres.includes(terme) || ville.includes(terme) || tel.includes(terme) || identifiant.includes(terme);
+
+    });
+
+    if (resultats.length === 0) {
+        messageVide.style.display = "block";
+        return;
+    }
+    messageVide.style.display = "none";
+
+    resultats.forEach((c) => {
+
+        const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
+        const initiales = (c.personnel?.nom || "??").substring(0, 2).toUpperCase();
+        const photoUrl = c.documents?.photo?.url;
+        const statutAffiche = c.statut === "soumise" ? "en_verification" : c.statut;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><div class="avatar-mini">${photoUrl ? `<img src="${photoUrl}" alt="${nom}">` : initiales}</div></td>
+            <td>${nom}</td>
+            <td>${(c.matieres || []).join(", ") || "-"}</td>
+            <td>${c.personnel?.ville || "-"}</td>
+            <td>${c.professionnel?.diplome || "-"}</td>
+            <td><span class="badge ${statutAffiche}">${LIBELLES_STATUT[c.statut] || c.statut}</span></td>
+            <td>${formaterDate(c.dateCreation)}</td>
+            <td><button class="btn-voir" data-id="${c.id}">👁️ Voir</button></td>
+        `;
+        corps.appendChild(tr);
+
+    });
+
+    corps.querySelectorAll(".btn-voir").forEach((btn) => {
+        btn.addEventListener("click", () => ouvrirModal(btn.dataset.id));
+    });
+
+}
+
+document.getElementById("recherche").addEventListener("input", appliquerFiltres);
+document.getElementById("filtreStatut").addEventListener("change", (e) => {
+    filtreActuel = e.target.value;
+    document.querySelectorAll(".stat-card").forEach(c => c.classList.toggle("actif", c.dataset.filtre === filtreActuel));
+    appliquerFiltres();
+});
+
+document.querySelectorAll(".stat-card").forEach((carte) => {
+    carte.addEventListener("click", () => {
+        filtreActuel = carte.dataset.filtre;
+        document.getElementById("filtreStatut").value = filtreActuel;
+        document.querySelectorAll(".stat-card").forEach(c => c.classList.toggle("actif", c === carte));
+        appliquerFiltres();
+    });
+});
+
+// ==========================================================
+// MODAL — ouverture / onglets
+// ==========================================================
+
+function docCellule(cle, cData) {
+    const lien = document.getElementById("lien" + cle.charAt(0).toUpperCase() + cle.slice(1));
+    const nomEl = document.getElementById("nomFichier" + cle.charAt(0).toUpperCase() + cle.slice(1));
+    const info = cData?.documents?.[cle];
+    if (info && info.url) {
+        nomEl.textContent = info.nom || "Fichier envoyé";
+        lien.innerHTML = `<a href="${info.url}" target="_blank" rel="noopener">${cle === "photo" ? "Voir" : "Ouvrir / Télécharger"}</a>`;
+    } else {
+        nomEl.textContent = "Aucun fichier envoyé";
+        lien.innerHTML = `<span class="manquant">❌ Manquant</span>`;
+    }
+}
+
+async function ouvrirModal(id) {
+
+    const c = candidatures.find(x => x.id === id);
+    if (!c) return;
+
+    candidatureOuverteId = id;
+
+    document.getElementById("modalTitre").textContent = "Dossier — " + ([c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || identifiantCourt(id));
+
+    document.getElementById("infoIdentifiant").textContent = identifiantCourt(id);
+    document.getElementById("infoNom").textContent = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
+    document.getElementById("infoTelephone").textContent = c.personnel?.telephone || "-";
+    document.getElementById("infoEmail").textContent = c.personnel?.email || "-";
+    document.getElementById("infoAdresse").textContent = [c.personnel?.adresse, c.personnel?.ville].filter(Boolean).join(", ") || "-";
+    document.getElementById("infoMatieres").textContent = (c.matieres || []).join(", ") || "-";
+    document.getElementById("infoNiveaux").textContent = (c.niveaux || []).join(", ") || "-";
+    document.getElementById("infoDiplome").textContent = c.professionnel?.diplome || "-";
+    document.getElementById("infoExperience").textContent = c.professionnel?.experience ? c.professionnel.experience + " an(s)" : "-";
+    document.getElementById("infoPresentation").textContent = c.professionnel?.presentation || "-";
+
+    docCellule("cv", c);
+    docCellule("diplome", c);
+    docCellule("pieceIdentite", c);
+    docCellule("photo", c);
+
+    const verif = c.verificationDocs || {};
+    document.getElementById("verifCv").checked = !!verif.cv;
+    document.getElementById("verifDiplome").checked = !!verif.diplome;
+    document.getElementById("verifPieceIdentite").checked = !!verif.pieceIdentite;
+    document.getElementById("verifPhoto").checked = !!verif.photo;
+
+    const score = c.scoreAdmin || {};
+    document.getElementById("scoreDossierComplet").value = score.dossierComplet ?? 0;
+    document.getElementById("scoreDiplomesCoherents").value = score.diplomesCoherents ?? 0;
+    document.getElementById("scoreExperience").value = score.experience ?? 0;
+    document.getElementById("scorePresentationCv").value = score.presentationCv ?? 0;
+    recalculerScore();
+
+    document.getElementById("commentaireAdmin").value = c.messageAdmin || "";
+
+    const listeHisto = document.getElementById("listeHistorique");
+    const historique = Array.isArray(c.historique) ? [...c.historique].sort((a, b) => new Date(b.date) - new Date(a.date)) : [];
+    listeHisto.innerHTML = historique.length
+        ? historique.map(h => `<div class="historique-item"><div class="date">${h.date ? new Date(h.date).toLocaleString("fr-FR") : "-"}</div><div class="action">${h.action}</div></div>`).join("")
+        : `<div class="historique-vide">Aucun historique pour le moment.</div>`;
+
+    document.querySelectorAll(".onglet").forEach(o => o.classList.toggle("actif", o.dataset.onglet === "infos"));
+    document.querySelectorAll(".onglet-contenu").forEach(o => o.classList.toggle("actif", o.dataset.contenu === "infos"));
+
+    document.getElementById("modalOverlay").classList.add("ouvert");
+
+    // Passage automatique en "en vérification" à la première ouverture d'un dossier soumis
+    if (c.statut === "soumise") {
+        await updateDoc(doc(db, "candidaturesRecrutement", id), {
+            statut: "en_verification",
+            historique: arrayUnion({ date: new Date().toISOString(), action: "Dossier ouvert pour vérification" })
+        });
+        c.statut = "en_verification";
+        mettreAJourStats();
+        appliquerFiltres();
+    }
+
+}
+
+document.querySelectorAll(".onglet").forEach((onglet) => {
+    onglet.addEventListener("click", () => {
+        document.querySelectorAll(".onglet").forEach(o => o.classList.toggle("actif", o === onglet));
+        document.querySelectorAll(".onglet-contenu").forEach(o => o.classList.toggle("actif", o.dataset.contenu === onglet.dataset.onglet));
+    });
+});
+
+document.getElementById("btnFermerModal").addEventListener("click", () => {
+    document.getElementById("modalOverlay").classList.remove("ouvert");
+});
+document.getElementById("modalOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "modalOverlay") document.getElementById("modalOverlay").classList.remove("ouvert");
+});
+
+function recalculerScore() {
+    const total = ["scoreDossierComplet", "scoreDiplomesCoherents", "scoreExperience", "scorePresentationCv"]
+        .reduce((somme, id) => somme + (Number(document.getElementById(id).value) || 0), 0);
+    document.getElementById("scoreTotalAffiche").textContent = total;
+    return total;
+}
+["scoreDossierComplet", "scoreDiplomesCoherents", "scoreExperience", "scorePresentationCv"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", recalculerScore);
+});
+
+// ==========================================================
+// ACTIONS ADMIN
+// ==========================================================
+
+function recupererVerification() {
+    return {
+        cv: document.getElementById("verifCv").checked,
+        diplome: document.getElementById("verifDiplome").checked,
+        pieceIdentite: document.getElementById("verifPieceIdentite").checked,
+        photo: document.getElementById("verifPhoto").checked
+    };
+}
+
+function recupererScore() {
+    return {
+        dossierComplet: Number(document.getElementById("scoreDossierComplet").value) || 0,
+        diplomesCoherents: Number(document.getElementById("scoreDiplomesCoherents").value) || 0,
+        experience: Number(document.getElementById("scoreExperience").value) || 0,
+        presentationCv: Number(document.getElementById("scorePresentationCv").value) || 0,
+        total: recalculerScore()
+    };
+}
+
+// Envoie un vrai message dans la messagerie du candidat (visible sur messages-enseignant.html)
+async function envoyerNotification(candidature, contenu) {
+    try {
+        const profilSnap = await getDoc(doc(db, "enseignants", candidature.id));
+        const identifiantEnseignant = profilSnap.exists() ? profilSnap.data().identifiant : null;
+        if (!identifiantEnseignant) return;
+
+        await addDoc(collection(db, "messages"), {
+            enseignantId: identifiantEnseignant,
+            contenu,
+            dateEnvoi: new Date().toISOString(),
+            origine: "recrutement"
+        });
+    } catch (error) {
+        console.warn("Notification non envoyée :", error.message);
+    }
+}
+
+async function appliquerAction({ nouveauStatut, nouveauDocumentsStatut, actionHistorique, messageParDefaut, exigerCommentaire }) {
+
+    const c = candidatures.find(x => x.id === candidatureOuverteId);
+    if (!c) return;
+
+    const commentaire = document.getElementById("commentaireAdmin").value.trim();
+
+    if (exigerCommentaire && !commentaire) {
+        window.notify("Merci d'ajouter un commentaire avant cette action.", "avertissement");
+        return;
+    }
+
+    window.showLoading("Mise à jour du dossier...");
+
+    try {
+
+        const maj = {
+            verificationDocs: recupererVerification(),
+            scoreAdmin: recupererScore(),
+            messageAdmin: commentaire || messageParDefaut,
+            historique: arrayUnion({ date: new Date().toISOString(), action: actionHistorique })
+        };
+
+        if (nouveauStatut) maj.statut = nouveauStatut;
+        if (nouveauDocumentsStatut) maj.documentsStatut = nouveauDocumentsStatut;
+
+        await updateDoc(doc(db, "candidaturesRecrutement", candidatureOuverteId), maj);
+
+        await envoyerNotification(c, commentaire || messageParDefaut);
+
+        window.hideLoading();
+        window.notify("Dossier mis à jour avec succès.", "succes");
+
+        document.getElementById("modalOverlay").classList.remove("ouvert");
+        await chargerCandidatures();
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur : " + error.message, "erreur");
+    }
+
+}
+
+document.getElementById("btnValiderDocs").addEventListener("click", () => appliquerAction({
+    nouveauStatut: "documents_valides",
+    nouveauDocumentsStatut: "valides",
+    actionHistorique: "Documents vérifiés et validés",
+    messageParDefaut: "Votre dossier est complet. Vos documents ont été validés."
+}));
+
+document.getElementById("btnAutoriserTest").addEventListener("click", () => appliquerAction({
+    nouveauStatut: "test_autorise",
+    actionHistorique: "Test autorisé",
+    messageParDefaut: "Félicitations, vous êtes autorisé(e) à passer le test EDUFORCI."
+}));
+
+document.getElementById("btnDemanderModifs").addEventListener("click", () => appliquerAction({
+    nouveauDocumentsStatut: "a_completer",
+    actionHistorique: "Modifications demandées : " + (document.getElementById("commentaireAdmin").value.trim() || "voir commentaire"),
+    messageParDefaut: "Merci de compléter ou corriger certains éléments de votre dossier.",
+    exigerCommentaire: true
+}));
+
+document.getElementById("btnRejeter").addEventListener("click", () => {
+    if (!confirm("Confirmez-vous le rejet définitif de cette candidature ?")) return;
+    appliquerAction({
+        nouveauStatut: "refuse",
+        actionHistorique: "Candidature refusée",
+        messageParDefaut: "Nous sommes désolés, votre candidature n'a pas été retenue."
+    });
+});
+
+document.getElementById("btnMarquerAdmis").addEventListener("click", () => {
+    if (!confirm("Confirmez-vous l'admission de ce candidat ?")) return;
+    appliquerAction({
+        nouveauStatut: "admis",
+        actionHistorique: "Candidat admis",
+        messageParDefaut: "Félicitations, votre candidature est acceptée ! Bienvenue chez EDUFORCI."
+    });
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+</html>

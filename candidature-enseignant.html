@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma candidature | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:800px;}
+
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+h1{color:#153A73;margin-bottom:6px;}
+h2{color:#153A73;font-size:19px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+p.sub{color:#666;margin-bottom:10px;}
+
+.etape-num{background:#0B63F6;color:white;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+
+label{display:block;margin:14px 0 6px;font-weight:600;color:#153A73;font-size:14px;}
+input,select,textarea{width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+textarea{resize:vertical;min-height:90px;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+@media (max-width:600px){.grid2{grid-template-columns:1fr;}}
+
+.add-row{display:flex;gap:10px;margin-top:6px;}
+.add-row input{flex:1;}
+.add-row button{padding:0 20px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;}
+.add-row button:hover{background:#084ec7;}
+
+.tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;}
+.tag{background:#eaf1ff;color:#0B63F6;padding:9px 14px;border-radius:30px;font-weight:600;display:flex;align-items:center;gap:8px;font-size:14px;}
+.tag button{background:none;border:none;color:#0B63F6;font-weight:800;cursor:pointer;font-size:15px;}
+
+.checkbox-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;}
+.checkbox-grid label{display:flex;align-items:center;gap:8px;font-weight:400;color:#333;margin:0;background:#f4f7fc;padding:10px 16px;border-radius:10px;cursor:pointer;flex:0 0 auto;}
+.checkbox-grid input{width:auto;}
+
+.jour{display:flex;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid #eee;}
+.jour:last-child{border-bottom:none;}
+.jour label.nom{width:100px;font-weight:600;color:#153A73;margin:0;flex-shrink:0;}
+.switch{position:relative;width:46px;height:24px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:30px;transition:.3s;}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+input:checked + .slider{background:#0B63F6;}
+input:checked + .slider:before{transform:translateX(22px);}
+.jour input[type="text"]{flex:1;padding:10px;font-size:13px;}
+.jour input[type="text"]:disabled{background:#f4f4f4;color:#aaa;}
+
+.doc-row{border:1px dashed #cdd7ea;border-radius:12px;padding:16px;margin-top:14px;}
+.doc-row label{margin-top:0;}
+.doc-row small{display:block;color:#888;margin-bottom:8px;}
+.doc-statut{font-size:13px;font-weight:600;margin-top:8px;}
+.doc-statut.ok{color:#28a745;}
+
+button.submit{width:100%;margin-top:10px;padding:16px;background:#0B63F6;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:600;cursor:pointer;}
+button.submit:hover{background:#084ec7;}
+
+.banniere{margin-bottom:25px;padding:16px 20px;border-radius:14px;font-weight:600;background:#fff4e0;color:#e08b00;}
+
+</style>
+
+</head>
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="missions-proposees-enseignant.html">🎯 Missions proposées</a>
+<a href="mes-candidatures-enseignant.html" class="active">📝 Ma candidature</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="card">
+<h1>📝 Candidature de recrutement</h1>
+<p class="sub">Remplissez ce dossier pour rejoindre le corps enseignant EDUFORCI. Toutes les rubriques sont nécessaires pour un dossier complet.</p>
+</div>
+
+<div id="banniereReprise" class="banniere" style="display:none;"></div>
+
+<form id="formCandidature">
+
+<div class="card">
+<h2><span class="etape-num">1</span> Informations personnelles</h2>
+
+<div class="grid2">
+<div>
+<label>Nom</label>
+<input type="text" id="nom" required>
+</div>
+<div>
+<label>Prénom(s)</label>
+<input type="text" id="prenom" required>
+</div>
+</div>
+
+<div class="grid2">
+<div>
+<label>Téléphone</label>
+<input type="tel" id="telephone" required>
+</div>
+<div>
+<label>Adresse e-mail</label>
+<input type="email" id="email" required>
+</div>
+</div>
+
+<div class="grid2">
+<div>
+<label>Date de naissance</label>
+<input type="date" id="dateNaissance">
+</div>
+<div>
+<label>Ville</label>
+<input type="text" id="ville" required>
+</div>
+</div>
+
+<label>Adresse complète</label>
+<input type="text" id="adresse">
+
+</div>
+
+<div class="card">
+<h2><span class="etape-num">2</span> Informations professionnelles</h2>
+
+<div class="grid2">
+<div>
+<label>Diplôme le plus élevé</label>
+<input type="text" id="diplome" required>
+</div>
+<div>
+<label>Années d'expérience</label>
+<input type="number" min="0" id="experience" required>
+</div>
+</div>
+
+<label>Présentation / motivation</label>
+<textarea id="presentation" placeholder="Présentez votre parcours et vos motivations à rejoindre EDUFORCI..." required></textarea>
+
+</div>
+
+<div class="card">
+<h2><span class="etape-num">3</span> Matières</h2>
+<p class="sub">Ajoutez toutes les matières que vous pouvez enseigner.</p>
+
+<div class="add-row">
+<input type="text" id="nouvelleMatiere" placeholder="Ex : Mathématiques">
+<button type="button" id="btnAjouterMatiere">Ajouter</button>
+</div>
+<div class="tags" id="listeMatieres"></div>
+
+</div>
+
+<div class="card">
+<h2><span class="etape-num">4</span> Niveaux</h2>
+<p class="sub">Sélectionnez les niveaux que vous êtes en mesure d'enseigner.</p>
+
+<div class="checkbox-grid" id="listeNiveaux">
+<label><input type="checkbox" value="Primaire"> Primaire</label>
+<label><input type="checkbox" value="Collège"> Collège</label>
+<label><input type="checkbox" value="Lycée"> Lycée</label>
+<label><input type="checkbox" value="Université"> Université</label>
+</div>
+
+</div>
+
+<div class="card">
+<h2><span class="etape-num">5</span> Disponibilités</h2>
+<p class="sub">Indiquez les jours et horaires où vous êtes disponible.</p>
+
+<div id="joursContainer"></div>
+
+</div>
+
+<div class="card">
+<h2><span class="etape-num">6</span> Téléversement des documents</h2>
+<p class="sub">Formats acceptés : PDF, JPG, PNG (5 Mo maximum par fichier).</p>
+
+<div class="doc-row">
+<label>CV</label>
+<input type="file" id="fichierCv" accept=".pdf,.jpg,.jpeg,.png">
+<div class="doc-statut" id="statutCv"></div>
+</div>
+
+<div class="doc-row">
+<label>Diplôme</label>
+<input type="file" id="fichierDiplome" accept=".pdf,.jpg,.jpeg,.png">
+<div class="doc-statut" id="statutDiplome"></div>
+</div>
+
+<div class="doc-row">
+<label>Pièce d'identité</label>
+<input type="file" id="fichierPieceIdentite" accept=".pdf,.jpg,.jpeg,.png">
+<div class="doc-statut" id="statutPieceIdentite"></div>
+</div>
+
+<div class="doc-row">
+<label>Photo professionnelle</label>
+<input type="file" id="fichierPhoto" accept=".jpg,.jpeg,.png">
+<div class="doc-statut" id="statutPhoto"></div>
+</div>
+
+</div>
+
+<div class="card">
+<h2><span class="etape-num">7</span> Validation de la candidature</h2>
+<p class="sub">En soumettant ce dossier, vous confirmez l'exactitude des informations fournies. Votre candidature sera transmise à l'équipe EDUFORCI pour vérification.</p>
+<button type="submit" class="submit" id="btnSoumettre">✅ Soumettre ma candidature</button>
+</div>
+
+</form>
+
+</div>
+
+<script type="module">
+
+import { auth, db, storage } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
+
+const jours = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+let uid = null;
+let matieres = [];
+let documentsExistants = {};
+let candSnapAvantEnvoi = false;
+
+function construireJours(dispoActuelles) {
+    const container = document.getElementById("joursContainer");
+    container.innerHTML = "";
+    jours.forEach((jour) => {
+        const cle = jour.toLowerCase();
+        const info = dispoActuelles[cle] || { actif: false, horaire: "" };
+        const ligne = document.createElement("div");
+        ligne.className = "jour";
+        ligne.innerHTML = `
+            <label class="nom">${jour}</label>
+            <label class="switch">
+                <input type="checkbox" data-jour="${cle}" ${info.actif ? "checked" : ""}>
+                <span class="slider"></span>
+            </label>
+            <input type="text" data-horaire="${cle}" placeholder="Ex : 16h00 - 18h00" value="${info.horaire || ""}" ${info.actif ? "" : "disabled"}>
+        `;
+        container.appendChild(ligne);
+    });
+    container.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.addEventListener("change", (e) => {
+            const cle = e.target.getAttribute("data-jour");
+            container.querySelector(`input[data-horaire="${cle}"]`).disabled = !e.target.checked;
+        });
+    });
+}
+
+function afficherMatieres() {
+    const container = document.getElementById("listeMatieres");
+    container.innerHTML = "";
+    matieres.forEach((m, index) => {
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.innerHTML = `<span>${m}</span>`;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "✕";
+        btn.addEventListener("click", () => { matieres.splice(index, 1); afficherMatieres(); });
+        tag.appendChild(btn);
+        container.appendChild(tag);
+    });
+}
+
+document.getElementById("btnAjouterMatiere").addEventListener("click", () => {
+    const input = document.getElementById("nouvelleMatiere");
+    const valeur = input.value.trim();
+    if (!valeur || matieres.includes(valeur)) { input.value = ""; return; }
+    matieres.push(valeur);
+    input.value = "";
+    afficherMatieres();
+});
+document.getElementById("nouvelleMatiere").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("btnAjouterMatiere").click(); }
+});
+
+function marquerDocOk(cle, nomFichier) {
+    const el = document.getElementById("statut" + cle.charAt(0).toUpperCase() + cle.slice(1));
+    if (el) { el.textContent = "✅ Déjà envoyé : " + nomFichier + " (choisissez un fichier pour le remplacer)"; el.classList.add("ok"); }
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    uid = user.uid;
+
+    // Pré-remplissage à partir du profil enseignant
+    const profilSnap = await getDoc(doc(db, "enseignants", uid));
+    if (profilSnap.exists()) {
+        const p = profilSnap.data();
+        if (p.nom) document.getElementById("nom").value = p.nom;
+        if (p.email) document.getElementById("email").value = p.email;
+        if (p.telephone) document.getElementById("telephone").value = p.telephone;
+        if (p.ville) document.getElementById("ville").value = p.ville;
+        if (p.diplome) document.getElementById("diplome").value = p.diplome;
+        if (p.experience) document.getElementById("experience").value = p.experience;
+    }
+
+    // Reprise d'un dossier existant (brouillon ou modification)
+    const candSnap = await getDoc(doc(db, "candidaturesRecrutement", uid));
+    construireJours({});
+
+    candSnapAvantEnvoi = candSnap.exists();
+
+    if (candSnap.exists()) {
+        const c = candSnap.data();
+
+        if (["en_verification", "documents_valides", "test_autorise"].includes(c.statut)) {
+            const banniere = document.getElementById("banniereReprise");
+            banniere.style.display = "block";
+            banniere.textContent = "ℹ️ Votre dossier est déjà en cours de traitement. Vous pouvez le modifier, mais cela relancera la vérification.";
+        }
+
+        if (c.personnel) {
+            document.getElementById("nom").value = c.personnel.nom || "";
+            document.getElementById("prenom").value = c.personnel.prenom || "";
+            document.getElementById("telephone").value = c.personnel.telephone || "";
+            document.getElementById("email").value = c.personnel.email || "";
+            document.getElementById("dateNaissance").value = c.personnel.dateNaissance || "";
+            document.getElementById("ville").value = c.personnel.ville || "";
+            document.getElementById("adresse").value = c.personnel.adresse || "";
+        }
+        if (c.professionnel) {
+            document.getElementById("diplome").value = c.professionnel.diplome || "";
+            document.getElementById("experience").value = c.professionnel.experience || "";
+            document.getElementById("presentation").value = c.professionnel.presentation || "";
+        }
+        if (Array.isArray(c.matieres)) { matieres = [...c.matieres]; afficherMatieres(); }
+        if (Array.isArray(c.niveaux)) {
+            document.querySelectorAll('#listeNiveaux input[type="checkbox"]').forEach(cb => {
+                cb.checked = c.niveaux.includes(cb.value);
+            });
+        }
+        if (c.disponibilites) construireJours(c.disponibilites);
+        if (c.documents) {
+            documentsExistants = c.documents;
+            Object.keys(c.documents).forEach(cle => marquerDocOk(cle, c.documents[cle].nom));
+        }
+    }
+
+});
+
+async function televerserSiPresent(inputId, cle) {
+    const input = document.getElementById(inputId);
+    const fichier = input.files[0];
+    if (!fichier) return documentsExistants[cle] || null;
+
+    const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${fichier.name}`;
+    const storageRef = ref(storage, chemin);
+    await uploadBytes(storageRef, fichier);
+    const url = await getDownloadURL(storageRef);
+    return { url, nom: fichier.name };
+}
+
+document.getElementById("formCandidature").addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const niveauxCoches = Array.from(document.querySelectorAll('#listeNiveaux input:checked')).map(cb => cb.value);
+
+    if (matieres.length === 0) { window.notify("Veuillez ajouter au moins une matière.", "avertissement"); return; }
+    if (niveauxCoches.length === 0) { window.notify("Veuillez sélectionner au moins un niveau.", "avertissement"); return; }
+
+    window.showLoading("Envoi de votre dossier...");
+
+    try {
+
+        const disponibilites = {};
+        jours.forEach((jour) => {
+            const cle = jour.toLowerCase();
+            const cb = document.querySelector(`input[data-jour="${cle}"]`);
+            const horaire = document.querySelector(`input[data-horaire="${cle}"]`);
+            disponibilites[cle] = { actif: cb.checked, horaire: horaire.value.trim() };
+        });
+
+        const documents = {
+            cv: await televerserSiPresent("fichierCv", "cv"),
+            diplome: await televerserSiPresent("fichierDiplome", "diplome"),
+            pieceIdentite: await televerserSiPresent("fichierPieceIdentite", "pieceIdentite"),
+            photo: await televerserSiPresent("fichierPhoto", "photo")
+        };
+
+        await setDoc(doc(db, "candidaturesRecrutement", uid), {
+            uid,
+            statut: "soumise",
+            documentsStatut: "en_attente",
+            personnel: {
+                nom: document.getElementById("nom").value.trim(),
+                prenom: document.getElementById("prenom").value.trim(),
+                telephone: document.getElementById("telephone").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                dateNaissance: document.getElementById("dateNaissance").value,
+                ville: document.getElementById("ville").value.trim(),
+                adresse: document.getElementById("adresse").value.trim()
+            },
+            professionnel: {
+                diplome: document.getElementById("diplome").value.trim(),
+                experience: document.getElementById("experience").value,
+                presentation: document.getElementById("presentation").value.trim()
+            },
+            matieres,
+            niveaux: niveauxCoches,
+            disponibilites,
+            documents,
+            dateMiseAJour: new Date().toISOString(),
+            historique: arrayUnion({
+                date: new Date().toISOString(),
+                action: candSnapAvantEnvoi ? "Candidature modifiée et resoumise" : "Candidature reçue"
+            })
+        }, { merge: true });
+
+        // Ne définit la date de création que la première fois
+        if (!candSnapAvantEnvoi) {
+            await setDoc(doc(db, "candidaturesRecrutement", uid), { dateCreation: new Date().toISOString() }, { merge: true });
+        }
+
+        window.hideLoading();
+        await window.notify("Candidature envoyée avec succès ! Vous serez notifié dès qu'elle sera vérifiée.", "succes");
+        window.location.href = "mes-candidatures-enseignant.html";
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur lors de l'envoi : " + error.message, "erreur");
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>
