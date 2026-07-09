@@ -238,9 +238,10 @@ button.submit:hover{background:#084ec7;}
 
 <script type="module">
 
-import { auth, db} from "./js/firebase.js";
+import { auth, db, storage } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 
 const jours = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 let uid = null;
@@ -373,36 +374,17 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function televerserSiPresent(inputId, cle) {
-
     const input = document.getElementById(inputId);
     const fichier = input.files[0];
-
     if (!fichier) return documentsExistants[cle] || null;
 
-    const formData = new FormData();
-    formData.append("file", fichier);
-    formData.append("upload_preset", "eduforci");
-
-    const reponse = await fetch(
-        "https://api.cloudinary.com/v1_1/osifmino/auto/upload",
-        {
-            method: "POST",
-            body: formData
-        }
-    );
-
-    if (!reponse.ok) {
-        throw new Error("Impossible d'envoyer le fichier sur Cloudinary.");
-    }
-
-    const resultat = await reponse.json();
-
-    return {
-        url: resultat.secure_url,
-        nom: fichier.name
-    };
-
+    const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${fichier.name}`;
+    const storageRef = ref(storage, chemin);
+    await uploadBytes(storageRef, fichier);
+    const url = await getDownloadURL(storageRef);
+    return { url, nom: fichier.name };
 }
+
 document.getElementById("formCandidature").addEventListener("submit", async (e) => {
 
     e.preventDefault();
@@ -486,5 +468,3 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 
 </body>
 </html>
-
-    

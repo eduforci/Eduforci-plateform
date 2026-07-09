@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banque de questions | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:270px;height:100vh;background:#153A73;color:#fff;position:fixed;left:0;top:0;padding:30px 20px;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:10px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:270px;width:100%;padding:35px;max-width:900px;}
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+h1{color:#153A73;margin-bottom:10px;}
+p.sub{color:#666;margin-bottom:16px;line-height:1.5;}
+
+label{display:block;font-weight:600;color:#153A73;margin:14px 0 6px;}
+select,input,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:14.5px;}
+textarea{min-height:100px;font-family:monospace;font-size:13px;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+
+button.action{margin-top:18px;padding:14px 26px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:15px;}
+button.action:hover{background:#084ec7;}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th{background:#153A73;color:white;padding:10px;text-align:left;font-size:13px;}
+td{padding:9px 10px;border-bottom:1px solid #eee;font-size:13.5px;}
+.badge-diff{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.badge-diff.facile{background:#e6f7ec;color:#28a745;}
+.badge-diff.moyen{background:#fff4e0;color:#e08b00;}
+.badge-diff.difficile{background:#fdeaea;color:#d93025;}
+.correcte{color:#28a745;font-weight:700;}
+.btn-suppr{background:#fdeaea;color:#d93025;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;}
+
+.aide{background:#eaf1ff;color:#0B63F6;padding:14px 16px;border-radius:10px;font-size:13.5px;margin-top:14px;line-height:1.5;}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+<a href="gestion-affectations.html">🎯 Affectations</a>
+<a href="reservations-admin.html">📅 Réservations</a>
+<a href="offres-admin.html">📢 Offres d'emploi</a>
+<a href="candidatures-admin.html">📄 Candidatures</a>
+<a href="candidatures-recrutement-admin.html">🧑‍🏫 Recrutement enseignants</a>
+<a href="banque-questions-admin.html" class="active">❓ Banque de questions</a>
+<a href="paiements-admin.html">💳 Paiements</a>
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="card">
+<h1>❓ Banque de questions — Test de recrutement</h1>
+<p class="sub">Ajoutez ici les questions utilisées pour le test de recrutement (30 questions tirées au hasard par matière lors du test). Le champ « matière » doit correspondre exactement à celui saisi par les enseignants (ex : Anglais, Mathématiques...).</p>
+
+<form id="formQuestion">
+
+<div class="grid2">
+<div>
+<label>Matière</label>
+<input type="text" id="matiere" placeholder="Ex : Anglais" required>
+</div>
+<div>
+<label>Difficulté</label>
+<select id="difficulte">
+<option value="facile">Facile</option>
+<option value="moyen" selected>Moyen</option>
+<option value="difficile">Difficile</option>
+</select>
+</div>
+</div>
+
+<label>Question</label>
+<textarea id="question" placeholder="Ex : Quel est le pluriel de « child » ?" required></textarea>
+
+<label>Choix de réponses (un par ligne, 2 à 6 choix)</label>
+<textarea id="choix" placeholder="childs
+children
+childes
+childrens" required></textarea>
+
+<label>Numéro du bon choix (1 = première ligne ci-dessus)</label>
+<input type="number" id="bonneReponse" min="1" value="1" required>
+
+<label>Explication (affichée dans les futurs retours au candidat)</label>
+<textarea id="explication" placeholder="Ex : Le pluriel de « child » est irrégulier : children."></textarea>
+
+<button type="submit" class="action">➕ Ajouter la question</button>
+
+</form>
+
+</div>
+
+<div class="card">
+<h1>📋 Questions existantes (<span id="compteur">0</span>)</h1>
+<div class="aide">💡 Pour un test fiable de 30 questions, prévoyez au moins 40 à 50 questions par matière (elles sont tirées au hasard à chaque tentative).</div>
+
+<label style="margin-top:18px;">Filtrer par matière</label>
+<select id="filtreMatiere"><option value="toutes">Toutes les matières</option></select>
+
+<table>
+<thead><tr><th>Matière</th><th>Difficulté</th><th>Question</th><th>Bonne réponse</th><th></th></tr></thead>
+<tbody id="corpsTableau"></tbody>
+</table>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let questions = [];
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) { window.location.href = "connexion-admin.html"; return; }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    await chargerQuestions();
+
+});
+
+async function chargerQuestions() {
+
+    const snap = await getDocs(collection(db, "questionsRecrutement"));
+    questions = [];
+    snap.forEach((d) => questions.push({ id: d.id, ...d.data() }));
+
+    const matieres = [...new Set(questions.map(q => q.matiere))].sort();
+    const filtreSelect = document.getElementById("filtreMatiere");
+    const valeurActuelle = filtreSelect.value;
+    filtreSelect.innerHTML = `<option value="toutes">Toutes les matières</option>` + matieres.map(m => `<option value="${m}">${m}</option>`).join("");
+    filtreSelect.value = valeurActuelle || "toutes";
+
+    afficherTableau();
+
+}
+
+function afficherTableau() {
+
+    const filtre = document.getElementById("filtreMatiere").value;
+    const liste = filtre === "toutes" ? questions : questions.filter(q => q.matiere === filtre);
+
+    document.getElementById("compteur").textContent = liste.length;
+
+    const corps = document.getElementById("corpsTableau");
+    corps.innerHTML = liste.map(q => `
+        <tr>
+            <td>${q.matiere}</td>
+            <td><span class="badge-diff ${q.difficulte}">${q.difficulte}</span></td>
+            <td>${q.question.length > 60 ? q.question.slice(0, 60) + "…" : q.question}</td>
+            <td class="correcte">${q.choix?.[q.reponseCorrecte] ?? "-"}</td>
+            <td><button class="btn-suppr" data-id="${q.id}">🗑️</button></td>
+        </tr>
+    `).join("");
+
+    corps.querySelectorAll(".btn-suppr").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (!confirm("Supprimer définitivement cette question ?")) return;
+            await deleteDoc(doc(db, "questionsRecrutement", btn.dataset.id));
+            await chargerQuestions();
+        });
+    });
+
+}
+
+document.getElementById("filtreMatiere").addEventListener("change", afficherTableau);
+
+document.getElementById("formQuestion").addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const choixListe = document.getElementById("choix").value.split("\n").map(s => s.trim()).filter(Boolean);
+    const bonneReponseNum = Number(document.getElementById("bonneReponse").value);
+
+    if (choixListe.length < 2) { window.notify("Il faut au moins 2 choix de réponse.", "avertissement"); return; }
+    if (bonneReponseNum < 1 || bonneReponseNum > choixListe.length) { window.notify("Le numéro de la bonne réponse est invalide.", "avertissement"); return; }
+
+    window.showLoading("Ajout de la question...");
+
+    try {
+
+        await addDoc(collection(db, "questionsRecrutement"), {
+            matiere: document.getElementById("matiere").value.trim(),
+            difficulte: document.getElementById("difficulte").value,
+            question: document.getElementById("question").value.trim(),
+            choix: choixListe,
+            reponseCorrecte: bonneReponseNum - 1,
+            explication: document.getElementById("explication").value.trim()
+        });
+
+        document.getElementById("formQuestion").reset();
+        document.getElementById("bonneReponse").value = 1;
+
+        window.hideLoading();
+        window.notify("Question ajoutée avec succès.", "succes");
+
+        await chargerQuestions();
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur : " + error.message, "erreur");
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+</body>
+</html>

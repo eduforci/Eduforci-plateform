@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de recrutement | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,.85)),url("hero.jpg") center center/cover fixed no-repeat;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+
+.conteneur{width:100%;max-width:680px;}
+
+.card{background:white;border-radius:20px;box-shadow:0 15px 40px rgba(0,0,0,.25);overflow:hidden;}
+
+/* --- écran d'état (accès refusé / chargement / terminé) --- */
+.etat{padding:60px 40px;text-align:center;}
+.etat .emoji{font-size:50px;margin-bottom:18px;}
+.etat h2{color:#153A73;margin-bottom:12px;}
+.etat p{color:#666;line-height:1.6;margin-bottom:22px;}
+.etat a{display:inline-block;padding:14px 28px;background:#0B63F6;color:white;text-decoration:none;border-radius:10px;font-weight:600;}
+.etat a:hover{background:#084ec7;}
+
+/* --- écran d'accueil --- */
+.accueil{padding:40px;text-align:center;}
+.accueil .logo{font-size:38px;margin-bottom:6px;}
+.accueil h1{color:#153A73;font-size:20px;letter-spacing:.5px;margin-bottom:4px;}
+.accueil .bienvenue{color:#333;font-size:17px;margin:18px 0 22px;}
+.infos-test{display:flex;justify-content:center;gap:30px;margin-bottom:26px;flex-wrap:wrap;}
+.infos-test div{background:#f4f7fc;padding:14px 22px;border-radius:12px;}
+.infos-test .val{color:#0B63F6;font-weight:700;font-size:16px;}
+.infos-test .lbl{color:#888;font-size:12px;margin-top:2px;}
+
+.certif{display:flex;align-items:flex-start;gap:10px;text-align:left;background:#fff8e1;padding:16px;border-radius:12px;margin-bottom:24px;}
+.certif input{margin-top:3px;width:18px;height:18px;flex-shrink:0;}
+.certif label{color:#7a5c00;font-size:14px;line-height:1.5;}
+
+button.demarrer{width:100%;padding:16px;background:#0B63F6;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;}
+button.demarrer:hover{background:#084ec7;}
+button.demarrer:disabled{background:#ccc;cursor:not-allowed;}
+
+/* --- écran de test --- */
+.entete-test{background:#153A73;color:white;padding:18px 26px;display:flex;justify-content:space-between;align-items:center;}
+.entete-test .logo{font-weight:700;}
+.chrono{font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;}
+.chrono.urgent{color:#ff6b6b;}
+
+.progression-zone{padding:16px 26px 0;}
+.progression-txt{color:#666;font-size:13px;margin-bottom:8px;display:flex;justify-content:space-between;}
+.barre-progression{height:10px;background:#eee;border-radius:10px;overflow:hidden;}
+.barre-progression-remplie{height:100%;background:#0B63F6;transition:width .3s;}
+
+.zone-question{padding:32px 26px;}
+.zone-question h2{color:#153A73;font-size:19px;line-height:1.5;margin-bottom:26px;}
+
+.choix{display:block;padding:16px 18px;border:2px solid #eee;border-radius:12px;margin-bottom:14px;cursor:pointer;transition:.2s;font-size:15px;color:#333;}
+.choix:hover{border-color:#c6d9ff;}
+.choix.selectionne{border-color:#0B63F6;background:#eaf1ff;color:#0B63F6;font-weight:600;}
+.choix input{margin-right:12px;}
+
+.nav-test{display:flex;justify-content:space-between;padding:0 26px 30px;gap:12px;}
+.nav-test button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14.5px;}
+.btn-precedent{background:#f0f0f0;color:#555;}
+.btn-precedent:hover{background:#e2e2e2;}
+.btn-precedent:disabled{opacity:.4;cursor:not-allowed;}
+.btn-suivant{background:#0B63F6;color:white;}
+.btn-suivant:hover{background:#084ec7;}
+.btn-terminer{background:#28a745;color:white;}
+.btn-terminer:hover{background:#1f7a35;}
+
+</style>
+
+</head>
+<body>
+
+<div class="conteneur">
+<div class="card" id="carte"></div>
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const DUREE_SECONDES = 60 * 60;   // 60 minutes
+const NB_QUESTIONS = 30;
+const MAX_CHANGEMENTS_ONGLET = 3;
+
+let uid = null;
+let candidature = null;
+let test = null;               // état complet du testsRecrutement/{uid}
+let indexActuel = 0;
+let intervalChrono = null;
+let changementsOnglet = 0;
+let finalisationEnCours = false;
+
+const carte = document.getElementById("carte");
+
+function genererSessionId() {
+    const d = new Date();
+    const jour = d.getFullYear().toString() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+    const alea = Array.from({ length: 6 }, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join("");
+    return `SESSION-${jour}-${alea}`;
+}
+
+function melanger(tableau) {
+    const t = [...tableau];
+    for (let i = t.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [t[i], t[j]] = [t[j], t[i]];
+    }
+    return t;
+}
+
+// ==========================================================
+// ÉCRANS D'ÉTAT (accès refusé / déjà passé / etc.)
+// ==========================================================
+
+function afficherEtat(emoji, titre, message, lienRetour = true) {
+    carte.innerHTML = `
+        <div class="etat">
+            <div class="emoji">${emoji}</div>
+            <h2>${titre}</h2>
+            <p>${message}</p>
+            ${lienRetour ? `<a href="dashboard-enseignant.html">Retour au tableau de bord</a>` : ""}
+        </div>`;
+}
+
+// ==========================================================
+// AUTHENTIFICATION + VÉRIFICATION D'ACCÈS
+// ==========================================================
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    uid = user.uid;
+    afficherEtat("⏳", "Chargement...", "Vérification de votre dossier en cours.", false);
+
+    const candSnap = await getDoc(doc(db, "candidaturesRecrutement", uid));
+
+    if (!candSnap.exists()) {
+        afficherEtat("📝", "Aucune candidature", "Vous devez d'abord soumettre votre dossier de candidature.");
+        return;
+    }
+
+    candidature = candSnap.data();
+
+    if (candidature.statut === "refuse") {
+        afficherEtat("❌", "Candidature refusée", "Votre candidature n'a pas été retenue. Le test de recrutement n'est pas accessible.");
+        return;
+    }
+
+    const testSnap = await getDoc(doc(db, "testsRecrutement", uid));
+    test = testSnap.exists() ? testSnap.data() : null;
+
+    if (test && test.terminé) {
+        afficherEtat("✔️", "Test déjà réalisé", `Vous avez déjà passé le test de recrutement le ${new Date(test.fin).toLocaleDateString("fr-FR")}. Une seule tentative est autorisée. Le résultat vous sera communiqué par l'équipe EDUFORCI.`);
+        return;
+    }
+
+    if (test && test.statut === "en_cours") {
+        // Reprise d'un test interrompu
+        changementsOnglet = test.changementsOnglet || 0;
+        demarrerEcranTest();
+        return;
+    }
+
+    if (candidature.statut !== "test_autorise") {
+        afficherEtat("🔒", "Vous n'êtes pas encore autorisé à passer le test.", "Votre dossier doit d'abord être validé par l'équipe EDUFORCI. Consultez le statut de votre candidature pour plus de détails.");
+        return;
+    }
+
+    afficherEcranAccueil();
+
+});
+
+// ==========================================================
+// ÉCRAN D'ACCUEIL
+// ==========================================================
+
+function afficherEcranAccueil() {
+
+    const nom = [candidature.personnel?.prenom, candidature.personnel?.nom].filter(Boolean).join(" ") || "";
+    const matiere = (candidature.matieres && candidature.matieres[0]) || "Générale";
+
+    carte.innerHTML = `
+        <div class="accueil">
+            <div class="logo">🧑‍🏫</div>
+            <h1>TEST DE RECRUTEMENT EDUFORCI</h1>
+            <div class="bienvenue">Bienvenue ${nom}</div>
+
+            <div class="infos-test">
+                <div><div class="val">${matiere}</div><div class="lbl">Matière</div></div>
+                <div><div class="val">60 min</div><div class="lbl">Durée</div></div>
+                <div><div class="val">${NB_QUESTIONS}</div><div class="lbl">Questions</div></div>
+            </div>
+
+            <div class="certif">
+                <input type="checkbox" id="certifSeul">
+                <label for="certifSeul">Je certifie passer ce test seul, sans aide extérieure, et je comprends qu'une seule tentative est autorisée. Le temps ne démarre qu'après avoir cliqué sur « Commencer le test ».</label>
+            </div>
+
+            <button class="demarrer" id="btnDemarrer" disabled>▶ Commencer le test</button>
+        </div>`;
+
+    document.getElementById("certifSeul").addEventListener("change", (e) => {
+        document.getElementById("btnDemarrer").disabled = !e.target.checked;
+    });
+
+    document.getElementById("btnDemarrer").addEventListener("click", demarrerTest);
+
+}
+
+// ==========================================================
+// DÉMARRAGE DU TEST (création du document testsRecrutement)
+// ==========================================================
+
+async function demarrerTest() {
+
+    window.showLoading("Préparation de votre test...");
+
+    try {
+
+        const matiere = (candidature.matieres && candidature.matieres[0]) || "Générale";
+
+        const q = query(collection(db, "questionsRecrutement"), where("matiere", "==", matiere));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            window.hideLoading();
+            afficherEtat("⚠️", "Banque de questions indisponible", `Aucune question n'est encore disponible pour la matière « ${matiere} ». Merci de contacter l'équipe EDUFORCI.`);
+            return;
+        }
+
+        const toutesLesQuestions = [];
+        snap.forEach((d) => toutesLesQuestions.push({ id: d.id, ...d.data() }));
+
+        const questionsChoisies = melanger(toutesLesQuestions).slice(0, NB_QUESTIONS).map((q) => ({
+            id: q.id,
+            question: q.question,
+            choix: q.choix
+            // volontairement : ni reponseCorrecte, ni explication ici.
+            // Elles ne seront récupérées qu'à la finalisation du test (voir finaliserTest).
+        }));
+
+        const maintenant = new Date().toISOString();
+
+        test = {
+            candidat: { uid, nom: candidature.personnel?.nom || "", prenom: candidature.personnel?.prenom || "" },
+            matiere,
+            sessionId: genererSessionId(),
+            questions: questionsChoisies,
+            reponses: {},
+            statut: "en_cours",
+            debut: maintenant,
+            fin: null,
+            dureeSecondes: DUREE_SECONDES,
+            tempsUtiliseSecondes: null,
+            score: null,
+            pourcentage: null,
+            changementsOnglet: 0,
+            tentativeNumero: 1,
+            terminé: false
+        };
+
+        await setDoc(doc(db, "testsRecrutement", uid), test);
+
+        // Trace dans l'historique de la candidature
+        await updateDoc(doc(db, "candidaturesRecrutement", uid), {
+            historique: arrayUnion({ date: maintenant, action: `Test démarré — session ${test.sessionId}` })
+        });
+
+        window.hideLoading();
+        changementsOnglet = 0;
+        demarrerEcranTest();
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur au démarrage du test : " + error.message, "erreur");
+    }
+
+}
+
+// ==========================================================
+// ÉCRAN DE TEST
+// ==========================================================
+
+function demarrerEcranTest() {
+
+    indexActuel = Object.keys(test.reponses || {}).length
+        ? test.questions.findIndex(q => !(q.id in test.reponses))
+        : 0;
+    if (indexActuel === -1) indexActuel = test.questions.length - 1;
+
+    carte.innerHTML = `
+        <div class="entete-test">
+            <div class="logo">EDUFORCI</div>
+            <div class="chrono" id="chrono">--:--</div>
+        </div>
+        <div class="progression-zone">
+            <div class="progression-txt"><span id="labelQuestion">Question 1 / ${test.questions.length}</span></div>
+            <div class="barre-progression"><div class="barre-progression-remplie" id="barreProgression" style="width:0%;"></div></div>
+        </div>
+        <div class="zone-question" id="zoneQuestion"></div>
+        <div class="nav-test">
+            <button class="btn-precedent" id="btnPrecedent">◀ Précédent</button>
+            <button class="btn-suivant" id="btnSuivant">Suivant ▶</button>
+        </div>
+    `;
+
+    document.getElementById("btnPrecedent").addEventListener("click", () => { if (indexActuel > 0) { indexActuel--; afficherQuestion(); } });
+    document.getElementById("btnSuivant").addEventListener("click", () => {
+        if (indexActuel < test.questions.length - 1) { indexActuel++; afficherQuestion(); }
+        else finaliserTest("Test terminé par le candidat");
+    });
+
+    afficherQuestion();
+    demarrerChrono();
+    surveillerChangementsOnglet();
+    window.addEventListener("beforeunload", (e) => { if (test && !test.terminé) { e.preventDefault(); e.returnValue = ""; } });
+
+}
+
+function afficherQuestion() {
+
+    const q = test.questions[indexActuel];
+    const reponseActuelle = test.reponses[q.id];
+
+    document.getElementById("labelQuestion").textContent = `Question ${indexActuel + 1} / ${test.questions.length}`;
+    document.getElementById("barreProgression").style.width = `${((indexActuel + 1) / test.questions.length) * 100}%`;
+
+    const zone = document.getElementById("zoneQuestion");
+    zone.innerHTML = `
+        <h2>${q.question}</h2>
+        ${q.choix.map((c, i) => `
+            <label class="choix ${reponseActuelle === i ? "selectionne" : ""}" data-index="${i}">
+                <input type="radio" name="reponse" value="${i}" ${reponseActuelle === i ? "checked" : ""}>
+                ${c}
+            </label>
+        `).join("")}
+    `;
+
+    zone.querySelectorAll(".choix").forEach((label) => {
+        label.addEventListener("click", () => enregistrerReponse(q.id, Number(label.dataset.index)));
+    });
+
+    const btnSuivant = document.getElementById("btnSuivant");
+    btnSuivant.textContent = indexActuel === test.questions.length - 1 ? "✅ Terminer le test" : "Suivant ▶";
+    btnSuivant.className = indexActuel === test.questions.length - 1 ? "btn-terminer" : "btn-suivant";
+
+    document.getElementById("btnPrecedent").disabled = indexActuel === 0;
+
+}
+
+async function enregistrerReponse(questionId, choixIndex) {
+
+    test.reponses[questionId] = choixIndex;
+    afficherQuestion();
+
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), { [`reponses.${questionId}`]: choixIndex });
+    } catch (error) {
+        console.warn("Échec de la sauvegarde automatique :", error.message);
+    }
+
+}
+
+// ==========================================================
+// CHRONOMÈTRE
+// ==========================================================
+
+function demarrerChrono() {
+
+    if (intervalChrono) clearInterval(intervalChrono);
+
+    intervalChrono = setInterval(() => {
+
+        const debutMs = new Date(test.debut).getTime();
+        const ecouleSec = Math.floor((Date.now() - debutMs) / 1000);
+        const restantSec = test.dureeSecondes - ecouleSec;
+
+        if (restantSec <= 0) {
+            clearInterval(intervalChrono);
+            finaliserTest("Temps écoulé — fin automatique");
+            return;
+        }
+
+        const min = Math.floor(restantSec / 60).toString().padStart(2, "0");
+        const sec = (restantSec % 60).toString().padStart(2, "0");
+        const chronoEl = document.getElementById("chrono");
+        if (chronoEl) {
+            chronoEl.textContent = `⏳ ${min}:${sec}`;
+            chronoEl.classList.toggle("urgent", restantSec < 300);
+        }
+
+    }, 1000);
+
+}
+
+// ==========================================================
+// ANTI-TRICHE (changements d'onglet)
+// ==========================================================
+
+function surveillerChangementsOnglet() {
+
+    document.addEventListener("visibilitychange", async () => {
+
+        if (document.hidden && test && !test.terminé) {
+
+            changementsOnglet++;
+
+            try {
+                await updateDoc(doc(db, "testsRecrutement", uid), { changementsOnglet });
+            } catch (error) {
+                console.warn("Erreur de suivi anti-triche :", error.message);
+            }
+
+            if (changementsOnglet >= MAX_CHANGEMENTS_ONGLET) {
+                finaliserTest(`Test terminé automatiquement (${MAX_CHANGEMENTS_ONGLET} changements d'onglet détectés)`);
+            }
+
+        }
+
+    });
+
+}
+
+// ==========================================================
+// FINALISATION / CORRECTION AUTOMATIQUE
+// ==========================================================
+
+async function finaliserTest(motif) {
+
+    if (finalisationEnCours || (test && test.terminé)) return;
+    finalisationEnCours = true;
+
+    if (intervalChrono) clearInterval(intervalChrono);
+    window.removeEventListener("beforeunload", () => {});
+
+    window.showLoading("Correction en cours...");
+
+    try {
+
+        // Les bonnes réponses ne sont récupérées qu'ici, à la toute fin du test,
+        // jamais envoyées au navigateur pendant que le candidat répond.
+        const correctionsSnap = await Promise.all(
+            test.questions.map((q) => getDoc(doc(db, "questionsRecrutement", q.id)))
+        );
+
+        let bonnesReponses = 0;
+        test.questions.forEach((q, i) => {
+            const correction = correctionsSnap[i].exists() ? correctionsSnap[i].data() : null;
+            if (correction && test.reponses[q.id] === correction.reponseCorrecte) bonnesReponses++;
+        });
+
+        const total = test.questions.length;
+        const pourcentage = total ? Math.round((bonnesReponses / total) * 100) : 0;
+        const scoreSur20 = total ? Math.round((bonnesReponses / total) * 20 * 10) / 10 : 0;
+
+        const debutMs = new Date(test.debut).getTime();
+        const tempsUtiliseSecondes = Math.min(test.dureeSecondes, Math.floor((Date.now() - debutMs) / 1000));
+        const maintenant = new Date().toISOString();
+
+        await updateDoc(doc(db, "testsRecrutement", uid), {
+            statut: "termine",
+            terminé: true,
+            fin: maintenant,
+            tempsUtiliseSecondes,
+            score: scoreSur20,
+            pourcentage,
+            changementsOnglet
+        });
+
+        await updateDoc(doc(db, "candidaturesRecrutement", uid), {
+            historique: arrayUnion({ date: maintenant, action: motif + ` — session ${test.sessionId}` })
+        });
+
+        window.hideLoading();
+
+        carte.innerHTML = `
+            <div class="etat">
+                <div class="emoji">✔️</div>
+                <h2>Votre test est terminé.</h2>
+                <p>Vos réponses ont été enregistrées.<br>Merci d'avoir passé le test de recrutement EDUFORCI.</p>
+                <a href="dashboard-enseignant.html">Retour au tableau de bord</a>
+            </div>`;
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur lors de la finalisation : " + error.message, "erreur");
+        finalisationEnCours = false;
+    }
+
+}
+
+</script>
+
+</body>
+</html>

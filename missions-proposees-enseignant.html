@@ -93,13 +93,15 @@ function formaterDate(iso) {
 }
 
 let monUid = null;
+
 async function chargerMissions() {
 
     const conteneur = document.getElementById("listeMissions");
 
     try {
 
-        const snap = await getDocs(collection(db, "missions"));
+        const q = query(collection(db, "missions"), where("enseignantsProposesIds", "array-contains", monUid));
+        const snap = await getDocs(q);
 
         if (snap.empty) {
             conteneur.innerHTML = `<div class="empty">Aucune mission ne vous a été proposée pour le moment.</div>`;
@@ -207,7 +209,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     monUid = user.uid;
-    alert("UID : " + monUid);
     chargerMissions();
 
 });

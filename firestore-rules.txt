@@ -1,0 +1,215 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================================
+    // FONCTIONS UTILITAIRES
+    // ==========================================================
+
+    function estConnecte() {
+      return request.auth != null;
+    }
+
+    function estProprietaire(userId) {
+      return estConnecte() && request.auth.uid == userId;
+    }
+
+    function estAdmin() {
+      return estConnecte() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Identifiant "ENS-xxxx" du prof connecté (utilisé dans reservations/messages/avis)
+    function monIdentifiantEnseignant() {
+      return get(/databases/$(database)/documents/enseignants/$(request.auth.uid)).data.identifiant;
+    }
+
+    // ==========================================================
+    // COMPTES
+    // ==========================================================
+
+    match /admins/{id} {
+      allow read: if estProprietaire(id) || estAdmin();
+      allow write: if estAdmin();
+    }
+
+    match /parents/{id} {
+      allow read: if estProprietaire(id) || estAdmin();
+      allow create: if estProprietaire(id);
+      allow update: if estProprietaire(id) || estAdmin();
+      allow delete: if estAdmin();
+    }
+
+    match /enseignants/{id} {
+      // Profils publics : nécessaire pour les pages de recherche accessibles
+      // sans connexion (enseignants.html, recherche.html, profil-enseignant.html...)
+      allow read: if true;
+      allow create: if estProprietaire(id);
+      allow update: if estProprietaire(id) || estAdmin();
+      allow delete: if estAdmin();
+    }
+
+    match /etablissements/{id} {
+      allow read: if estProprietaire(id) || estAdmin();
+      allow create: if estProprietaire(id);
+      allow update: if estProprietaire(id) || estAdmin();
+      allow delete: if estAdmin();
+    }
+
+    // Compteurs utilisés pour générer les identifiants (PAR-, ENS-, ETB-...)
+    match /compteurs/{id} {
+      allow read: if estConnecte();
+      allow update: if estConnecte();
+      allow create, delete: if estAdmin();
+    }
+
+    match /parametres/{id} {
+      allow read: if true;
+      allow write: if estAdmin();
+    }
+
+    // ==========================================================
+    // MISSIONS ("Demander un enseignant" — établissements & parents)
+    // ==========================================================
+
+    match /missions/{id} {
+
+      allow read: if estAdmin()
+        || (estConnecte() && resource.data.demandeurId == request.auth.uid)
+        || (estConnecte() && resource.data.enseignantsProposesIds is list
+            && request.auth.uid in resource.data.enseignantsProposesIds);
+
+      allow create: if estConnecte()
+        && request.resource.data.demandeurId == request.auth.uid;
+
+      // Le demandeur (mise à jour de ses propres infos) OU un enseignant proposé
+      // (pour répondre disponible/indisponible) OU l'admin (matching, statut...)
+      allow update: if estAdmin()
+        || (estConnecte() && resource.data.demandeurId == request.auth.uid)
+        || (estConnecte() && resource.data.enseignantsProposesIds is list
+            && request.auth.uid in resource.data.enseignantsProposesIds);
+
+      allow delete: if estAdmin()
+        || (estConnecte() && resource.data.demandeurId == request.auth.uid);
+    }
+
+    // ==========================================================
+    // OFFRES D'EMPLOI (publiées par les établissements)
+    // ==========================================================
+
+    match /offres/{id} {
+      allow read: if true;
+      allow create: if estConnecte()
+        && request.resource.data.etablissementId == request.auth.uid;
+      allow update, delete: if estAdmin()
+        || (estConnecte() && resource.data.etablissementId == request.auth.uid);
+    }
+
+    // ==========================================================
+    // CANDIDATURES (aux offres)
+    // ==========================================================
+
+    match /candidatures/{id} {
+      allow read: if estAdmin()
+        || (estConnecte() && resource.data.etablissementId == request.auth.uid)
+        || (estConnecte() && resource.data.enseignantId == request.auth.uid);
+      allow create: if estConnecte();
+      allow update, delete: if estAdmin();
+    }
+
+    // ==========================================================
+    // CANDIDATURES DE RECRUTEMENT (dossier enseignant -> EDUFORCI)
+    // Id du document = uid de l'enseignant candidat
+    // ==========================================================
+
+    match /candidaturesRecrutement/{id} {
+      allow read: if estProprietaire(id) || estAdmin();
+      allow create, update: if estProprietaire(id) || estAdmin();
+      allow delete: if estAdmin();
+    }
+
+    // ==========================================================
+    // BANQUE DE QUESTIONS (test de recrutement)
+    // Lecture nécessaire au candidat pour afficher les questions,
+    // mais les bonnes réponses ne sont exploitées côté client
+    // qu'à la toute fin du test (voir test-enseignant.html).
+    // ==========================================================
+
+    match /questionsRecrutement/{id} {
+      allow read: if estConnecte();
+      allow write: if estAdmin();
+    }
+
+    // ==========================================================
+    // TESTS DE RECRUTEMENT
+    // Id du document = uid du candidat
+    // ==========================================================
+
+    match /testsRecrutement/{id} {
+      allow read: if estProprietaire(id) || estAdmin();
+      allow create, update: if estProprietaire(id) || estAdmin();
+      allow delete: if estAdmin();
+    }
+
+    // ==========================================================
+    // RÉSERVATIONS (parent -> enseignant)
+    // ==========================================================
+
+    match /reservations/{id} {
+      allow read: if estAdmin()
+        || (estConnecte() && resource.data.parentId == request.auth.uid)
+        || (estConnecte() && exists(/databases/$(database)/documents/enseignants/$(request.auth.uid))
+            && resource.data.enseignantId == monIdentifiantEnseignant());
+      allow create: if estConnecte()
+        && request.resource.data.parentId == request.auth.uid;
+      allow update: if estAdmin()
+        || (estConnecte() && resource.data.parentId == request.auth.uid)
+        || (estConnecte() && exists(/databases/$(database)/documents/enseignants/$(request.auth.uid))
+            && resource.data.enseignantId == monIdentifiantEnseignant());
+      allow delete: if estAdmin();
+    }
+
+    // ==========================================================
+    // MESSAGES
+    // ==========================================================
+
+    match /messages/{id} {
+      allow read: if estAdmin()
+        || (estConnecte() && resource.data.etablissementId == request.auth.uid)
+        || (estConnecte() && exists(/databases/$(database)/documents/enseignants/$(request.auth.uid))
+            && resource.data.enseignantId == monIdentifiantEnseignant())
+        || (estConnecte() && resource.data.parentId == request.auth.uid);
+      allow create: if estConnecte();
+      allow update: if estAdmin() || estConnecte();
+      allow delete: if estAdmin();
+    }
+
+    // ==========================================================
+    // AVIS (parent -> enseignant)
+    // ==========================================================
+
+    match /avis/{id} {
+      allow read: if true;
+      allow create: if estConnecte()
+        && request.resource.data.parentId == request.auth.uid;
+      allow update, delete: if estAdmin()
+        || (estConnecte() && resource.data.parentId == request.auth.uid);
+    }
+
+    // ==========================================================
+    // FAVORIS (id du document = "{uidParent}_{idEnseignant}")
+    // ==========================================================
+
+    match /favoris/{id} {
+      allow read: if estConnecte()
+        && id.matches(request.auth.uid + '_.*');
+      allow create: if estConnecte()
+        && id.matches(request.auth.uid + '_.*')
+        && request.resource.data.parentId == request.auth.uid;
+      allow delete: if estConnecte()
+        && id.matches(request.auth.uid + '_.*');
+    }
+
+  }
+}
