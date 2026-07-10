@@ -32,14 +32,15 @@ body{background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,.85)),url("hero.j
 .accueil .logo{font-size:38px;margin-bottom:6px;}
 .accueil h1{color:#153A73;font-size:20px;letter-spacing:.5px;margin-bottom:4px;}
 .accueil .bienvenue{color:#333;font-size:17px;margin:18px 0 22px;}
-.infos-test{display:flex;justify-content:center;gap:30px;margin-bottom:26px;flex-wrap:wrap;}
-.infos-test div{background:#f4f7fc;padding:14px 22px;border-radius:12px;}
-.infos-test .val{color:#0B63F6;font-weight:700;font-size:16px;}
-.infos-test .lbl{color:#888;font-size:12px;margin-top:2px;}
+.infos-test{display:flex;justify-content:center;gap:12px;margin-bottom:26px;flex-wrap:wrap;}
+.infos-test div{background:#f4f7fc;padding:12px 16px;border-radius:12px;min-width:80px;}
+.infos-test .val{color:#0B63F6;font-weight:700;font-size:14.5px;}
+.infos-test .lbl{color:#888;font-size:11.5px;margin-top:2px;}
 
-.certif{display:flex;align-items:flex-start;gap:10px;text-align:left;background:#fff8e1;padding:16px;border-radius:12px;margin-bottom:24px;}
+.certif{display:flex;align-items:flex-start;gap:10px;text-align:left;background:#fff8e1;padding:14px 16px;border-radius:12px;margin-bottom:10px;}
 .certif input{margin-top:3px;width:18px;height:18px;flex-shrink:0;}
-.certif label{color:#7a5c00;font-size:14px;line-height:1.5;}
+.certif label{color:#7a5c00;font-size:13.5px;line-height:1.5;}
+.certif:last-of-type{margin-bottom:22px;}
 
 button.demarrer{width:100%;padding:16px;background:#0B63F6;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;}
 button.demarrer:hover{background:#084ec7;}
@@ -64,15 +65,50 @@ button.demarrer:disabled{background:#ccc;cursor:not-allowed;}
 .choix.selectionne{border-color:#0B63F6;background:#eaf1ff;color:#0B63F6;font-weight:600;}
 .choix input{margin-right:12px;}
 
-.nav-test{display:flex;justify-content:space-between;padding:0 26px 30px;gap:12px;}
+.nav-test{display:flex;justify-content:space-between;padding:0 26px 12px;gap:12px;}
 .nav-test button{flex:1;padding:14px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:14.5px;}
 .btn-precedent{background:#f0f0f0;color:#555;}
 .btn-precedent:hover{background:#e2e2e2;}
 .btn-precedent:disabled{opacity:.4;cursor:not-allowed;}
 .btn-suivant{background:#0B63F6;color:white;}
 .btn-suivant:hover{background:#084ec7;}
+.btn-suivant:disabled{opacity:.4;cursor:not-allowed;}
+
+.nav-test-secondaire{display:flex;justify-content:space-between;padding:0 26px 30px;gap:12px;}
+.nav-test-secondaire button{flex:1;padding:13px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:13.5px;}
+.btn-marquer{background:#fff4e0;color:#e08b00;}
+.btn-marquer:hover{background:#ffe9c2;}
+.btn-marquer.actif{background:#e08b00;color:white;}
 .btn-terminer{background:#28a745;color:white;}
 .btn-terminer:hover{background:#1f7a35;}
+
+.panneau-questions{padding:14px 26px 6px;}
+.panneau-titre{color:#888;font-size:11.5px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.grille-questions{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:7px;margin-bottom:12px;}
+.chip-question{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #eee;color:#999;background:white;position:relative;}
+.chip-question.chip-actuel{border-color:#0B63F6;color:#0B63F6;background:#eaf1ff;}
+.chip-question.chip-repondue{background:#e6f7ec;border-color:#28a745;color:#28a745;}
+.chip-question.chip-marquee{border-color:#e08b00;}
+.chip-question.chip-marquee::after{content:"🚩";position:absolute;top:-8px;right:-6px;font-size:11px;}
+.legende-questions{display:flex;gap:14px;flex-wrap:wrap;color:#888;font-size:11.5px;margin-bottom:6px;}
+.legende-questions span{display:flex;align-items:center;gap:5px;}
+.legende-puce{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+/* --- overlay anti-triche --- */
+.overlay-avertissement{display:none;position:fixed;inset:0;background:rgba(140,20,20,.94);z-index:999999;align-items:center;justify-content:center;padding:24px;}
+.overlay-avertissement.visible{display:flex;}
+.avertissement-box{background:white;border-radius:20px;padding:36px 30px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4);}
+.avertissement-icone{font-size:48px;margin-bottom:14px;}
+.avertissement-box h2{color:#d93025;font-size:19px;margin-bottom:10px;}
+.avertissement-box p{color:#555;line-height:1.6;margin-bottom:18px;font-size:14.5px;}
+.avertissement-compteur{display:inline-block;background:#fdeaea;color:#d93025;padding:8px 18px;border-radius:30px;font-weight:700;font-size:13.5px;margin-bottom:22px;}
+.avertissement-box button{width:100%;padding:14px;background:#d93025;color:white;border:none;border-radius:10px;font-weight:700;font-size:14.5px;cursor:pointer;}
+.avertissement-box button:hover{background:#a8221a;}
+
+.gate-plein-ecran{padding:50px 40px;text-align:center;}
+.gate-plein-ecran .emoji{font-size:44px;margin-bottom:16px;}
+.gate-plein-ecran h2{color:#153A73;margin-bottom:12px;}
+.gate-plein-ecran p{color:#666;line-height:1.6;margin-bottom:24px;}
 
 </style>
 
@@ -83,6 +119,16 @@ button.demarrer:disabled{background:#ccc;cursor:not-allowed;}
 <div class="card" id="carte"></div>
 </div>
 
+<div class="overlay-avertissement" id="overlayAvertissement">
+    <div class="avertissement-box">
+        <div class="avertissement-icone">⚠️</div>
+        <h2 id="avertissementTitre">Avertissement</h2>
+        <p id="avertissementTexte"></p>
+        <div class="avertissement-compteur" id="avertissementCompteur"></div>
+        <button id="btnRevenirTest">J'ai compris, je reviens au test</button>
+    </div>
+</div>
+
 <script type="module">
 
 import { auth, db } from "./js/firebase.js";
@@ -91,14 +137,15 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arra
 
 const DUREE_SECONDES = 60 * 60;   // 60 minutes
 const NB_QUESTIONS = 30;
-const MAX_CHANGEMENTS_ONGLET = 3;
+const MAX_AVERTISSEMENTS = 3;
 
 let uid = null;
 let candidature = null;
 let test = null;               // état complet du testsRecrutement/{uid}
 let indexActuel = 0;
 let intervalChrono = null;
-let changementsOnglet = 0;
+let avertissements = 0;
+let enPause = false;
 let finalisationEnCours = false;
 
 const carte = document.getElementById("carte");
@@ -117,6 +164,24 @@ function melanger(tableau) {
         [t[i], t[j]] = [t[j], t[i]];
     }
     return t;
+}
+
+// ==========================================================
+// PLEIN ÉCRAN (non disponible sur tous les navigateurs, ex. Safari iOS —
+// dans ce cas on continue simplement sans pénaliser le candidat)
+// ==========================================================
+
+function pleinEcranDisponible() {
+    return !!(document.documentElement.requestFullscreen);
+}
+
+async function entrerPleinEcran() {
+    if (!pleinEcranDisponible()) return;
+    try { await document.documentElement.requestFullscreen(); } catch (error) { console.warn("Plein écran indisponible :", error.message); }
+}
+
+function sortirPleinEcran() {
+    if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
 }
 
 // ==========================================================
@@ -171,8 +236,8 @@ onAuthStateChanged(auth, async (user) => {
 
     if (test && test.statut === "en_cours") {
         // Reprise d'un test interrompu
-        changementsOnglet = test.changementsOnglet || 0;
-        demarrerEcranTest();
+        avertissements = test.avertissements || 0;
+        afficherGateReprise();
         return;
     }
 
@@ -181,18 +246,59 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    afficherEcranAccueil();
+    const expiration = calculerExpiration();
+
+    if (expiration && Date.now() > expiration.getTime()) {
+        afficherEtat("⏰", "Délai expiré", `Le délai pour passer ce test (jusqu'au ${formaterDateExpiration(expiration)}) est dépassé. Contactez l'équipe EDUFORCI si vous pensez qu'il s'agit d'une erreur.`);
+        return;
+    }
+
+    afficherEcranAccueil(expiration);
 
 });
+
+function trouverDateAutorisationTest() {
+    const entrees = (candidature.historique || []).filter(h => h.action && h.action.startsWith("Test autorisé"));
+    return entrees.length ? entrees[entrees.length - 1].date : null;
+}
+
+function calculerExpiration() {
+    const dateAutorisation = trouverDateAutorisationTest();
+    if (!dateAutorisation) return null;
+    return new Date(new Date(dateAutorisation).getTime() + 72 * 60 * 60 * 1000);
+}
+
+function formaterDateExpiration(dateExpiration) {
+    return dateExpiration.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) + " à 23h59";
+}
+
+// ==========================================================
+// REPRISE D'UN TEST INTERROMPU
+// ==========================================================
+
+function afficherGateReprise() {
+    carte.innerHTML = `
+        <div class="gate-plein-ecran">
+            <div class="emoji">🔄</div>
+            <h2>Reprise de votre test</h2>
+            <p>Votre test était en cours. Cliquez ci-dessous pour continuer là où vous en étiez, en plein écran.</p>
+            <button class="demarrer" id="btnReprendre">▶ Reprendre le test</button>
+        </div>`;
+    document.getElementById("btnReprendre").addEventListener("click", async () => {
+        await entrerPleinEcran();
+        demarrerEcranTest();
+    });
+}
 
 // ==========================================================
 // ÉCRAN D'ACCUEIL
 // ==========================================================
 
-function afficherEcranAccueil() {
+function afficherEcranAccueil(expiration) {
 
     const nom = [candidature.personnel?.prenom, candidature.personnel?.nom].filter(Boolean).join(" ") || "";
     const matiere = (candidature.matieres && candidature.matieres[0]) || "Générale";
+    const niveau = (candidature.niveaux && candidature.niveaux.join(", ")) || "-";
 
     carte.innerHTML = `
         <div class="accueil">
@@ -202,23 +308,40 @@ function afficherEcranAccueil() {
 
             <div class="infos-test">
                 <div><div class="val">${matiere}</div><div class="lbl">Matière</div></div>
+                <div><div class="val">${niveau}</div><div class="lbl">Niveau</div></div>
                 <div><div class="val">60 min</div><div class="lbl">Durée</div></div>
                 <div><div class="val">${NB_QUESTIONS}</div><div class="lbl">Questions</div></div>
+                <div><div class="val">1/1</div><div class="lbl">Tentative</div></div>
+                ${expiration ? `<div><div class="val">${formaterDateExpiration(expiration)}</div><div class="lbl">Expire le</div></div>` : ""}
             </div>
 
             <div class="certif">
-                <input type="checkbox" id="certifSeul">
-                <label for="certifSeul">Je certifie passer ce test seul, sans aide extérieure, et je comprends qu'une seule tentative est autorisée. Le temps ne démarre qu'après avoir cliqué sur « Commencer le test ».</label>
+                <input type="checkbox" class="case-certif" id="certif1">
+                <label for="certif1">Je certifie passer ce test sans assistance.</label>
+            </div>
+            <div class="certif">
+                <input type="checkbox" class="case-certif" id="certif2">
+                <label for="certif2">Je comprends que toute fraude entraîne l'annulation de ma candidature.</label>
+            </div>
+            <div class="certif">
+                <input type="checkbox" class="case-certif" id="certif3">
+                <label for="certif3">Je suis prêt(e).</label>
             </div>
 
             <button class="demarrer" id="btnDemarrer" disabled>▶ Commencer le test</button>
         </div>`;
 
-    document.getElementById("certifSeul").addEventListener("change", (e) => {
-        document.getElementById("btnDemarrer").disabled = !e.target.checked;
+    document.querySelectorAll(".case-certif").forEach((cb) => {
+        cb.addEventListener("change", () => {
+            const toutesCochees = [...document.querySelectorAll(".case-certif")].every(c => c.checked);
+            document.getElementById("btnDemarrer").disabled = !toutesCochees;
+        });
     });
 
-    document.getElementById("btnDemarrer").addEventListener("click", demarrerTest);
+    document.getElementById("btnDemarrer").addEventListener("click", async () => {
+        await entrerPleinEcran();
+        demarrerTest();
+    });
 
 }
 
@@ -262,6 +385,7 @@ async function demarrerTest() {
             sessionId: genererSessionId(),
             questions: questionsChoisies,
             reponses: {},
+            marquees: {},
             statut: "en_cours",
             debut: maintenant,
             fin: null,
@@ -269,7 +393,8 @@ async function demarrerTest() {
             tempsUtiliseSecondes: null,
             score: null,
             pourcentage: null,
-            changementsOnglet: 0,
+            avertissements: 0,
+            journalAntiTriche: [],
             tentativeNumero: 1,
             terminé: false
         };
@@ -282,7 +407,7 @@ async function demarrerTest() {
         });
 
         window.hideLoading();
-        changementsOnglet = 0;
+        avertissements = 0;
         demarrerEcranTest();
 
     } catch (error) {
@@ -312,24 +437,69 @@ function demarrerEcranTest() {
             <div class="progression-txt"><span id="labelQuestion">Question 1 / ${test.questions.length}</span></div>
             <div class="barre-progression"><div class="barre-progression-remplie" id="barreProgression" style="width:0%;"></div></div>
         </div>
+
+        <div class="panneau-questions">
+            <div class="panneau-titre">Navigation rapide</div>
+            <div class="grille-questions" id="grilleQuestions"></div>
+            <div class="legende-questions">
+                <span><span class="legende-puce" style="background:#e6f7ec;border:2px solid #28a745;"></span>Répondue</span>
+                <span><span class="legende-puce" style="background:#eaf1ff;border:2px solid #0B63F6;"></span>Actuelle</span>
+                <span><span class="legende-puce" style="background:white;border:2px solid #eee;"></span>À faire</span>
+                <span>🚩 Marquée</span>
+            </div>
+        </div>
+
         <div class="zone-question" id="zoneQuestion"></div>
         <div class="nav-test">
             <button class="btn-precedent" id="btnPrecedent">◀ Précédent</button>
             <button class="btn-suivant" id="btnSuivant">Suivant ▶</button>
         </div>
+        <div class="nav-test-secondaire">
+            <button class="btn-marquer" id="btnMarquer">🚩 Marquer pour revenir</button>
+            <button class="btn-terminer" id="btnTerminer">✅ Terminer le test</button>
+        </div>
     `;
 
     document.getElementById("btnPrecedent").addEventListener("click", () => { if (indexActuel > 0) { indexActuel--; afficherQuestion(); } });
-    document.getElementById("btnSuivant").addEventListener("click", () => {
-        if (indexActuel < test.questions.length - 1) { indexActuel++; afficherQuestion(); }
-        else finaliserTest("Test terminé par le candidat");
+    document.getElementById("btnSuivant").addEventListener("click", () => { if (indexActuel < test.questions.length - 1) { indexActuel++; afficherQuestion(); } });
+    document.getElementById("btnMarquer").addEventListener("click", basculerMarquage);
+    document.getElementById("btnTerminer").addEventListener("click", () => {
+        const nbReponses = Object.keys(test.reponses).length;
+        const nbTotal = test.questions.length;
+        const confirmation = nbReponses < nbTotal
+            ? confirm(`Il vous reste ${nbTotal - nbReponses} question(s) sans réponse. Voulez-vous vraiment terminer le test maintenant ? Cette action est définitive.`)
+            : confirm("Voulez-vous vraiment terminer et envoyer votre test ? Cette action est définitive.");
+        if (confirmation) finaliserTest("Test terminé par le candidat");
     });
 
     afficherQuestion();
     demarrerChrono();
-    surveillerChangementsOnglet();
+    surveillerAntiTriche();
     window.addEventListener("beforeunload", (e) => { if (test && !test.terminé) { e.preventDefault(); e.returnValue = ""; } });
 
+}
+
+function construireGrilleQuestions() {
+    return test.questions.map((q, i) => {
+        let classe = "";
+        if (i === indexActuel) classe = "chip-actuel";
+        else if (test.reponses[q.id] !== undefined) classe = "chip-repondue";
+        if (test.marquees && test.marquees[q.id]) classe += " chip-marquee";
+        return `<div class="chip-question ${classe}" data-index="${i}">${i + 1}</div>`;
+    }).join("");
+}
+
+async function basculerMarquage() {
+    const q = test.questions[indexActuel];
+    if (!test.marquees) test.marquees = {};
+    const nouvelEtat = !test.marquees[q.id];
+    test.marquees[q.id] = nouvelEtat;
+    afficherQuestion();
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), { [`marquees.${q.id}`]: nouvelEtat });
+    } catch (error) {
+        console.warn("Échec de la sauvegarde du marquage :", error.message);
+    }
 }
 
 function afficherQuestion() {
@@ -339,6 +509,10 @@ function afficherQuestion() {
 
     document.getElementById("labelQuestion").textContent = `Question ${indexActuel + 1} / ${test.questions.length}`;
     document.getElementById("barreProgression").style.width = `${((indexActuel + 1) / test.questions.length) * 100}%`;
+    document.getElementById("grilleQuestions").innerHTML = construireGrilleQuestions();
+    document.querySelectorAll(".chip-question").forEach((chip) => {
+        chip.addEventListener("click", () => { indexActuel = Number(chip.dataset.index); afficherQuestion(); });
+    });
 
     const zone = document.getElementById("zoneQuestion");
     zone.innerHTML = `
@@ -355,11 +529,13 @@ function afficherQuestion() {
         label.addEventListener("click", () => enregistrerReponse(q.id, Number(label.dataset.index)));
     });
 
-    const btnSuivant = document.getElementById("btnSuivant");
-    btnSuivant.textContent = indexActuel === test.questions.length - 1 ? "✅ Terminer le test" : "Suivant ▶";
-    btnSuivant.className = indexActuel === test.questions.length - 1 ? "btn-terminer" : "btn-suivant";
-
     document.getElementById("btnPrecedent").disabled = indexActuel === 0;
+    document.getElementById("btnSuivant").disabled = indexActuel === test.questions.length - 1;
+
+    const estMarquee = !!(test.marquees && test.marquees[q.id]);
+    const btnMarquer = document.getElementById("btnMarquer");
+    btnMarquer.textContent = estMarquee ? "🚩 Retirer le marquage" : "🚩 Marquer pour revenir";
+    btnMarquer.classList.toggle("actif", estMarquee);
 
 }
 
@@ -392,7 +568,7 @@ function demarrerChrono() {
 
         if (restantSec <= 0) {
             clearInterval(intervalChrono);
-            finaliserTest("Temps écoulé — fin automatique");
+            finaliserTest("Temps écoulé", "temps");
             return;
         }
 
@@ -409,44 +585,81 @@ function demarrerChrono() {
 }
 
 // ==========================================================
-// ANTI-TRICHE (changements d'onglet)
+// ANTI-TRICHE (changements d'onglet + sortie du plein écran)
+// avertissements progressifs : 1, 2, puis fin automatique au 3e
 // ==========================================================
 
-function surveillerChangementsOnglet() {
+function surveillerAntiTriche() {
 
-    document.addEventListener("visibilitychange", async () => {
-
-        if (document.hidden && test && !test.terminé) {
-
-            changementsOnglet++;
-
-            try {
-                await updateDoc(doc(db, "testsRecrutement", uid), { changementsOnglet });
-            } catch (error) {
-                console.warn("Erreur de suivi anti-triche :", error.message);
-            }
-
-            if (changementsOnglet >= MAX_CHANGEMENTS_ONGLET) {
-                finaliserTest(`Test terminé automatiquement (${MAX_CHANGEMENTS_ONGLET} changements d'onglet détectés)`);
-            }
-
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden && test && !test.terminé && !finalisationEnCours) {
+            declencherAvertissement("changement_onglet", "Vous avez changé d'onglet ou quitté la fenêtre.\nVeuillez revenir immédiatement.");
         }
-
     });
 
+    if (pleinEcranDisponible()) {
+        document.addEventListener("fullscreenchange", () => {
+            if (!document.fullscreenElement && test && !test.terminé && !finalisationEnCours && !enPause) {
+                declencherAvertissement("sortie_plein_ecran", "Vous avez quitté le mode plein écran.");
+            }
+        });
+    }
+
 }
+
+const LIBELLES_ORDRE = { 1: "Premier avertissement.", 2: "Deuxième avertissement." };
+
+async function declencherAvertissement(type, message) {
+
+    if (!test || test.terminé || finalisationEnCours || enPause) return;
+
+    avertissements++;
+    enPause = true;
+
+    const entree = { date: new Date().toISOString(), type, message };
+
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), {
+            avertissements,
+            journalAntiTriche: arrayUnion(entree)
+        });
+    } catch (error) {
+        console.warn("Erreur de suivi anti-triche :", error.message);
+    }
+
+    if (avertissements >= MAX_AVERTISSEMENTS) {
+        finaliserTest("Nombre d'avertissements dépassé", "fraude");
+        return;
+    }
+
+    document.getElementById("avertissementTitre").textContent = LIBELLES_ORDRE[avertissements] || "Avertissement.";
+    document.getElementById("avertissementTexte").textContent = message;
+    document.getElementById("avertissementCompteur").textContent = `Avertissement ${avertissements}/${MAX_AVERTISSEMENTS}`;
+    document.getElementById("overlayAvertissement").classList.add("visible");
+
+}
+
+document.getElementById("btnRevenirTest").addEventListener("click", async () => {
+    document.getElementById("overlayAvertissement").classList.remove("visible");
+    enPause = false;
+    if (pleinEcranDisponible() && !document.fullscreenElement && test && !test.terminé) {
+        await entrerPleinEcran();
+    }
+});
 
 // ==========================================================
 // FINALISATION / CORRECTION AUTOMATIQUE
 // ==========================================================
 
-async function finaliserTest(motif) {
+async function finaliserTest(motif, type = "normal") {
 
     if (finalisationEnCours || (test && test.terminé)) return;
     finalisationEnCours = true;
 
     if (intervalChrono) clearInterval(intervalChrono);
     window.removeEventListener("beforeunload", () => {});
+    document.getElementById("overlayAvertissement").classList.remove("visible");
+    sortirPleinEcran();
 
     window.showLoading("Correction en cours...");
 
@@ -476,25 +689,37 @@ async function finaliserTest(motif) {
             statut: "termine",
             terminé: true,
             fin: maintenant,
+            motifFin: motif,
+            typeFin: type,
             tempsUtiliseSecondes,
-            score: scoreSur20,
-            pourcentage,
-            changementsOnglet
+            score: type === "fraude" ? 0 : scoreSur20,
+            pourcentage: type === "fraude" ? 0 : pourcentage,
+            avertissements
         });
 
         await updateDoc(doc(db, "candidaturesRecrutement", uid), {
-            historique: arrayUnion({ date: maintenant, action: motif + ` — session ${test.sessionId}` })
+            historique: arrayUnion({ date: maintenant, action: `Test terminé (${motif}) — session ${test.sessionId}` })
         });
 
         window.hideLoading();
 
-        carte.innerHTML = `
-            <div class="etat">
-                <div class="emoji">✔️</div>
-                <h2>Votre test est terminé.</h2>
-                <p>Vos réponses ont été enregistrées.<br>Merci d'avoir passé le test de recrutement EDUFORCI.</p>
-                <a href="dashboard-enseignant.html">Retour au tableau de bord</a>
-            </div>`;
+        if (type === "fraude") {
+            carte.innerHTML = `
+                <div class="etat">
+                    <div class="emoji">🚫</div>
+                    <h2>Le test est terminé.</h2>
+                    <p>Motif : ${motif}.<br>Votre candidature sera examinée par l'équipe EDUFORCI.</p>
+                    <a href="dashboard-enseignant.html">Retour au tableau de bord</a>
+                </div>`;
+        } else {
+            carte.innerHTML = `
+                <div class="etat">
+                    <div class="emoji">✔️</div>
+                    <h2>Merci.</h2>
+                    <p>Vos réponses sont enregistrées.<br>Votre dossier est en cours d'évaluation.<br>Vous serez notifié(e).</p>
+                    <a href="dashboard-enseignant.html">Retour au tableau de bord</a>
+                </div>`;
+        }
 
     } catch (error) {
         window.hideLoading();

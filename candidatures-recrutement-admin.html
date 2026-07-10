@@ -538,12 +538,27 @@ async function ouvrirModal(id) {
 async function afficherTest(id) {
 
     const zone = document.getElementById("zoneTest");
+    const c = candidatures.find(x => x.id === id);
 
     try {
         const testSnap = await getDoc(doc(db, "testsRecrutement", id));
 
         if (!testSnap.exists()) {
-            zone.innerHTML = `<div class="historique-vide">Ce candidat n'a pas encore passé le test de recrutement.</div>`;
+
+            const etapes = [
+                { fait: true, label: "Candidature reçue" },
+                { fait: ["en_verification", "documents_valides", "test_autorise", "admis"].includes(c?.statut), label: "Documents en cours de vérification" },
+                { fait: ["documents_valides", "test_autorise", "admis"].includes(c?.statut), label: "Documents validés" },
+                { fait: ["test_autorise", "admis"].includes(c?.statut), label: "Test autorisé" },
+                { fait: false, label: c?.statut === "test_autorise" ? "En attente que le candidat clique sur « Commencer le test »" : "Test non autorisé pour le moment" }
+            ];
+
+            zone.innerHTML = etapes.map(e => `
+                <div class="etape-suivi ${e.fait ? "fait" : (e === etapes[etapes.length - 1] ? "actuel" : "")}">
+                    <div class="puce">${e.fait ? "✓" : "•"}</div>
+                    <span class="label">${e.label}</span>
+                </div>
+            `).join("");
             return;
         }
 
@@ -554,16 +569,27 @@ async function afficherTest(id) {
         const tempsAffiche = t.tempsUtiliseSecondes != null ? Math.round(t.tempsUtiliseSecondes / 60) + " min" : (enCours ? "En cours..." : "-");
         const scoreAffiche = t.score != null ? `${t.score} / 20` : "-";
         const pourcentageAffiche = t.pourcentage != null ? ` (${t.pourcentage} %)` : "";
+        const nbReponses = t.reponses ? Object.keys(t.reponses).length : 0;
+
+        const journal = Array.isArray(t.journalAntiTriche) ? t.journalAntiTriche : [];
+        const nbOnglet = journal.filter(j => j.type === "changement_onglet").length;
+        const nbPleinEcran = journal.filter(j => j.type === "sortie_plein_ecran").length;
+        const detailAvertissements = journal.length ? ` (${nbOnglet} onglet, ${nbPleinEcran} plein écran)` : "";
+
+        const motifLigne = t.typeFin === "fraude"
+            ? `<div class="info-ligne"><span class="cle">Motif de fin</span><span class="val" style="color:#d93025;">🚫 ${t.motifFin || "Fraude détectée"}</span></div>`
+            : (t.typeFin === "temps" ? `<div class="info-ligne"><span class="cle">Motif de fin</span><span class="val">⏰ Temps écoulé</span></div>` : "");
 
         zone.innerHTML = `
-            <div class="info-ligne"><span class="cle">Statut</span><span class="val">${enCours ? "🟠 En cours" : "✅ Terminé"}</span></div>
+            <div class="info-ligne"><span class="cle">Statut</span><span class="val">${enCours ? `🟠 En cours (${nbReponses}/${t.questions?.length || 30} répondues)` : "✅ Terminé"}</span></div>
             <div class="info-ligne"><span class="cle">Session</span><span class="val">${t.sessionId || "-"}</span></div>
             <div class="info-ligne"><span class="cle">Matière testée</span><span class="val">${t.matiere || "-"}</span></div>
             <div class="info-ligne"><span class="cle">Date</span><span class="val">${dateAffichee}</span></div>
             <div class="info-ligne"><span class="cle">Temps utilisé</span><span class="val">${tempsAffiche}</span></div>
             <div class="info-ligne"><span class="cle">Score</span><span class="val">${scoreAffiche}${pourcentageAffiche}</span></div>
             <div class="info-ligne"><span class="cle">Tentative</span><span class="val">${t.tentativeNumero || 1} / 1</span></div>
-            <div class="info-ligne" style="border-bottom:none;"><span class="cle">Changements d'onglet</span><span class="val">${t.changementsOnglet ?? 0}</span></div>
+            ${motifLigne}
+            <div class="info-ligne" style="border-bottom:none;"><span class="cle">Avertissements</span><span class="val">${t.avertissements ?? 0} / 3${detailAvertissements}</span></div>
         `;
 
     } catch (error) {

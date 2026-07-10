@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:680px;}
+
+.card{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+h1{color:#153A73;margin-bottom:6px;}
+p.sub{color:#666;margin-top:8px;}
+
+.banniere-test{background:linear-gradient(135deg,#7b2fd6,#0B63F6);color:white;padding:22px;border-radius:16px;margin-bottom:25px;}
+.banniere-test .titre{font-weight:700;font-size:16px;margin-bottom:10px;}
+.banniere-test .ligne{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:14px;opacity:.95;}
+.banniere-test a{display:inline-block;margin-top:12px;background:white;color:#7b2fd6;padding:11px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;}
+.banniere-test a:hover{opacity:.9;}
+
+.notif{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid #f0f0f0;}
+.notif:last-child{border-bottom:none;}
+.notif .icone{font-size:20px;flex-shrink:0;width:30px;text-align:center;}
+.notif .contenu{flex:1;}
+.notif .texte{color:#333;font-size:14.5px;line-height:1.5;}
+.notif .date{color:#999;font-size:12px;margin-top:4px;}
+
+.vide{text-align:center;padding:40px 20px;color:#888;}
+.chargement{text-align:center;padding:40px;color:#999;}
+
+</style>
+
+</head>
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="missions-proposees-enseignant.html">🎯 Missions proposées</a>
+<a href="notifications-enseignant.html" class="active">🔔 Notifications</a>
+<a href="mes-candidatures-enseignant.html">📝 Ma candidature</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="card">
+<h1>🔔 Notifications</h1>
+<p class="sub">Tout ce qui concerne votre dossier de candidature et votre test de recrutement.</p>
+</div>
+
+<div id="zoneBanniere"></div>
+
+<div class="card">
+<div id="zoneNotifications"><div class="chargement">⏳ Chargement...</div></div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+function choisirIcone(texte) {
+    const t = (texte || "").toLowerCase();
+    if (t.includes("refus")) return "❌";
+    if (t.includes("admis")) return "🎉";
+    if (t.includes("test autorisé") || t.includes("test démarré")) return "📅";
+    if (t.includes("valid")) return "✅";
+    if (t.includes("modification")) return "🟠";
+    if (t.includes("terminé")) return "🏁";
+    if (t.includes("reçue") || t.includes("soumise") || t.includes("resoumise")) return "📩";
+    return "💬";
+}
+
+function formaterDate(iso) {
+    if (!iso) return "-";
+    try { return new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }); } catch { return "-"; }
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    const zone = document.getElementById("zoneNotifications");
+    const zoneBanniere = document.getElementById("zoneBanniere");
+
+    try {
+
+        const candSnap = await getDoc(doc(db, "candidaturesRecrutement", user.uid));
+
+        let evenements = [];
+
+        if (candSnap.exists()) {
+            const c = candSnap.data();
+
+            if (Array.isArray(c.historique)) {
+                evenements = c.historique.map(h => ({ texte: h.action, date: h.date, source: "systeme" }));
+            }
+
+            if (c.statut === "test_autorise") {
+                const dateAutorisation = [...(c.historique || [])].reverse().find(h => h.action && h.action.startsWith("Test autorisé"))?.date;
+                const expiration = dateAutorisation ? new Date(new Date(dateAutorisation).getTime() + 72 * 60 * 60 * 1000) : null;
+
+                zoneBanniere.innerHTML = `
+                    <div class="banniere-test">
+                        <div class="titre">✅ Votre dossier a été validé.</div>
+                        <div class="ligne">📅 Le test de recrutement est disponible.</div>
+                        ${expiration ? `<div class="ligne">⏰ Vous avez jusqu'au ${expiration.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} à 23h59.</div>` : ""}
+                        <div class="ligne">🎯 Tentative restante : 1/1</div>
+                        <a href="test-enseignant.html">▶ Passer le test maintenant</a>
+                    </div>`;
+            }
+        }
+
+        // Messages libres envoyés par l'administrateur
+        const profilSnap = await getDoc(doc(db, "enseignants", user.uid));
+        if (profilSnap.exists() && profilSnap.data().identifiant) {
+            const q = query(collection(db, "messages"), where("enseignantId", "==", profilSnap.data().identifiant));
+            const msgSnap = await getDocs(q);
+            msgSnap.forEach((d) => {
+                const m = d.data();
+                if (m.origine === "recrutement" && m.contenu) {
+                    evenements.push({ texte: m.contenu, date: m.dateEnvoi, source: "message" });
+                }
+            });
+        }
+
+        evenements.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        zone.innerHTML = evenements.length
+            ? evenements.map(e => `
+                <div class="notif">
+                    <div class="icone">${choisirIcone(e.texte)}</div>
+                    <div class="contenu">
+                        <div class="texte">${e.texte}</div>
+                        <div class="date">${formaterDate(e.date)}</div>
+                    </div>
+                </div>`).join("")
+            : `<div class="vide">Aucune notification pour le moment.</div>`;
+
+    } catch (error) {
+        zone.innerHTML = `<div class="vide">Erreur lors du chargement : ${error.message}</div>`;
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>
