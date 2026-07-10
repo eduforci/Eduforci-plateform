@@ -252,6 +252,11 @@ onAuthStateChanged(auth, async (user) => {
     if (test && test.statut === "en_cours") {
         // Reprise d'un test interrompu
         avertissements = test.avertissements || 0;
+        try {
+            await updateDoc(doc(db, "testsRecrutement", uid), { actualisations: (test.actualisations || 0) + 1 });
+        } catch (error) {
+            console.warn("Suivi actualisation échoué :", error.message);
+        }
         afficherGateReprise();
         return;
     }
@@ -411,6 +416,9 @@ async function demarrerTest() {
             avertissements: 0,
             journalAntiTriche: [],
             tentativeNumero: prochaineTentative,
+            questionActuelle: 1,
+            actualisations: 0,
+            deconnexions: 0,
             terminé: false
         };
 
@@ -529,6 +537,8 @@ function afficherQuestion() {
         chip.addEventListener("click", () => { indexActuel = Number(chip.dataset.index); afficherQuestion(); });
     });
 
+    updateDoc(doc(db, "testsRecrutement", uid), { questionActuelle: indexActuel + 1 }).catch(() => {});
+
     const zone = document.getElementById("zoneQuestion");
     zone.innerHTML = `
         <h2>${q.question}</h2>
@@ -619,6 +629,13 @@ function surveillerAntiTriche() {
             }
         });
     }
+
+    window.addEventListener("offline", () => {
+        if (test && !test.terminé) {
+            updateDoc(doc(db, "testsRecrutement", uid), { deconnexions: (test.deconnexions || 0) + 1 }).catch(() => {});
+            if (test) test.deconnexions = (test.deconnexions || 0) + 1;
+        }
+    });
 
 }
 
