@@ -28,8 +28,8 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .welcome{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;overflow-x:auto;}
 
 /* --- Cartes de statistiques --- */
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-bottom:25px;}
-@media (max-width:1100px){.stats{grid-template-columns:repeat(3,1fr);}}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:25px;}
+@media (max-width:1250px){.stats{grid-template-columns:repeat(3,1fr);}}
 @media (max-width:650px){.stats{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:white;padding:20px;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;cursor:pointer;transition:.2s;border:2px solid transparent;}
 .stat-card:hover{transform:translateY(-2px);}
@@ -156,7 +156,8 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <div class="stats">
 <div class="stat-card" data-filtre="attente"><div class="nb" id="nbAttente">0</div><div class="lbl">🟡 En attente</div></div>
 <div class="stat-card" data-filtre="documents_valides"><div class="nb" id="nbDocValides">0</div><div class="lbl">🟢 Documents validés</div></div>
-<div class="stat-card" data-filtre="test_autorise"><div class="nb" id="nbTestAutorise">0</div><div class="lbl">🟣 Test autorisé</div></div>
+<div class="stat-card" data-filtre="test_autorise"><div class="nb" id="nbTestAutorise">0</div><div class="lbl">🟣 Tests autorisés</div></div>
+<div class="stat-card" data-filtre="tests_termines"><div class="nb" id="nbTestsTermines">0</div><div class="lbl">🏁 Tests terminés</div></div>
 <div class="stat-card" data-filtre="admis"><div class="nb" id="nbAdmis">0</div><div class="lbl">✅ Admis</div></div>
 <div class="stat-card" data-filtre="refuse"><div class="nb" id="nbRefuses">0</div><div class="lbl">❌ Refusés</div></div>
 </div>
@@ -169,7 +170,8 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <option value="toutes">Toutes</option>
 <option value="attente">En attente</option>
 <option value="documents_valides">Documents validés</option>
-<option value="test_autorise">Test autorisé</option>
+<option value="test_autorise">Tests autorisés</option>
+<option value="tests_termines">Tests terminés</option>
 <option value="admis">Admis</option>
 <option value="refuse">Refusés</option>
 </select>
@@ -293,13 +295,46 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 </div>
 </div>
 
+<!-- ================= POPUP AUTORISATION DU TEST ================= -->
+<div class="modal-overlay" id="popupAutoriser">
+<div class="modal-box" style="max-width:420px;">
+
+<div class="modal-entete" style="background:#7b2fd6;">
+<h2>🟣 Autoriser le test</h2>
+<button class="fermer" id="btnFermerPopupAutoriser">✕</button>
+</div>
+
+<div style="padding:26px 28px;">
+
+<p id="popupAutoriserQuestion" style="color:#333;font-size:15px;margin-bottom:20px;">Voulez-vous autoriser ce candidat à passer le test ?</p>
+
+<div class="score-grille" style="grid-template-columns:1fr 100px;">
+<label>Durée (minutes)</label><input type="number" id="paramDuree" min="10" max="180" value="60">
+<label>Nombre de questions</label><input type="number" id="paramQuestions" min="5" max="60" value="30">
+<label>Tentative(s) autorisée(s)</label><input type="number" id="paramTentatives" min="1" max="3" value="1">
+<label>Expiration (heures)</label><input type="number" id="paramExpiration" min="12" max="240" value="72">
+</div>
+
+<div id="zoneResultatAutorisation"></div>
+
+<div class="actions-grille" style="margin-top:22px;">
+<button class="btn-action btn-rejeter" id="btnAutoriserNon">NON</button>
+<button class="btn-action btn-valider-docs" id="btnAutoriserOui">OUI</button>
+</div>
+
+</div>
+
+</div>
+</div>
+
 <script type="module">
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, collection, getDocs, updateDoc, addDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, collection, getDocs, updateDoc, addDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let candidatures = [];   // liste brute { id, ...data }
+let idsTestsTermines = new Set();
 let filtreActuel = "toutes";
 let candidatureOuverteId = null;
 
@@ -321,10 +356,11 @@ function formaterDate(iso) {
     try { return new Date(iso).toLocaleDateString("fr-FR"); } catch { return "-"; }
 }
 
-function correspondFiltre(statut, filtre) {
+function correspondFiltre(candidat, filtre) {
     if (filtre === "toutes") return true;
-    if (filtre === "attente") return statut === "soumise" || statut === "en_verification";
-    return statut === filtre;
+    if (filtre === "attente") return candidat.statut === "soumise" || candidat.statut === "en_verification";
+    if (filtre === "tests_termines") return idsTestsTermines.has(candidat.id);
+    return candidat.statut === filtre;
 }
 
 // ==========================================================
@@ -357,13 +393,21 @@ async function chargerCandidatures() {
 
     try {
 
-        const snap = await getDocs(collection(db, "candidaturesRecrutement"));
+        const [snap, snapTests] = await Promise.all([
+            getDocs(collection(db, "candidaturesRecrutement")),
+            getDocs(collection(db, "testsRecrutement"))
+        ]);
 
         candidatures = [];
         snap.forEach((docSnap) => {
             const d = docSnap.data();
             if (d.statut === "brouillon" || !d.statut) return; // dossiers non soumis : ignorés côté admin
             candidatures.push({ id: docSnap.id, ...d });
+        });
+
+        idsTestsTermines = new Set();
+        snapTests.forEach((docSnap) => {
+            if (docSnap.data().terminé) idsTestsTermines.add(docSnap.id);
         });
 
         mettreAJourStats();
@@ -382,6 +426,7 @@ function mettreAJourStats() {
     document.getElementById("nbAttente").textContent = candidatures.filter(c => c.statut === "soumise" || c.statut === "en_verification").length;
     document.getElementById("nbDocValides").textContent = candidatures.filter(c => c.statut === "documents_valides").length;
     document.getElementById("nbTestAutorise").textContent = candidatures.filter(c => c.statut === "test_autorise").length;
+    document.getElementById("nbTestsTermines").textContent = idsTestsTermines.size;
     document.getElementById("nbAdmis").textContent = candidatures.filter(c => c.statut === "admis").length;
     document.getElementById("nbRefuses").textContent = candidatures.filter(c => c.statut === "refuse").length;
 }
@@ -399,7 +444,7 @@ function appliquerFiltres() {
 
     const resultats = candidatures.filter((c) => {
 
-        if (!correspondFiltre(c.statut, filtreActuel)) return false;
+        if (!correspondFiltre(c, filtreActuel)) return false;
         if (!terme) return true;
 
         const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ").toLowerCase();
@@ -713,11 +758,94 @@ document.getElementById("btnValiderDocs").addEventListener("click", () => appliq
     messageParDefaut: "Votre dossier est complet. Vos documents ont été validés."
 }));
 
-document.getElementById("btnAutoriserTest").addEventListener("click", () => appliquerAction({
-    nouveauStatut: "test_autorise",
-    actionHistorique: "Test autorisé",
-    messageParDefaut: "Félicitations, vous êtes autorisé(e) à passer le test EDUFORCI."
-}));
+document.getElementById("btnAutoriserTest").addEventListener("click", ouvrirPopupAutoriser);
+
+function ouvrirPopupAutoriser() {
+    const c = candidatures.find(x => x.id === candidatureOuverteId);
+    if (!c) return;
+    const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || identifiantCourt(c.id);
+    document.getElementById("popupAutoriserQuestion").textContent = `Voulez-vous autoriser ${nom} à passer le test ?`;
+    document.getElementById("paramDuree").value = 60;
+    document.getElementById("paramQuestions").value = 30;
+    document.getElementById("paramTentatives").value = 1;
+    document.getElementById("paramExpiration").value = 72;
+    document.getElementById("zoneResultatAutorisation").innerHTML = "";
+    document.querySelector("#popupAutoriser .actions-grille").style.display = "grid";
+    document.getElementById("popupAutoriser").classList.add("ouvert");
+}
+
+document.getElementById("btnFermerPopupAutoriser").addEventListener("click", () => {
+    document.getElementById("popupAutoriser").classList.remove("ouvert");
+});
+document.getElementById("btnAutoriserNon").addEventListener("click", () => {
+    document.getElementById("popupAutoriser").classList.remove("ouvert");
+});
+
+// Génère un identifiant de session d'autorisation TR-2026-000254,
+// en créant le compteur Firestore au besoin (même schéma que compteurs/enseignants etc.)
+async function genererIdAutorisation() {
+    const compteurRef = doc(db, "compteurs", "testsAutorises");
+    const compteurSnap = await getDoc(compteurRef);
+    let numero = 1;
+    if (!compteurSnap.exists()) {
+        await setDoc(compteurRef, { dernierNumero: 1 });
+    } else {
+        numero = (compteurSnap.data().dernierNumero || 0) + 1;
+        await updateDoc(compteurRef, { dernierNumero: numero });
+    }
+    const annee = new Date().getFullYear();
+    return `TR-${annee}-${String(numero).padStart(6, "0")}`;
+}
+
+document.getElementById("btnAutoriserOui").addEventListener("click", async () => {
+
+    const c = candidatures.find(x => x.id === candidatureOuverteId);
+    if (!c) return;
+
+    const dureeMinutes = Number(document.getElementById("paramDuree").value) || 60;
+    const nombreQuestions = Number(document.getElementById("paramQuestions").value) || 30;
+    const tentativesAutorisees = Number(document.getElementById("paramTentatives").value) || 1;
+    const expirationHeures = Number(document.getElementById("paramExpiration").value) || 72;
+
+    window.showLoading("Autorisation en cours...");
+
+    try {
+
+        const idAutorisation = await genererIdAutorisation();
+        const maintenant = new Date();
+        const dateExpiration = new Date(maintenant.getTime() + expirationHeures * 60 * 60 * 1000);
+
+        await updateDoc(doc(db, "candidaturesRecrutement", candidatureOuverteId), {
+            statut: "test_autorise",
+            documentsStatut: "valides",
+            autorisationTestId: idAutorisation,
+            parametresTest: { dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
+            messageAdmin: document.getElementById("commentaireAdmin").value.trim() || "Félicitations, vous êtes autorisé(e) à passer le test EDUFORCI.",
+            historique: arrayUnion({ date: maintenant.toISOString(), action: `Test autorisé — session ${idAutorisation}` })
+        });
+
+        await envoyerNotification(c, `Votre dossier a été validé. Le test de recrutement (${dureeMinutes} min, ${nombreQuestions} questions) est disponible jusqu'au ${dateExpiration.toLocaleDateString("fr-FR")}.`);
+
+        window.hideLoading();
+
+        document.querySelector("#popupAutoriser .actions-grille").style.display = "none";
+        document.getElementById("zoneResultatAutorisation").innerHTML = `
+            <div class="info-ligne"><span class="cle">Session</span><span class="val">${idAutorisation}</span></div>
+            <div class="info-ligne"><span class="cle">Statut</span><span class="val">🟣 Autorisé</span></div>
+            <div class="info-ligne"><span class="cle">Début possible</span><span class="val">${maintenant.toLocaleDateString("fr-FR")}</span></div>
+            <div class="info-ligne"><span class="cle">Expiration</span><span class="val">${dateExpiration.toLocaleDateString("fr-FR")}</span></div>
+            <div class="info-ligne" style="border-bottom:none;"><span class="cle">Tentative(s)</span><span class="val">${tentativesAutorisees}</span></div>
+        `;
+
+        await chargerCandidatures();
+        await ouvrirModal(candidatureOuverteId);
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur : " + error.message, "erreur");
+    }
+
+});
 
 document.getElementById("btnDemanderModifs").addEventListener("click", () => appliquerAction({
     nouveauDocumentsStatut: "a_completer",

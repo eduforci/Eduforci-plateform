@@ -135,8 +135,10 @@ import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-const DUREE_SECONDES = 60 * 60;   // 60 minutes
-const NB_QUESTIONS = 30;
+let DUREE_SECONDES = 60 * 60;   // 60 minutes par défaut, ajustable via candidature.parametresTest
+let NB_QUESTIONS = 30;
+let TENTATIVES_AUTORISEES = 1;
+let EXPIRATION_HEURES = 72;
 const MAX_AVERTISSEMENTS = 3;
 
 let uid = null;
@@ -147,6 +149,7 @@ let intervalChrono = null;
 let avertissements = 0;
 let enPause = false;
 let finalisationEnCours = false;
+let prochaineTentative = 1;
 
 const carte = document.getElementById("carte");
 
@@ -226,12 +229,24 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+    const parametres = candidature.parametresTest || {};
+    DUREE_SECONDES = (parametres.dureeMinutes || 60) * 60;
+    NB_QUESTIONS = parametres.nombreQuestions || 30;
+    TENTATIVES_AUTORISEES = parametres.tentativesAutorisees || 1;
+    EXPIRATION_HEURES = parametres.expirationHeures || 72;
+
     const testSnap = await getDoc(doc(db, "testsRecrutement", uid));
     test = testSnap.exists() ? testSnap.data() : null;
 
     if (test && test.terminé) {
-        afficherEtat("✔️", "Test déjà réalisé", `Vous avez déjà passé le test de recrutement le ${new Date(test.fin).toLocaleDateString("fr-FR")}. Une seule tentative est autorisée. Le résultat vous sera communiqué par l'équipe EDUFORCI.`);
-        return;
+        const tentativeActuelle = test.tentativeNumero || 1;
+        if (tentativeActuelle >= TENTATIVES_AUTORISEES) {
+            afficherEtat("✔️", "Test déjà réalisé", `Vous avez déjà passé le test de recrutement le ${new Date(test.fin).toLocaleDateString("fr-FR")} (tentative ${tentativeActuelle}/${TENTATIVES_AUTORISEES}). Le résultat vous sera communiqué par l'équipe EDUFORCI.`);
+            return;
+        }
+        // il reste une tentative disponible : le candidat repart sur un écran d'accueil neuf
+        prochaineTentative = tentativeActuelle + 1;
+        test = null;
     }
 
     if (test && test.statut === "en_cours") {
@@ -265,7 +280,7 @@ function trouverDateAutorisationTest() {
 function calculerExpiration() {
     const dateAutorisation = trouverDateAutorisationTest();
     if (!dateAutorisation) return null;
-    return new Date(new Date(dateAutorisation).getTime() + 72 * 60 * 60 * 1000);
+    return new Date(new Date(dateAutorisation).getTime() + EXPIRATION_HEURES * 60 * 60 * 1000);
 }
 
 function formaterDateExpiration(dateExpiration) {
@@ -311,7 +326,7 @@ function afficherEcranAccueil(expiration) {
                 <div><div class="val">${niveau}</div><div class="lbl">Niveau</div></div>
                 <div><div class="val">60 min</div><div class="lbl">Durée</div></div>
                 <div><div class="val">${NB_QUESTIONS}</div><div class="lbl">Questions</div></div>
-                <div><div class="val">1/1</div><div class="lbl">Tentative</div></div>
+                <div><div class="val">${prochaineTentative}/${TENTATIVES_AUTORISEES}</div><div class="lbl">Tentative</div></div>
                 ${expiration ? `<div><div class="val">${formaterDateExpiration(expiration)}</div><div class="lbl">Expire le</div></div>` : ""}
             </div>
 
@@ -395,7 +410,7 @@ async function demarrerTest() {
             pourcentage: null,
             avertissements: 0,
             journalAntiTriche: [],
-            tentativeNumero: 1,
+            tentativeNumero: prochaineTentative,
             terminé: false
         };
 
