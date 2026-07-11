@@ -114,6 +114,8 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 <a href="missions-proposees-enseignant.html">🎯 Missions proposées</a>
 <a href="notifications-enseignant.html">🔔 Notifications</a>
 <a href="mes-candidatures-enseignant.html" class="active">📝 Ma candidature</a>
+<a href="certificat-enseignant.html">🎓 Mon certificat</a>
+
 <a href="avis-enseignant.html">⭐ Avis</a>
 <a href="parametres-enseignant.html">⚙️ Paramètres</a>
 <a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
@@ -251,7 +253,7 @@ function rendreBlocDecision(c, statut) {
             <div class="bloc-decision admis">
                 <div class="decision-titre">🎉 Félicitations !</div>
                 <p>Votre candidature est acceptée.<br>Bienvenue chez EDUFORCI.</p>
-                ${c.numeroCertification ? `<div class="bandeau-certif">🎖️ ${c.badge || "Enseignant certifié EDUFORCI"}<br><strong>${c.numeroCertification}</strong><br><small>Le certificat téléchargeable sera bientôt disponible dans votre espace.</small></div>` : ""}
+                ${c.numeroCertification ? `<div class="bandeau-certif">🎖️ ${c.badge || "Enseignant certifié EDUFORCI"}<br><strong>${c.numeroCertification}</strong><br><a href="certificat-enseignant.html" style="display:inline-block;margin-top:10px;background:white;color:#28a745;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;">📥 Voir / télécharger mon certificat</a></div>` : ""}
                 <p style="margin-top:14px;">Votre profil sera prochainement publié.</p>
             </div>`;
     }

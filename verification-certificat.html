@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vérification de certification | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{min-height:100vh;background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,.85)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;align-items:center;justify-content:center;padding:20px;}
+
+.conteneur{max-width:480px;width:100%;}
+
+.entete{text-align:center;margin-bottom:24px;}
+.entete img{height:60px;margin-bottom:14px;}
+.entete h1{color:white;font-size:20px;}
+.entete p{color:rgba(255,255,255,.8);font-size:13.5px;margin-top:6px;}
+
+.card{background:white;border-radius:20px;padding:30px;box-shadow:0 20px 50px rgba(0,0,0,.3);}
+
+.barre-recherche{display:flex;gap:10px;margin-bottom:10px;}
+.barre-recherche input{flex:1;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;text-transform:uppercase;}
+.barre-recherche button{padding:14px 20px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;}
+.barre-recherche button:hover{background:#084ec7;}
+
+.aide{color:#999;font-size:12px;margin-bottom:10px;}
+
+.resultat{margin-top:22px;}
+
+.resultat-valide{background:#eafaf0;border:2px solid #28a745;border-radius:14px;padding:24px;text-align:center;}
+.resultat-valide .emoji{font-size:40px;margin-bottom:10px;}
+.resultat-valide h2{color:#28a745;font-size:17px;margin-bottom:16px;}
+
+.resultat-invalide{background:#fdeaea;border:2px solid #d93025;border-radius:14px;padding:24px;text-align:center;}
+.resultat-invalide .emoji{font-size:40px;margin-bottom:10px;}
+.resultat-invalide h2{color:#d93025;font-size:17px;margin-bottom:8px;}
+.resultat-invalide p{color:#666;font-size:13.5px;}
+
+.info-ligne{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.08);text-align:left;font-size:14px;}
+.info-ligne:last-child{border-bottom:none;}
+.info-ligne .cle{color:#666;font-weight:600;}
+.info-ligne .val{color:#153A73;font-weight:700;}
+
+.chargement{text-align:center;color:#999;padding:20px;}
+
+.pied{text-align:center;color:rgba(255,255,255,.6);font-size:12px;margin-top:20px;}
+
+</style>
+
+</head>
+<body>
+
+<div class="conteneur">
+
+<div class="entete">
+<img src="logo.png" alt="EDUFORCI">
+<h1>🔍 Vérification de certification</h1>
+<p>Vérifiez l'authenticité d'un certificat EDUFORCI (obtenu par scan du QR code ou saisie du numéro).</p>
+</div>
+
+<div class="card">
+
+<div class="barre-recherche">
+<input type="text" id="champNumero" placeholder="Ex : EDU-ENG-2026-00001">
+<button id="btnVerifier">Vérifier</button>
+</div>
+<div class="aide">Le numéro figure au bas du certificat, sous le QR code.</div>
+
+<div id="zoneResultat"></div>
+
+</div>
+
+<div class="pied">EDUFORCI — Plateforme de mise en relation enseignants / élèves</div>
+
+</div>
+
+<script type="module">
+
+import { db } from "./js/firebase.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+async function verifier(numero) {
+
+    const zone = document.getElementById("zoneResultat");
+
+    if (!numero) return;
+
+    zone.innerHTML = `<div class="chargement">⏳ Vérification en cours...</div>`;
+
+    try {
+
+        const snap = await getDoc(doc(db, "certificationsPubliques", numero.trim().toUpperCase()));
+
+        if (!snap.exists() || snap.data().statut !== "valide") {
+
+            zone.innerHTML = `
+                <div class="resultat resultat-invalide">
+                    <div class="emoji">❌</div>
+                    <h2>Certificat introuvable ou invalide</h2>
+                    <p>Aucune certification EDUFORCI valide ne correspond à ce numéro. Vérifiez la saisie ou contactez EDUFORCI si vous pensez qu'il s'agit d'une erreur.</p>
+                </div>`;
+            return;
+        }
+
+        const c = snap.data();
+        const dateAffichee = c.dateCertification ? new Date(c.dateCertification).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "-";
+
+        zone.innerHTML = `
+            <div class="resultat resultat-valide">
+                <div class="emoji">✅</div>
+                <h2>Certification authentique</h2>
+                <div class="info-ligne"><span class="cle">Nom</span><span class="val">${c.nom || "-"}</span></div>
+                <div class="info-ligne"><span class="cle">Matière</span><span class="val">${c.matiere || "-"}</span></div>
+                <div class="info-ligne"><span class="cle">Niveau</span><span class="val">${c.niveau || "-"}</span></div>
+                <div class="info-ligne"><span class="cle">Session</span><span class="val">${c.session || "-"}</span></div>
+                <div class="info-ligne"><span class="cle">Numéro</span><span class="val">${c.numeroCertification}</span></div>
+                <div class="info-ligne"><span class="cle">Délivré le</span><span class="val">${dateAffichee}</span></div>
+            </div>`;
+
+    } catch (error) {
+        zone.innerHTML = `<div class="resultat resultat-invalide"><p>Erreur lors de la vérification : ${error.message}</p></div>`;
+    }
+
+}
+
+document.getElementById("btnVerifier").addEventListener("click", () => verifier(document.getElementById("champNumero").value));
+document.getElementById("champNumero").addEventListener("keydown", (e) => { if (e.key === "Enter") verifier(e.target.value); });
+
+// Vérification automatique si le numéro arrive via l'URL (lien du QR code)
+const numeroUrl = new URLSearchParams(window.location.search).get("num");
+if (numeroUrl) {
+    document.getElementById("champNumero").value = numeroUrl;
+    verifier(numeroUrl);
+}
+
+</script>
+
+</body>
+</html>

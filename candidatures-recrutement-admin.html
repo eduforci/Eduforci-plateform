@@ -1263,6 +1263,8 @@ document.getElementById("btnMarquerAdmis").addEventListener("click", async () =>
     try {
 
         const matiere = (c.matieres && c.matieres[0]) || "";
+        const niveau = (c.niveaux && c.niveaux.join(", ")) || "";
+        const nomComplet = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
         const numeroCertification = await genererNumeroCertification(matiere);
         const maintenant = new Date().toISOString();
 
@@ -1273,6 +1275,17 @@ document.getElementById("btnMarquerAdmis").addEventListener("click", async () =>
             badge: "Enseignant certifié EDUFORCI",
             messageAdmin: document.getElementById("commentaireAdmin").value.trim() || "Félicitations, votre candidature est acceptée ! Bienvenue chez EDUFORCI.",
             historique: arrayUnion({ date: maintenant, action: `Candidat admis — certification ${numeroCertification}` })
+        });
+
+        // Document public minimal (sans coordonnées privées) pour la vérification par QR code
+        await setDoc(doc(db, "certificationsPubliques", numeroCertification), {
+            numeroCertification,
+            nom: nomComplet,
+            matiere,
+            niveau,
+            session: new Date().getFullYear(),
+            dateCertification: maintenant,
+            statut: "valide"
         });
 
         // Active le profil enseignant existant avec le badge de certification

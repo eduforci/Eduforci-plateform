@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon certificat | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+
+.sidebar{width:260px;height:100vh;background:#153A73;color:white;padding:30px 20px;position:fixed;top:0;left:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:white;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover{background:#0B63F6;}
+.sidebar a.active{background:#0B63F6;}
+
+.main{margin-left:260px;padding:35px;width:100%;max-width:760px;}
+
+.entete-page{background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:25px;}
+.entete-page h1{color:#153A73;margin-bottom:6px;}
+.entete-page p{color:#666;margin-top:8px;}
+
+.chargement, .vide{text-align:center;padding:60px 20px;color:#888;background:white;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);}
+.vide .emoji{font-size:44px;margin-bottom:16px;}
+.vide h2{color:#153A73;margin-bottom:10px;}
+.vide a{display:inline-block;margin-top:16px;color:#0B63F6;font-weight:600;text-decoration:none;}
+
+/* ---- Certificat ---- */
+#zoneCertificat{display:none;}
+
+.certificat{background:#fdfaf3;border-radius:16px;box-shadow:0 15px 40px rgba(0,0,0,.18);padding:8px;margin-bottom:22px;}
+.certificat-interieur{border:3px solid #0B63F6;border-radius:10px;padding:44px 36px;text-align:center;position:relative;}
+.certificat-interieur::before{content:"";position:absolute;inset:10px;border:1px solid #cdd7ea;border-radius:6px;pointer-events:none;}
+
+.certif-eduforci{color:#153A73;font-weight:700;font-size:15px;letter-spacing:3px;margin-bottom:6px;}
+.certif-titre{font-family:"Playfair Display",serif;color:#153A73;font-size:30px;margin:10px 0 4px;}
+.certif-sous-titre{color:#888;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin-bottom:28px;}
+
+.certif-nom{font-family:"Playfair Display",serif;font-size:27px;color:#0B63F6;margin:18px 0;padding-bottom:14px;border-bottom:2px solid #eaf1ff;display:inline-block;min-width:60%;}
+
+.certif-texte{color:#444;font-size:14px;line-height:1.8;max-width:480px;margin:0 auto 26px;}
+
+.certif-details{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;margin-bottom:30px;}
+.certif-details div{text-align:center;}
+.certif-details .val{color:#153A73;font-weight:700;font-size:15px;}
+.certif-details .lbl{color:#999;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-top:3px;}
+
+.certif-bas{display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;flex-wrap:wrap;gap:20px;}
+.certif-numero{text-align:left;color:#666;font-size:12px;}
+.certif-numero strong{display:block;color:#153A73;font-size:14px;}
+.certif-signature{text-align:center;}
+.certif-signature .trait{font-family:"Playfair Display",serif;font-style:italic;color:#0B63F6;font-size:20px;}
+.certif-signature .lbl{color:#999;font-size:11px;margin-top:4px;border-top:1px solid #ddd;padding-top:6px;}
+#qrcodeCanvas{display:flex;justify-content:center;}
+
+.badge-certif{display:inline-block;background:#eafaf0;color:#28a745;padding:8px 18px;border-radius:30px;font-weight:700;font-size:13px;margin-bottom:20px;}
+
+.actions-certif{display:flex;gap:14px;flex-wrap:wrap;}
+.btn-telecharger{flex:1;min-width:220px;padding:16px;background:#0B63F6;color:white;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;}
+.btn-telecharger:hover{background:#084ec7;}
+.btn-verifier{flex:1;min-width:220px;padding:16px;background:white;border:2px solid #0B63F6;color:#0B63F6;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;text-align:center;}
+.btn-verifier:hover{background:#eaf1ff;}
+
+</style>
+
+</head>
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="missions-proposees-enseignant.html">🎯 Missions proposées</a>
+<a href="notifications-enseignant.html">🔔 Notifications</a>
+<a href="mes-candidatures-enseignant.html">📝 Ma candidature</a>
+<a href="certificat-enseignant.html" class="active">🎓 Mon certificat</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+
+<div class="entete-page">
+<h1>🎓 Mon certificat EDUFORCI</h1>
+<p>Votre certification officielle d'enseignant recruté par EDUFORCI.</p>
+</div>
+
+<div id="chargement" class="chargement">⏳ Chargement...</div>
+
+<div id="zoneVide" class="vide" style="display:none;">
+<div class="emoji">🔒</div>
+<h2>Certificat non disponible</h2>
+<p>Votre certificat apparaîtra ici une fois votre candidature admise par l'équipe EDUFORCI.</p>
+<a href="mes-candidatures-enseignant.html">← Voir ma candidature</a>
+</div>
+
+<div id="zoneCertificat">
+
+<div class="certificat" id="captureCertificat">
+<div class="certificat-interieur">
+
+<div class="certif-eduforci">E D U F O R C I</div>
+<div class="certif-titre">Certificat de Recrutement</div>
+<div class="certif-sous-titre">Enseignant certifié</div>
+
+<div class="badge-certif" id="certifBadge">🎖️ Enseignant certifié EDUFORCI</div>
+
+<p class="certif-texte">Ce certificat atteste que</p>
+<div class="certif-nom" id="certifNom">-</div>
+<p class="certif-texte">a satisfait à l'ensemble des exigences du processus de recrutement EDUFORCI et est reconnu(e) apte à enseigner au sein de notre réseau.</p>
+
+<div class="certif-details">
+<div><div class="val" id="certifMatiere">-</div><div class="lbl">Matière</div></div>
+<div><div class="val" id="certifNiveau">-</div><div class="lbl">Niveau</div></div>
+<div><div class="val" id="certifSession">-</div><div class="lbl">Session</div></div>
+</div>
+
+<div class="certif-bas">
+<div class="certif-numero">
+N° de certification
+<strong id="certifNumero">-</strong>
+Délivré le <span id="certifDate">-</span>
+</div>
+<div id="qrcodeCanvas"></div>
+<div class="certif-signature">
+<div class="trait">EDUFORCI</div>
+<div class="lbl">Signature EDUFORCI</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="actions-certif">
+<button class="btn-telecharger" id="btnTelecharger">📥 Télécharger mon certificat (PDF)</button>
+<a class="btn-verifier" id="lienVerification" href="#" target="_blank">🔍 Voir la page de vérification publique</a>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+let donneesCertif = null;
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-enseignant.html";
+        return;
+    }
+
+    try {
+
+        const snap = await getDoc(doc(db, "candidaturesRecrutement", user.uid));
+
+        if (!snap.exists() || snap.data().statut !== "admis" || !snap.data().numeroCertification) {
+            document.getElementById("chargement").style.display = "none";
+            document.getElementById("zoneVide").style.display = "block";
+            return;
+        }
+
+        const c = snap.data();
+        donneesCertif = c;
+
+        const nomComplet = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
+        const matiere = (c.matieres && c.matieres[0]) || (c.parametresTest?.matiere) || "-";
+        const niveau = (c.niveaux && c.niveaux.join(", ")) || (c.parametresTest?.niveau) || "-";
+        const session = c.dateCertification ? new Date(c.dateCertification).getFullYear() : new Date().getFullYear();
+        const dateAffichee = c.dateCertification ? new Date(c.dateCertification).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "-";
+
+        document.getElementById("certifBadge").textContent = "🎖️ " + (c.badge || "Enseignant certifié EDUFORCI");
+        document.getElementById("certifNom").textContent = nomComplet;
+        document.getElementById("certifMatiere").textContent = matiere;
+        document.getElementById("certifNiveau").textContent = niveau;
+        document.getElementById("certifSession").textContent = session;
+        document.getElementById("certifNumero").textContent = c.numeroCertification;
+        document.getElementById("certifDate").textContent = dateAffichee;
+
+        const urlVerification = new URL("verification-certificat.html", window.location.href);
+        urlVerification.searchParams.set("num", c.numeroCertification);
+        document.getElementById("lienVerification").href = urlVerification.toString();
+
+        new QRCode(document.getElementById("qrcodeCanvas"), {
+            text: urlVerification.toString(),
+            width: 84,
+            height: 84,
+            colorDark: "#153A73",
+            colorLight: "#ffffff"
+        });
+
+        document.getElementById("chargement").style.display = "none";
+        document.getElementById("zoneCertificat").style.display = "block";
+
+    } catch (error) {
+        document.getElementById("chargement").textContent = "Erreur lors du chargement : " + error.message;
+    }
+
+});
+
+document.getElementById("btnTelecharger").addEventListener("click", async () => {
+
+    if (!donneesCertif) return;
+
+    window.showLoading("Génération du certificat PDF...");
+
+    try {
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+        const largeur = pdf.internal.pageSize.getWidth();
+        const hauteur = pdf.internal.pageSize.getHeight();
+
+        // Cadre décoratif
+        pdf.setDrawColor(11, 99, 246);
+        pdf.setLineWidth(1.2);
+        pdf.rect(10, 10, largeur - 20, hauteur - 20);
+        pdf.setDrawColor(200, 210, 230);
+        pdf.setLineWidth(0.4);
+        pdf.rect(14, 14, largeur - 28, hauteur - 28);
+
+        const c = donneesCertif;
+        const nomComplet = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
+        const matiere = (c.matieres && c.matieres[0]) || (c.parametresTest?.matiere) || "-";
+        const niveau = (c.niveaux && c.niveaux.join(", ")) || (c.parametresTest?.niveau) || "-";
+        const session = c.dateCertification ? new Date(c.dateCertification).getFullYear() : new Date().getFullYear();
+        const dateAffichee = c.dateCertification ? new Date(c.dateCertification).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "-";
+
+        pdf.setTextColor(21, 58, 115);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(14);
+        pdf.text("E D U F O R C I", largeur / 2, 32, { align: "center" });
+
+        pdf.setFontSize(26);
+        pdf.text("Certificat de Recrutement", largeur / 2, 46, { align: "center" });
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(11);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text("ENSEIGNANT CERTIFIÉ", largeur / 2, 54, { align: "center" });
+
+        pdf.setTextColor(70, 70, 70);
+        pdf.setFontSize(12);
+        pdf.text("Ce certificat atteste que", largeur / 2, 70, { align: "center" });
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(22);
+        pdf.setTextColor(11, 99, 246);
+        pdf.text(nomComplet, largeur / 2, 82, { align: "center" });
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(11.5);
+        pdf.setTextColor(70, 70, 70);
+        const texte = "a satisfait à l'ensemble des exigences du processus de recrutement EDUFORCI et est reconnu(e) apte à enseigner au sein de notre réseau.";
+        const lignes = pdf.splitTextToSize(texte, largeur - 90);
+        pdf.text(lignes, largeur / 2, 92, { align: "center" });
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.setTextColor(21, 58, 115);
+        pdf.text(`Matière : ${matiere}`, largeur / 2 - 55, 116, { align: "center" });
+        pdf.text(`Niveau : ${niveau}`, largeur / 2, 116, { align: "center" });
+        pdf.text(`Session : ${session}`, largeur / 2 + 55, 116, { align: "center" });
+
+        // QR code (récupéré depuis le canvas déjà généré à l'écran)
+        const qrCanvas = document.querySelector("#qrcodeCanvas canvas");
+        if (qrCanvas) {
+            const qrDataUrl = qrCanvas.toDataURL("image/png");
+            pdf.addImage(qrDataUrl, "PNG", largeur - 55, hauteur - 55, 30, 30);
+        }
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`N° de certification : ${c.numeroCertification}`, 25, hauteur - 30);
+        pdf.text(`Délivré le ${dateAffichee}`, 25, hauteur - 24);
+
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(16);
+        pdf.setTextColor(11, 99, 246);
+        pdf.text("EDUFORCI", largeur / 2, hauteur - 28, { align: "center" });
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text("Signature EDUFORCI", largeur / 2, hauteur - 22, { align: "center" });
+
+        pdf.save(`Certificat-EDUFORCI-${c.numeroCertification}.pdf`);
+
+        window.hideLoading();
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur lors de la génération du PDF : " + error.message, "erreur");
+    }
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    window.location.href = "connexion-enseignant.html";
+});
+
+</script>
+
+</body>
+</html>
