@@ -322,8 +322,8 @@ function afficherGateReprise() {
 function afficherEcranAccueil(expiration) {
 
     const nom = [candidature.personnel?.prenom, candidature.personnel?.nom].filter(Boolean).join(" ") || "";
-    const matiere = (candidature.matieres && candidature.matieres[0]) || "Générale";
-    const niveau = (candidature.niveaux && candidature.niveaux.join(", ")) || "-";
+    const matiere = candidature.parametresTest?.matiere || (candidature.matieres && candidature.matieres[0]) || "Générale";
+    const niveau = candidature.parametresTest?.niveau || (candidature.niveaux && candidature.niveaux.join(", ")) || "-";
 
     carte.innerHTML = `
         <div class="accueil">
@@ -380,7 +380,7 @@ async function demarrerTest() {
 
     try {
 
-        const matiere = (candidature.matieres && candidature.matieres[0]) || "Générale";
+        const matiere = candidature.parametresTest?.matiere || (candidature.matieres && candidature.matieres[0]) || "Générale";
 
         const q = query(collection(db, "questionsRecrutement"), where("matiere", "==", matiere));
         const snap = await getDocs(q);
@@ -780,10 +780,24 @@ async function finaliserTest(motif, type = "normal") {
         );
 
         let bonnesReponses = 0;
-        questionsQcm.forEach((q, i) => {
+        let sansReponse = 0;
+        const detailReponses = questionsQcm.map((q, i) => {
             const correction = correctionsSnap[i].exists() ? correctionsSnap[i].data() : null;
-            if (correction && test.reponses[q.id] === correction.reponseCorrecte) bonnesReponses++;
+            const reponseDonnee = test.reponses[q.id];
+            const aRepondu = reponseDonnee !== undefined && reponseDonnee !== null;
+            const correcte = aRepondu && correction && reponseDonnee === correction.reponseCorrecte;
+            if (correcte) bonnesReponses++;
+            if (!aRepondu) sansReponse++;
+            return {
+                id: q.id,
+                question: q.question,
+                choix: q.choix,
+                reponseDonneeIndex: aRepondu ? reponseDonnee : null,
+                reponseCorrecteIndex: correction ? correction.reponseCorrecte : null,
+                correcte: !!correcte
+            };
         });
+        const mauvaisesReponses = questionsQcm.length - bonnesReponses - sansReponse;
 
         const total = questionsQcm.length;
         const pourcentage = total ? Math.round((bonnesReponses / total) * 100) : 0;
@@ -803,7 +817,10 @@ async function finaliserTest(motif, type = "normal") {
             score: type === "fraude" ? 0 : scoreSur20,
             pourcentage: type === "fraude" ? 0 : pourcentage,
             bonnesReponsesQcm: bonnesReponses,
+            mauvaisesReponsesQcm: mauvaisesReponses,
+            sansReponseQcm: sansReponse,
             totalQcm: total,
+            detailReponses,
             statutCorrectionOuvertes: questionsOuvertes.length ? "en_attente" : null,
             avertissements
         });

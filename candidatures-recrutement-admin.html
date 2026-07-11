@@ -56,8 +56,10 @@ tr:nth-child(even){background:#f8f9fc;}
 .badge.soumise, .badge.en_verification{background:#fff4e0;color:#e08b00;}
 .badge.documents_valides{background:#e6f7ec;color:#28a745;}
 .badge.test_autorise{background:#f2e9ff;color:#7b2fd6;}
+.badge.convoque_epreuve, .badge.convoque_entretien{background:#e0f0ff;color:#0B63F6;}
 .badge.admis{background:#e6f7ec;color:#28a745;}
 .badge.refuse{background:#fdeaea;color:#d93025;}
+.badge.annulee{background:#eee;color:#555;}
 
 .btn-voir{padding:9px 18px;background:#0B63F6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
 .btn-voir:hover{background:#084ec7;}
@@ -111,8 +113,28 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 .correction-note label{font-weight:600;color:#153A73;font-size:13px;margin:0;}
 .correction-note input{width:70px;padding:8px;border:1px solid #ddd;border-radius:8px;text-align:center;}
 .correction-note span{color:#888;font-size:13px;}
+
+.detail-reponse-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f2f2f2;font-size:13.5px;}
+.detail-reponse-item:last-child{border-bottom:none;}
+.detail-reponse-num{flex-shrink:0;font-weight:700;color:#153A73;white-space:nowrap;}
+.detail-reponse-texte{color:#333;line-height:1.5;}
+.detail-reponse-sub{color:#777;font-size:12.5px;margin-top:4px;}
+.detail-reponse-item.ko .detail-reponse-sub strong{color:#d93025;}
+.detail-reponse-item.ok .detail-reponse-sub strong{color:#28a745;}
 .actions-grille{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px;}
 @media (max-width:560px){.actions-grille{grid-template-columns:1fr;}}
+
+.decision-finale{margin-top:20px;padding-top:18px;border-top:1px dashed #ddd;}
+.decision-finale .panneau-titre{margin-bottom:12px;}
+.btn-decision{display:block;width:100%;padding:13px;border-radius:10px;font-weight:700;font-size:13.5px;cursor:pointer;margin-bottom:10px;border:2px solid;background:white;text-align:left;}
+.btn-convoquer{border-color:#0B63F6;color:#0B63F6;}
+.btn-convoquer:hover{background:#eaf1ff;}
+.btn-decision.btn-decision-admis{border-color:#28a745;color:#28a745;}
+.btn-decision.btn-decision-admis:hover{background:#e6f7ec;}
+.btn-decision.btn-decision-rejeter{border-color:#d93025;color:#d93025;}
+.btn-decision.btn-decision-rejeter:hover{background:#fdeaea;}
+.btn-annuler-candidature{border-color:#555;color:#555;}
+.btn-annuler-candidature:hover{background:#f0f0f0;}
 .btn-action{padding:14px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:white;}
 .btn-valider-docs{background:#28a745;}
 .btn-valider-docs:hover{background:#1f7a35;}
@@ -184,8 +206,11 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <option value="documents_valides">Documents validés</option>
 <option value="test_autorise">Tests autorisés</option>
 <option value="tests_termines">Tests terminés</option>
+<option value="convoque_epreuve">Convoqués (épreuve)</option>
+<option value="convoque_entretien">Convoqués (entretien)</option>
 <option value="admis">Admis</option>
 <option value="refuse">Refusés</option>
+<option value="annulee">Annulées</option>
 </select>
 </div>
 
@@ -289,20 +314,30 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 </div>
 
 <div class="actions-footer">
+
+<div class="panneau-titre">📄 Vérification des documents</div>
 <div class="actions-grille">
 <button class="btn-action btn-valider-docs" id="btnValiderDocs">🟢 Valider les documents</button>
-<button class="btn-action btn-autoriser-test" id="btnAutoriserTest">🟣 Autoriser le test</button>
 <button class="btn-action btn-modifs" id="btnDemanderModifs">🟠 Demander des modifications</button>
-<button class="btn-action btn-rejeter" id="btnRejeter">🔴 Rejeter la candidature</button>
 </div>
+
+<button class="btn-action btn-autoriser-test" id="btnAutoriserTest" style="width:100%;margin-top:14px;">🟣 Autoriser le test</button>
 
 <div class="zone-resultats-test">
 <h3 style="color:#153A73;margin-top:20px;margin-bottom:10px;font-size:15px;">🧪 Déroulement du test de recrutement</h3>
 <div id="zoneTest"></div>
 </div>
 
-<button class="btn-admis" id="btnMarquerAdmis">✅ Marquer comme admis (après test réussi)</button>
-<button class="btn-reinitialiser" id="btnReinitialiser">↩️ Annuler l'admission / réinitialiser ce candidat</button>
+<div class="decision-finale">
+<div class="panneau-titre">🏁 Décision finale de l'administrateur (une seule option)</div>
+<button class="btn-decision btn-convoquer" id="btnConvoquerEpreuve">1️⃣ Convoquer à l'épreuve pédagogique</button>
+<button class="btn-decision btn-convoquer" id="btnConvoquerEntretien">2️⃣ Convoquer à l'entretien</button>
+<button class="btn-decision btn-decision-admis" id="btnMarquerAdmis">3️⃣ Admettre le candidat</button>
+<button class="btn-decision btn-decision-rejeter" id="btnRejeter">4️⃣ Refuser la candidature</button>
+<button class="btn-decision btn-annuler-candidature" id="btnAnnulerCandidature">5️⃣ Annuler la candidature (fraude, faux documents, abandon...)</button>
+</div>
+
+<button class="btn-reinitialiser" id="btnReinitialiser">↩️ Annuler l'admission / réinitialiser ce candidat (compte de test)</button>
 </div>
 
 </div>
@@ -321,11 +356,14 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 
 <p id="popupAutoriserQuestion" style="color:#333;font-size:15px;margin-bottom:20px;">Voulez-vous autoriser ce candidat à passer le test ?</p>
 
-<div class="score-grille" style="grid-template-columns:1fr 100px;">
+<label>Matière</label><input type="text" id="paramMatiere" style="width:100%;">
+<label>Niveau</label><input type="text" id="paramNiveau" style="width:100%;">
+
+<div class="score-grille" style="grid-template-columns:1fr 100px;margin-top:10px;">
 <label>Durée (minutes)</label><input type="number" id="paramDuree" min="10" max="180" value="60">
 <label>Nombre de questions</label><input type="number" id="paramQuestions" min="5" max="60" value="30">
 <label>Tentative(s) autorisée(s)</label><input type="number" id="paramTentatives" min="1" max="3" value="1">
-<label>Expiration (heures)</label><input type="number" id="paramExpiration" min="12" max="240" value="72">
+<label>Validité (heures)</label><input type="number" id="paramExpiration" min="12" max="240" value="72">
 </div>
 
 <div id="zoneResultatAutorisation"></div>
@@ -356,8 +394,11 @@ const LIBELLES_STATUT = {
     en_verification: "🟠 En vérification",
     documents_valides: "🟢 Documents validés",
     test_autorise: "🟣 Test autorisé",
+    convoque_epreuve: "📅 Convoqué (épreuve pédagogique)",
+    convoque_entretien: "📅 Convoqué (entretien)",
     admis: "✅ Admis",
-    refuse: "❌ Refusé"
+    refuse: "❌ Refusé",
+    annulee: "🚫 Annulée"
 };
 
 function identifiantCourt(id) {
@@ -595,6 +636,7 @@ async function ouvrirModal(id) {
 
 let arreterEcouteTest = null;
 let intervalTempsRestantAdmin = null;
+let afficherDetailActuel = false;
 
 function fermerEcouteTest() {
     if (arreterEcouteTest) { arreterEcouteTest(); arreterEcouteTest = null; }
@@ -661,10 +703,20 @@ function rendreTest(t, c) {
     const dureeMin = t.tempsUtiliseSecondes != null ? Math.round(t.tempsUtiliseSecondes / 60) + " min" : "-";
     const scoreAffiche = t.score != null ? `${t.score} / 20` : "-";
     const pourcentageAffiche = t.pourcentage != null ? ` (${t.pourcentage} %)` : "";
-    const detailQcm = (t.totalQcm != null) ? ` — ${t.bonnesReponsesQcm ?? 0}/${t.totalQcm} bonnes réponses` : "";
 
     const questionsOuvertes = (t.questions || []).filter(q => q.type === "ouverte");
     const noteOuvertesAffichee = t.noteQuestionsOuvertes != null ? `${t.noteQuestionsOuvertes} / ${t.noteQuestionsOuvertesMax}` : (questionsOuvertes.length ? "à corriger" : null);
+
+    const totalQuestions = t.questions?.length || 0;
+    const tempsMoyenAffiche = (!enCours && t.tempsUtiliseSecondes != null && totalQuestions) ? Math.round(t.tempsUtiliseSecondes / totalQuestions) + " s" : "-";
+
+    const comportement = (() => {
+        if (t.typeFin === "fraude") return { label: "🚫 Fraude détectée", couleur: "#d93025" };
+        const total = t.avertissements ?? 0;
+        if (total === 0) return { label: "✅ Excellent", couleur: "#28a745" };
+        if (total === 1) return { label: "🟡 Correct", couleur: "#e08b00" };
+        return { label: "🟠 Suspect", couleur: "#e08b00" };
+    })();
 
     const motifLigne = t.typeFin === "fraude"
         ? `<div class="info-ligne"><span class="cle">Motif de fin</span><span class="val" style="color:#d93025;">🚫 ${t.motifFin || "Fraude détectée"}</span></div>`
@@ -682,28 +734,67 @@ function rendreTest(t, c) {
     const blocResultat = !enCours ? `
         <hr class="sep">
         <div class="panneau-titre">🏆 Résultat</div>
-        <div class="info-ligne"><span class="cle">QCM</span><span class="val">${scoreAffiche}${pourcentageAffiche}${detailQcm}</span></div>
-        ${noteOuvertesAffichee ? `<div class="info-ligne" style="border-bottom:none;"><span class="cle">Questions ouvertes</span><span class="val">${noteOuvertesAffichee}</span></div>` : ""}
+        <div class="info-ligne"><span class="cle">Score</span><span class="val">${scoreAffiche}${pourcentageAffiche}</span></div>
+        <div class="info-ligne"><span class="cle">Temps utilisé</span><span class="val">${dureeMin}</span></div>
+        <div class="info-ligne"><span class="cle">Bonnes réponses</span><span class="val" style="color:#28a745;">${t.bonnesReponsesQcm ?? 0} / ${t.totalQcm ?? 0}</span></div>
+        <div class="info-ligne"><span class="cle">Mauvaises réponses</span><span class="val" style="color:#d93025;">${t.mauvaisesReponsesQcm ?? 0}</span></div>
+        <div class="info-ligne"><span class="cle">Sans réponse</span><span class="val" style="color:#999;">${t.sansReponseQcm ?? 0}</span></div>
+        ${noteOuvertesAffichee ? `<div class="info-ligne"><span class="cle">Questions ouvertes</span><span class="val">${noteOuvertesAffichee}</span></div>` : ""}
+        <div class="info-ligne" style="border-bottom:none;"><span class="cle">Temps moyen / question</span><span class="val">${tempsMoyenAffiche}</span></div>
+    ` : "";
+
+    const blocAntiFraude = !enCours ? `
+        <hr class="sep">
+        <div class="panneau-titre">🕵️ Analyse anti-fraude</div>
+        <div class="info-ligne"><span class="cle">Comportement</span><span class="val" style="color:${comportement.couleur};">${comportement.label}</span></div>
+        <div class="info-ligne"><span class="cle">Avertissements</span><span class="val">${t.avertissements ?? 0} / 3</span></div>
+        <div class="info-ligne"><span class="cle">Onglets</span><span class="val">${nbOnglet}</span></div>
+        <div class="info-ligne"><span class="cle">Sorties plein écran</span><span class="val">${nbPleinEcran}</span></div>
+        <div class="info-ligne"><span class="cle">Actualisations</span><span class="val">${t.actualisations ?? 0}</span></div>
+        <div class="info-ligne" style="border-bottom:none;"><span class="cle">Déconnexions</span><span class="val">${t.deconnexions ?? 0}</span></div>
+    ` : "";
+
+    const detail = Array.isArray(t.detailReponses) ? t.detailReponses : [];
+    const blocDetail = (!enCours && detail.length) ? `
+        <hr class="sep">
+        <div class="panneau-titre" style="cursor:pointer;" id="toggleDetailReponses">📋 Détail des réponses (${detail.length}) — cliquer pour ${afficherDetailActuel ? "masquer" : "afficher"}</div>
+        <div id="listeDetailReponses" style="display:${afficherDetailActuel ? "block" : "none"};max-height:340px;overflow-y:auto;">
+            ${detail.map((d, i) => `
+                <div class="detail-reponse-item ${d.correcte ? "ok" : "ko"}">
+                    <div class="detail-reponse-num">${d.correcte ? "✅" : "❌"} Q${i + 1}</div>
+                    <div class="detail-reponse-texte">
+                        <div>${d.question}</div>
+                        <div class="detail-reponse-sub">Réponse du candidat : <strong>${d.reponseDonneeIndex != null && d.choix ? d.choix[d.reponseDonneeIndex] : "Sans réponse"}</strong>
+                        ${!d.correcte && d.reponseCorrecteIndex != null && d.choix ? ` · Bonne réponse : <strong>${d.choix[d.reponseCorrecteIndex]}</strong>` : ""}</div>
+                    </div>
+                </div>
+            `).join("")}
+        </div>
     ` : "";
 
     zone.innerHTML = `
         ${blocTempsReel}
-        <div class="panneau-titre">🕵️ Journal anti-fraude</div>
+        <div class="panneau-titre">ℹ️ Session</div>
         <div class="info-ligne"><span class="cle">Session</span><span class="val">${t.sessionId || "-"}</span></div>
         <div class="info-ligne"><span class="cle">Matière</span><span class="val">${t.matiere || "-"}</span></div>
         <div class="info-ligne"><span class="cle">Début</span><span class="val">${heureDebut}</span></div>
         <div class="info-ligne"><span class="cle">Fin</span><span class="val">${heureFin}</span></div>
-        <div class="info-ligne"><span class="cle">Durée</span><span class="val">${dureeMin}</span></div>
-        <div class="info-ligne"><span class="cle">Onglets</span><span class="val">${nbOnglet}</span></div>
-        <div class="info-ligne"><span class="cle">Sorties plein écran</span><span class="val">${nbPleinEcran}</span></div>
-        <div class="info-ligne"><span class="cle">Actualisations</span><span class="val">${t.actualisations ?? 0}</span></div>
-        <div class="info-ligne"><span class="cle">Déconnexions</span><span class="val">${t.deconnexions ?? 0}</span></div>
         <div class="info-ligne"><span class="cle">Tentative</span><span class="val">${t.tentativeNumero || 1}</span></div>
         <div class="info-ligne" style="border-bottom:none;"><span class="cle">Statut</span><span class="val">${enCours ? "🟠 En cours" : "✅ Terminé"}</span></div>
         ${motifLigne}
         ${blocResultat}
+        ${blocAntiFraude}
+        ${blocDetail}
         ${!enCours && questionsOuvertes.length ? `<hr class="sep"><div class="panneau-titre">📝 Correction des questions ouvertes</div><div id="zoneCorrectionOuvertes"><div class="historique-vide">⏳ Chargement des réponses...</div></div>` : ""}
     `;
+
+    const toggleDetail = document.getElementById("toggleDetailReponses");
+    if (toggleDetail) {
+        toggleDetail.addEventListener("click", () => {
+            afficherDetailActuel = !afficherDetailActuel;
+            rendreTest(t, c);
+        });
+    }
 
     if (enCours && t.debut && t.dureeSecondes) {
         const debutMs = new Date(t.debut).getTime();
@@ -934,6 +1025,8 @@ function ouvrirPopupAutoriser() {
     if (!c) return;
     const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || identifiantCourt(c.id);
     document.getElementById("popupAutoriserQuestion").textContent = `Voulez-vous autoriser ${nom} à passer le test ?`;
+    document.getElementById("paramMatiere").value = (c.matieres && c.matieres[0]) || "";
+    document.getElementById("paramNiveau").value = (c.niveaux && c.niveaux.join(", ")) || "";
     document.getElementById("paramDuree").value = 60;
     document.getElementById("paramQuestions").value = 30;
     document.getElementById("paramTentatives").value = 1;
@@ -971,6 +1064,8 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
     const c = candidatures.find(x => x.id === candidatureOuverteId);
     if (!c) return;
 
+    const matiereChoisie = document.getElementById("paramMatiere").value.trim();
+    const niveauChoisi = document.getElementById("paramNiveau").value.trim();
     const dureeMinutes = Number(document.getElementById("paramDuree").value) || 60;
     const nombreQuestions = Number(document.getElementById("paramQuestions").value) || 30;
     const tentativesAutorisees = Number(document.getElementById("paramTentatives").value) || 1;
@@ -988,12 +1083,12 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
             statut: "test_autorise",
             documentsStatut: "valides",
             autorisationTestId: idAutorisation,
-            parametresTest: { dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
+            parametresTest: { matiere: matiereChoisie, niveau: niveauChoisi, dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
             messageAdmin: document.getElementById("commentaireAdmin").value.trim() || "Félicitations, vous êtes autorisé(e) à passer le test EDUFORCI.",
             historique: arrayUnion({ date: maintenant.toISOString(), action: `Test autorisé — session ${idAutorisation}` })
         });
 
-        await envoyerNotification(c, `Votre dossier a été validé. Le test de recrutement (${dureeMinutes} min, ${nombreQuestions} questions) est disponible jusqu'au ${dateExpiration.toLocaleDateString("fr-FR")}.`);
+        await envoyerNotification(c, `Votre dossier a été validé. Le test de recrutement (${matiereChoisie}, ${dureeMinutes} min, ${nombreQuestions} questions) est disponible jusqu'au ${dateExpiration.toLocaleDateString("fr-FR")}.`);
 
         window.hideLoading();
 
@@ -1001,6 +1096,8 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
         document.getElementById("zoneResultatAutorisation").innerHTML = `
             <div class="info-ligne"><span class="cle">Session</span><span class="val">${idAutorisation}</span></div>
             <div class="info-ligne"><span class="cle">Statut</span><span class="val">🟣 Autorisé</span></div>
+            <div class="info-ligne"><span class="cle">Matière</span><span class="val">${matiereChoisie || "-"}</span></div>
+            <div class="info-ligne"><span class="cle">Niveau</span><span class="val">${niveauChoisi || "-"}</span></div>
             <div class="info-ligne"><span class="cle">Début possible</span><span class="val">${maintenant.toLocaleDateString("fr-FR")}</span></div>
             <div class="info-ligne"><span class="cle">Expiration</span><span class="val">${dateExpiration.toLocaleDateString("fr-FR")}</span></div>
             <div class="info-ligne" style="border-bottom:none;"><span class="cle">Tentative(s)</span><span class="val">${tentativesAutorisees}</span></div>
@@ -1023,6 +1120,24 @@ document.getElementById("btnDemanderModifs").addEventListener("click", () => app
     exigerCommentaire: true
 }));
 
+document.getElementById("btnConvoquerEpreuve").addEventListener("click", () => {
+    if (!confirm("Convoquer ce candidat à l'épreuve pédagogique ?")) return;
+    appliquerAction({
+        nouveauStatut: "convoque_epreuve",
+        actionHistorique: "Candidat convoqué à l'épreuve pédagogique",
+        messageParDefaut: "Félicitations, vous êtes convoqué(e) à l'épreuve pédagogique. Vous recevrez prochainement les modalités."
+    });
+});
+
+document.getElementById("btnConvoquerEntretien").addEventListener("click", () => {
+    if (!confirm("Convoquer ce candidat à l'entretien ?")) return;
+    appliquerAction({
+        nouveauStatut: "convoque_entretien",
+        actionHistorique: "Candidat convoqué à l'entretien",
+        messageParDefaut: "Félicitations, vous êtes convoqué(e) à un entretien. Vous recevrez prochainement les modalités."
+    });
+});
+
 document.getElementById("btnRejeter").addEventListener("click", () => {
     if (!confirm("Confirmez-vous le rejet définitif de cette candidature ?")) return;
     appliquerAction({
@@ -1032,13 +1147,79 @@ document.getElementById("btnRejeter").addEventListener("click", () => {
     });
 });
 
-document.getElementById("btnMarquerAdmis").addEventListener("click", () => {
-    if (!confirm("Confirmez-vous l'admission de ce candidat ?")) return;
+document.getElementById("btnAnnulerCandidature").addEventListener("click", () => {
+    if (!confirm("Annuler définitivement cette candidature (fraude, faux documents, abandon...) ? Cette action nécessite un motif dans le commentaire administrateur.")) return;
     appliquerAction({
-        nouveauStatut: "admis",
-        actionHistorique: "Candidat admis",
-        messageParDefaut: "Félicitations, votre candidature est acceptée ! Bienvenue chez EDUFORCI."
+        nouveauStatut: "annulee",
+        actionHistorique: "Candidature annulée : " + (document.getElementById("commentaireAdmin").value.trim() || "voir commentaire"),
+        messageParDefaut: "Votre candidature a été annulée.",
+        exigerCommentaire: true
     });
+});
+
+// Génère un numéro de certification EDUFORCI, ex : EDU-ENG-2026-00001
+async function genererNumeroCertification(matiere) {
+    const compteurRef = doc(db, "compteurs", "certificationsEduforci");
+    const compteurSnap = await getDoc(compteurRef);
+    let numero = 1;
+    if (!compteurSnap.exists()) {
+        await setDoc(compteurRef, { dernierNumero: 1 });
+    } else {
+        numero = (compteurSnap.data().dernierNumero || 0) + 1;
+        await updateDoc(compteurRef, { dernierNumero: numero });
+    }
+    const code = (matiere || "GEN").normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, 3).toUpperCase();
+    const annee = new Date().getFullYear();
+    return `EDU-${code}-${annee}-${String(numero).padStart(5, "0")}`;
+}
+
+document.getElementById("btnMarquerAdmis").addEventListener("click", async () => {
+
+    const c = candidatures.find(x => x.id === candidatureOuverteId);
+    if (!c) return;
+    if (!confirm("Confirmez-vous l'admission de ce candidat ? Un numéro de certification et le badge « Enseignant certifié EDUFORCI » lui seront attribués.")) return;
+
+    window.showLoading("Admission en cours...");
+
+    try {
+
+        const matiere = (c.matieres && c.matieres[0]) || "";
+        const numeroCertification = await genererNumeroCertification(matiere);
+        const maintenant = new Date().toISOString();
+
+        await updateDoc(doc(db, "candidaturesRecrutement", candidatureOuverteId), {
+            statut: "admis",
+            numeroCertification,
+            dateCertification: maintenant,
+            badge: "Enseignant certifié EDUFORCI",
+            messageAdmin: document.getElementById("commentaireAdmin").value.trim() || "Félicitations, votre candidature est acceptée ! Bienvenue chez EDUFORCI.",
+            historique: arrayUnion({ date: maintenant, action: `Candidat admis — certification ${numeroCertification}` })
+        });
+
+        // Active le profil enseignant existant avec le badge de certification
+        try {
+            await updateDoc(doc(db, "enseignants", candidatureOuverteId), {
+                estCertifieEduforci: true,
+                badgeEduforci: "Enseignant certifié EDUFORCI",
+                numeroCertification
+            });
+        } catch (error) {
+            console.warn("Profil enseignant non mis à jour :", error.message);
+        }
+
+        await envoyerNotification(c, `Félicitations, votre candidature est acceptée ! Numéro de certification : ${numeroCertification}. Bienvenue chez EDUFORCI.`);
+
+        window.hideLoading();
+        window.notify("Candidat admis et certifié : " + numeroCertification, "succes");
+
+        await chargerCandidatures();
+        await ouvrirModal(candidatureOuverteId);
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur : " + error.message, "erreur");
+    }
+
 });
 
 document.getElementById("btnReinitialiser").addEventListener("click", async () => {

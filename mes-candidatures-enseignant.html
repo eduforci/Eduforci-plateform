@@ -41,8 +41,10 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .badge.en_verification{background:#fff4e0;color:#e08b00;}
 .badge.documents_valides{background:#e6f7ec;color:#28a745;}
 .badge.test_autorise{background:#f2e9ff;color:#7b2fd6;}
+.badge.convoque_epreuve, .badge.convoque_entretien{background:#e0f0ff;color:#0B63F6;}
 .badge.admis{background:#e6f7ec;color:#28a745;}
 .badge.refuse{background:#fdeaea;color:#d93025;}
+.badge.annulee{background:#eee;color:#555;}
 
 .sep{border:none;border-top:1px solid #eee;margin:20px 0;}
 
@@ -51,6 +53,7 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 
 .msg-admin-titre{color:#153A73;font-weight:700;margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:.5px;}
 .msg-admin{background:#f4f7fc;padding:16px;border-radius:12px;color:#333;line-height:1.5;font-size:15px;}
+.bandeau-certif{background:linear-gradient(135deg,#28a745,#1f7a35);color:white;padding:16px;border-radius:12px;margin-top:16px;text-align:center;line-height:1.6;font-size:14.5px;}
 
 .btn-modifier{display:block;width:100%;text-align:center;margin-top:26px;padding:15px;background:#0B63F6;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:16px;}
 .btn-modifier:hover{background:#084ec7;}
@@ -123,8 +126,11 @@ const LIBELLES_STATUT = {
     en_verification: "🟠 En vérification",
     documents_valides: "🟢 Documents validés",
     test_autorise: "🟣 Test autorisé",
+    convoque_epreuve: "📅 Convoqué (épreuve pédagogique)",
+    convoque_entretien: "📅 Convoqué (entretien)",
     admis: "✅ Admis",
-    refuse: "❌ Refusé"
+    refuse: "❌ Refusé",
+    annulee: "🚫 Candidature annulée"
 };
 
 const ORDRE_ETAPES = [
@@ -172,7 +178,7 @@ function rendreDossier(c) {
     }
 
     let suiviHtml = "";
-    if (statut !== "refuse" && statut !== "brouillon") {
+    if (statut !== "refuse" && statut !== "brouillon" && statut !== "annulee") {
         const indexActuel = ORDRE_ETAPES.findIndex(e => e.cle === statut);
         suiviHtml = `<div class="suivi"><div class="docs-titre">Suivi du dossier</div>`;
         ORDRE_ETAPES.forEach((etape, i) => {
@@ -203,6 +209,8 @@ function rendreDossier(c) {
 
             <div class="msg-admin-titre">Message de l'administrateur</div>
             <div class="msg-admin">${c.messageAdmin ? c.messageAdmin : "Aucun message pour le moment."}</div>
+
+            ${statut === "admis" && c.numeroCertification ? `<div class="bandeau-certif">🎖️ ${c.badge || "Enseignant certifié EDUFORCI"}<br><strong>${c.numeroCertification}</strong></div>` : ""}
 
             <a href="candidature-enseignant.html" class="btn-modifier">✏️ Modifier ma candidature</a>
 
