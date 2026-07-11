@@ -102,6 +102,15 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 .actions-footer{padding:22px 28px;border-top:1px solid #eee;}
 .zone-resultats-test{background:#f9f7ff;border:1px solid #e6ddff;border-radius:12px;padding:16px 18px;margin-top:6px;}
 .panneau-titre{color:#888;font-size:11.5px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+
+.correction-item{border:1px solid #eee;border-radius:12px;padding:16px;margin-bottom:14px;}
+.correction-question{color:#153A73;font-weight:700;font-size:14.5px;margin-bottom:8px;}
+.correction-indicatif{background:#fff8e1;color:#7a5c00;font-size:12.5px;padding:10px 12px;border-radius:8px;margin-bottom:10px;line-height:1.5;}
+.correction-reponse{background:#f8f9fc;padding:12px 14px;border-radius:8px;color:#333;font-size:14px;line-height:1.6;margin-bottom:12px;white-space:pre-wrap;}
+.correction-note{display:flex;align-items:center;gap:8px;}
+.correction-note label{font-weight:600;color:#153A73;font-size:13px;margin:0;}
+.correction-note input{width:70px;padding:8px;border:1px solid #ddd;border-radius:8px;text-align:center;}
+.correction-note span{color:#888;font-size:13px;}
 .actions-grille{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px;}
 @media (max-width:560px){.actions-grille{grid-template-columns:1fr;}}
 .btn-action{padding:14px;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:white;}
@@ -652,6 +661,10 @@ function rendreTest(t, c) {
     const dureeMin = t.tempsUtiliseSecondes != null ? Math.round(t.tempsUtiliseSecondes / 60) + " min" : "-";
     const scoreAffiche = t.score != null ? `${t.score} / 20` : "-";
     const pourcentageAffiche = t.pourcentage != null ? ` (${t.pourcentage} %)` : "";
+    const detailQcm = (t.totalQcm != null) ? ` — ${t.bonnesReponsesQcm ?? 0}/${t.totalQcm} bonnes réponses` : "";
+
+    const questionsOuvertes = (t.questions || []).filter(q => q.type === "ouverte");
+    const noteOuvertesAffichee = t.noteQuestionsOuvertes != null ? `${t.noteQuestionsOuvertes} / ${t.noteQuestionsOuvertesMax}` : (questionsOuvertes.length ? "à corriger" : null);
 
     const motifLigne = t.typeFin === "fraude"
         ? `<div class="info-ligne"><span class="cle">Motif de fin</span><span class="val" style="color:#d93025;">🚫 ${t.motifFin || "Fraude détectée"}</span></div>`
@@ -664,6 +677,13 @@ function rendreTest(t, c) {
         <div class="info-ligne"><span class="cle">Temps restant</span><span class="val" id="tempsRestantAdmin">--:--</span></div>
         <div class="info-ligne" style="border-bottom:none;"><span class="cle">Question actuelle</span><span class="val">${t.questionActuelle || 1} / ${t.questions?.length || 30}</span></div>
         <hr class="sep">
+    ` : "";
+
+    const blocResultat = !enCours ? `
+        <hr class="sep">
+        <div class="panneau-titre">🏆 Résultat</div>
+        <div class="info-ligne"><span class="cle">QCM</span><span class="val">${scoreAffiche}${pourcentageAffiche}${detailQcm}</span></div>
+        ${noteOuvertesAffichee ? `<div class="info-ligne" style="border-bottom:none;"><span class="cle">Questions ouvertes</span><span class="val">${noteOuvertesAffichee}</span></div>` : ""}
     ` : "";
 
     zone.innerHTML = `
@@ -679,9 +699,10 @@ function rendreTest(t, c) {
         <div class="info-ligne"><span class="cle">Actualisations</span><span class="val">${t.actualisations ?? 0}</span></div>
         <div class="info-ligne"><span class="cle">Déconnexions</span><span class="val">${t.deconnexions ?? 0}</span></div>
         <div class="info-ligne"><span class="cle">Tentative</span><span class="val">${t.tentativeNumero || 1}</span></div>
-        <div class="info-ligne"><span class="cle">Statut</span><span class="val">${enCours ? "🟠 En cours" : "✅ Terminé"}</span></div>
+        <div class="info-ligne" style="border-bottom:none;"><span class="cle">Statut</span><span class="val">${enCours ? "🟠 En cours" : "✅ Terminé"}</span></div>
         ${motifLigne}
-        <div class="info-ligne" style="border-bottom:none;"><span class="cle">Score</span><span class="val">${scoreAffiche}${pourcentageAffiche}</span></div>
+        ${blocResultat}
+        ${!enCours && questionsOuvertes.length ? `<hr class="sep"><div class="panneau-titre">📝 Correction des questions ouvertes</div><div id="zoneCorrectionOuvertes"><div class="historique-vide">⏳ Chargement des réponses...</div></div>` : ""}
     `;
 
     if (enCours && t.debut && t.dureeSecondes) {
@@ -696,6 +717,93 @@ function rendreTest(t, c) {
         };
         majTempsRestant();
         intervalTempsRestantAdmin = setInterval(majTempsRestant, 1000);
+    }
+
+    if (!enCours && questionsOuvertes.length) {
+        chargerCorrectionOuvertes(t, c);
+    }
+
+}
+
+async function chargerCorrectionOuvertes(t, c) {
+
+    const zoneCorrection = document.getElementById("zoneCorrectionOuvertes");
+    if (!zoneCorrection) return;
+
+    const questionsOuvertes = (t.questions || []).filter(q => q.type === "ouverte");
+
+    try {
+
+        const banqueSnap = await Promise.all(
+            questionsOuvertes.map(q => getDoc(doc(db, "questionsRecrutement", q.id)))
+        );
+
+        const corrections = t.corrections || {};
+
+        zoneCorrection.innerHTML = questionsOuvertes.map((q, i) => {
+            const banque = banqueSnap[i].exists() ? banqueSnap[i].data() : null;
+            const reponse = t.reponses?.[q.id]?.texte || "";
+            const bareme = q.bareme || 5;
+            const pointsActuels = corrections[q.id]?.points ?? "";
+
+            return `
+                <div class="correction-item">
+                    <div class="correction-question">${q.question}</div>
+                    ${banque?.corrigeIndicatif ? `<div class="correction-indicatif">💡 Corrigé indicatif (usage interne) : ${banque.corrigeIndicatif}</div>` : ""}
+                    <div class="correction-reponse">${reponse ? reponse.replace(/\n/g, "<br>") : "<em>Aucune réponse fournie.</em>"}</div>
+                    <div class="correction-note">
+                        <label>Points</label>
+                        <input type="number" class="input-note-ouverte" data-id="${q.id}" data-bareme="${bareme}" min="0" max="${bareme}" step="0.5" value="${pointsActuels}">
+                        <span>/ ${bareme}</span>
+                    </div>
+                </div>
+            `;
+        }).join("") + `<button class="btn-voir" id="btnEnregistrerCorrection" style="width:100%;margin-top:8px;">💾 Enregistrer la correction</button>`;
+
+        document.getElementById("btnEnregistrerCorrection").addEventListener("click", () => enregistrerCorrectionOuvertes(t, c));
+
+    } catch (error) {
+        zoneCorrection.innerHTML = `<div class="historique-vide">Erreur lors du chargement des réponses : ${error.message}</div>`;
+    }
+
+}
+
+async function enregistrerCorrectionOuvertes(t, c) {
+
+    const inputs = document.querySelectorAll(".input-note-ouverte");
+    const corrections = {};
+    let noteTotale = 0;
+    let noteMax = 0;
+    let incomplet = false;
+
+    inputs.forEach((input) => {
+        const bareme = Number(input.dataset.bareme) || 5;
+        noteMax += bareme;
+        if (input.value === "") { incomplet = true; return; }
+        const points = Math.min(bareme, Math.max(0, Number(input.value)));
+        corrections[input.dataset.id] = { points, bareme };
+        noteTotale += points;
+    });
+
+    if (incomplet && !confirm("Certaines questions n'ont pas encore de note (laissées à 0). Continuer quand même ?")) return;
+
+    window.showLoading("Enregistrement de la correction...");
+
+    try {
+
+        await updateDoc(doc(db, "testsRecrutement", candidatureOuverteId), {
+            corrections,
+            noteQuestionsOuvertes: noteTotale,
+            noteQuestionsOuvertesMax: noteMax,
+            statutCorrectionOuvertes: "corrige"
+        });
+
+        window.hideLoading();
+        window.notify("Correction enregistrée.", "succes");
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur : " + error.message, "erreur");
     }
 
 }

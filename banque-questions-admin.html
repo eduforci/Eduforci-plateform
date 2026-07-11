@@ -90,20 +90,36 @@ td{padding:9px 10px;border-bottom:1px solid #eee;font-size:13.5px;}
 </div>
 </div>
 
+<label>Type de question</label>
+<select id="typeQuestion">
+<option value="qcm" selected>QCM (choix multiples, corrigé automatiquement)</option>
+<option value="ouverte">Question ouverte / rédaction (corrigée manuellement)</option>
+</select>
+
 <label>Question</label>
 <textarea id="question" placeholder="Ex : Quel est le pluriel de « child » ?" required></textarea>
 
+<div id="blocQcm">
 <label>Choix de réponses (un par ligne, 2 à 6 choix)</label>
 <textarea id="choix" placeholder="childs
 children
 childes
-childrens" required></textarea>
+childrens"></textarea>
 
 <label>Numéro du bon choix (1 = première ligne ci-dessus)</label>
-<input type="number" id="bonneReponse" min="1" value="1" required>
+<input type="number" id="bonneReponse" min="1" value="1">
 
 <label>Explication (affichée dans les futurs retours au candidat)</label>
 <textarea id="explication" placeholder="Ex : Le pluriel de « child » est irrégulier : children."></textarea>
+</div>
+
+<div id="blocOuverte" style="display:none;">
+<label>Barème (points, sur ce total sera calculée la note de l'épreuve)</label>
+<input type="number" id="bareme" min="1" max="20" value="5">
+
+<label>Corrigé indicatif (visible uniquement par l'administrateur au moment de la correction, jamais par le candidat)</label>
+<textarea id="corrigeIndicatif" placeholder="Ex : L'élève doit mentionner... Points clés attendus : ..."></textarea>
+</div>
 
 <button type="submit" class="action">➕ Ajouter la question</button>
 
@@ -113,13 +129,13 @@ childrens" required></textarea>
 
 <div class="card">
 <h1>📋 Questions existantes (<span id="compteur">0</span>)</h1>
-<div class="aide">💡 Pour un test fiable de 30 questions, prévoyez au moins 40 à 50 questions par matière (elles sont tirées au hasard à chaque tentative).</div>
+<div class="aide">💡 Pour un test fiable de 30 questions QCM, prévoyez au moins 40 à 50 questions par matière (elles sont tirées au hasard à chaque tentative). Les questions ouvertes sont limitées à 4 par test.</div>
 
 <label style="margin-top:18px;">Filtrer par matière</label>
 <select id="filtreMatiere"><option value="toutes">Toutes les matières</option></select>
 
 <table>
-<thead><tr><th>Matière</th><th>Difficulté</th><th>Question</th><th>Bonne réponse</th><th></th></tr></thead>
+<thead><tr><th>Type</th><th>Matière</th><th>Difficulté</th><th>Question</th><th>Bonne réponse / Barème</th><th></th></tr></thead>
 <tbody id="corpsTableau"></tbody>
 </table>
 
@@ -134,6 +150,14 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { doc, getDoc, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let questions = [];
+
+document.getElementById("typeQuestion").addEventListener("change", (e) => {
+    const estOuverte = e.target.value === "ouverte";
+    document.getElementById("blocQcm").style.display = estOuverte ? "none" : "block";
+    document.getElementById("blocOuverte").style.display = estOuverte ? "block" : "none";
+    document.getElementById("choix").required = !estOuverte;
+    document.getElementById("bonneReponse").required = !estOuverte;
+});
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -177,10 +201,11 @@ function afficherTableau() {
     const corps = document.getElementById("corpsTableau");
     corps.innerHTML = liste.map(q => `
         <tr>
+            <td>${q.type === "ouverte" ? "📝 Ouverte" : "☑️ QCM"}</td>
             <td>${q.matiere}</td>
             <td><span class="badge-diff ${q.difficulte}">${q.difficulte}</span></td>
             <td>${q.question.length > 60 ? q.question.slice(0, 60) + "…" : q.question}</td>
-            <td class="correcte">${q.choix?.[q.reponseCorrecte] ?? "-"}</td>
+            <td class="correcte">${q.type === "ouverte" ? `${q.bareme || 5} pts` : (q.choix?.[q.reponseCorrecte] ?? "-")}</td>
             <td><button class="btn-suppr" data-id="${q.id}">🗑️</button></td>
         </tr>
     `).join("");
@@ -201,27 +226,53 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
 
     e.preventDefault();
 
-    const choixListe = document.getElementById("choix").value.split("\n").map(s => s.trim()).filter(Boolean);
-    const bonneReponseNum = Number(document.getElementById("bonneReponse").value);
-
-    if (choixListe.length < 2) { window.notify("Il faut au moins 2 choix de réponse.", "avertissement"); return; }
-    if (bonneReponseNum < 1 || bonneReponseNum > choixListe.length) { window.notify("Le numéro de la bonne réponse est invalide.", "avertissement"); return; }
+    const type = document.getElementById("typeQuestion").value;
+    const matiere = document.getElementById("matiere").value.trim();
+    const difficulte = document.getElementById("difficulte").value;
+    const enonce = document.getElementById("question").value.trim();
 
     window.showLoading("Ajout de la question...");
 
     try {
 
-        await addDoc(collection(db, "questionsRecrutement"), {
-            matiere: document.getElementById("matiere").value.trim(),
-            difficulte: document.getElementById("difficulte").value,
-            question: document.getElementById("question").value.trim(),
-            choix: choixListe,
-            reponseCorrecte: bonneReponseNum - 1,
-            explication: document.getElementById("explication").value.trim()
-        });
+        if (type === "ouverte") {
+
+            const bareme = Number(document.getElementById("bareme").value) || 5;
+
+            await addDoc(collection(db, "questionsRecrutement"), {
+                type: "ouverte",
+                matiere,
+                difficulte,
+                question: enonce,
+                bareme,
+                corrigeIndicatif: document.getElementById("corrigeIndicatif").value.trim()
+            });
+
+        } else {
+
+            const choixListe = document.getElementById("choix").value.split("\n").map(s => s.trim()).filter(Boolean);
+            const bonneReponseNum = Number(document.getElementById("bonneReponse").value);
+
+            if (choixListe.length < 2) { window.hideLoading(); window.notify("Il faut au moins 2 choix de réponse.", "avertissement"); return; }
+            if (bonneReponseNum < 1 || bonneReponseNum > choixListe.length) { window.hideLoading(); window.notify("Le numéro de la bonne réponse est invalide.", "avertissement"); return; }
+
+            await addDoc(collection(db, "questionsRecrutement"), {
+                type: "qcm",
+                matiere,
+                difficulte,
+                question: enonce,
+                choix: choixListe,
+                reponseCorrecte: bonneReponseNum - 1,
+                explication: document.getElementById("explication").value.trim()
+            });
+
+        }
 
         document.getElementById("formQuestion").reset();
         document.getElementById("bonneReponse").value = 1;
+        document.getElementById("bareme").value = 5;
+        document.getElementById("blocQcm").style.display = "block";
+        document.getElementById("blocOuverte").style.display = "none";
 
         window.hideLoading();
         window.notify("Question ajoutée avec succès.", "succes");
