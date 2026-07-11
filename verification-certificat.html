@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
 <style>
 
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
@@ -50,6 +52,12 @@ body{min-height:100vh;background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,
 
 .pied{text-align:center;color:rgba(255,255,255,.6);font-size:12px;margin-top:20px;}
 
+.btn-scanner{width:100%;padding:14px;background:white;border:2px solid #0B63F6;color:#0B63F6;border-radius:10px;font-weight:700;cursor:pointer;font-size:14.5px;margin-bottom:16px;}
+.btn-scanner:hover{background:#eaf1ff;}
+.btn-scanner.actif{background:#fdeaea;border-color:#d93025;color:#d93025;}
+
+#zoneScanner{display:none;margin-bottom:18px;border-radius:14px;overflow:hidden;}
+
 </style>
 
 </head>
@@ -64,6 +72,9 @@ body{min-height:100vh;background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,
 </div>
 
 <div class="card">
+
+<button class="btn-scanner" id="btnScanner">📷 Scanner le QR code avec la caméra</button>
+<div id="zoneScanner"></div>
 
 <div class="barre-recherche">
 <input type="text" id="champNumero" placeholder="Ex : EDU-ENG-2026-00001">
@@ -130,6 +141,74 @@ async function verifier(numero) {
 
 document.getElementById("btnVerifier").addEventListener("click", () => verifier(document.getElementById("champNumero").value));
 document.getElementById("champNumero").addEventListener("keydown", (e) => { if (e.key === "Enter") verifier(e.target.value); });
+
+// ==========================================================
+// SCAN QR CODE VIA LA CAMÉRA
+// ==========================================================
+
+let scannerActif = null;
+
+function extraireNumero(texteDecode) {
+    // Le QR code encode l'URL complète de vérification (?num=EDU-...) : on extrait juste le numéro
+    try {
+        const url = new URL(texteDecode);
+        const num = url.searchParams.get("num");
+        if (num) return num;
+    } catch {
+        // Ce n'est pas une URL : on suppose que c'est directement le numéro
+    }
+    return texteDecode;
+}
+
+async function demarrerScanner() {
+
+    const zone = document.getElementById("zoneScanner");
+    const bouton = document.getElementById("btnScanner");
+
+    zone.style.display = "block";
+    bouton.textContent = "✕ Arrêter le scan";
+    bouton.classList.add("actif");
+
+    scannerActif = new window.Html5Qrcode("zoneScanner");
+
+    try {
+
+        await scannerActif.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 230, height: 230 } },
+            async (texteDecode) => {
+                await arreterScanner();
+                const numero = extraireNumero(texteDecode);
+                document.getElementById("champNumero").value = numero;
+                verifier(numero);
+            },
+            () => {} // erreurs de scan image par image : on ignore, c'est normal tant qu'aucun QR n'est détecté
+        );
+
+    } catch (error) {
+        zone.style.display = "none";
+        bouton.textContent = "📷 Scanner le QR code avec la caméra";
+        bouton.classList.remove("actif");
+        window.alert("Impossible d'accéder à la caméra : " + error.message + "\nVous pouvez saisir le numéro manuellement ci-dessous.");
+    }
+
+}
+
+async function arreterScanner() {
+    if (scannerActif) {
+        try { await scannerActif.stop(); scannerActif.clear(); } catch {}
+        scannerActif = null;
+    }
+    document.getElementById("zoneScanner").style.display = "none";
+    const bouton = document.getElementById("btnScanner");
+    bouton.textContent = "📷 Scanner le QR code avec la caméra";
+    bouton.classList.remove("actif");
+}
+
+document.getElementById("btnScanner").addEventListener("click", () => {
+    if (scannerActif) arreterScanner();
+    else demarrerScanner();
+});
 
 // Vérification automatique si le numéro arrive via l'URL (lien du QR code)
 const numeroUrl = new URLSearchParams(window.location.search).get("num");

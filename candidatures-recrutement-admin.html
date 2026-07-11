@@ -206,7 +206,6 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <option value="documents_valides">Documents validés</option>
 <option value="test_autorise">Tests autorisés</option>
 <option value="tests_termines">Tests terminés</option>
-<option value="convoque_epreuve">Convoqués (épreuve)</option>
 <option value="convoque_entretien">Convoqués (entretien)</option>
 <option value="admis">Admis</option>
 <option value="refuse">Refusés</option>
@@ -330,11 +329,10 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 
 <div class="decision-finale">
 <div class="panneau-titre">🏁 Décision finale de l'administrateur (une seule option)</div>
-<button class="btn-decision btn-convoquer" id="btnConvoquerEpreuve">1️⃣ Convoquer à l'épreuve pédagogique</button>
-<button class="btn-decision btn-convoquer" id="btnConvoquerEntretien">2️⃣ Convoquer à l'entretien</button>
-<button class="btn-decision btn-decision-admis" id="btnMarquerAdmis">3️⃣ Admettre le candidat</button>
-<button class="btn-decision btn-decision-rejeter" id="btnRejeter">4️⃣ Refuser la candidature</button>
-<button class="btn-decision btn-annuler-candidature" id="btnAnnulerCandidature">5️⃣ Annuler la candidature (fraude, faux documents, abandon...)</button>
+<button class="btn-decision btn-convoquer" id="btnConvoquerEntretien">1️⃣ Convoquer à l'entretien</button>
+<button class="btn-decision btn-decision-admis" id="btnMarquerAdmis">2️⃣ Admettre le candidat</button>
+<button class="btn-decision btn-decision-rejeter" id="btnRejeter">3️⃣ Refuser la candidature</button>
+<button class="btn-decision btn-annuler-candidature" id="btnAnnulerCandidature">4️⃣ Annuler la candidature (fraude, faux documents, abandon...)</button>
 </div>
 
 <button class="btn-reinitialiser" id="btnReinitialiser">↩️ Annuler l'admission / réinitialiser ce candidat (compte de test)</button>
@@ -1171,7 +1169,6 @@ function ouvrirPopupConvocation(type) {
     document.getElementById("popupConvocation").classList.add("ouvert");
 }
 
-document.getElementById("btnConvoquerEpreuve").addEventListener("click", () => ouvrirPopupConvocation("convoque_epreuve"));
 document.getElementById("btnConvoquerEntretien").addEventListener("click", () => ouvrirPopupConvocation("convoque_entretien"));
 
 document.getElementById("btnFermerPopupConvocation").addEventListener("click", () => {
