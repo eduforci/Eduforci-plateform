@@ -59,7 +59,7 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .certif-numero{text-align:left;color:#666;font-size:12px;}
 .certif-numero strong{display:block;color:#153A73;font-size:14px;}
 .certif-signature{text-align:center;}
-.certif-signature .trait{font-family:"Playfair Display",serif;font-style:italic;color:#0B63F6;font-size:20px;}
+.certif-signature img{width:64px;height:64px;object-fit:contain;}
 .certif-signature .lbl{color:#999;font-size:11px;margin-top:4px;border-top:1px solid #ddd;padding-top:6px;}
 #qrcodeCanvas{display:flex;justify-content:center;}
 
@@ -137,7 +137,7 @@ Délivré le <span id="certifDate">-</span>
 </div>
 <div id="qrcodeCanvas"></div>
 <div class="certif-signature">
-<div class="trait">EDUFORCI</div>
+<img src="cachet-eduforci.png" alt="Sceau EDUFORCI">
 <div class="lbl">Signature EDUFORCI</div>
 </div>
 </div>
@@ -161,6 +161,21 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let donneesCertif = null;
+
+function chargerImageBase64(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext("2d").drawImage(img, 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = reject;
+        img.src = url;
+    });
+}
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -295,14 +310,14 @@ document.getElementById("btnTelecharger").addEventListener("click", async () => 
         pdf.text(`N° de certification : ${c.numeroCertification}`, 25, hauteur - 30);
         pdf.text(`Délivré le ${dateAffichee}`, 25, hauteur - 24);
 
-        pdf.setFont("helvetica", "italic");
-        pdf.setFontSize(16);
-        pdf.setTextColor(11, 99, 246);
-        pdf.text("EDUFORCI", largeur / 2, hauteur - 28, { align: "center" });
+        const cachetDataUrl = await chargerImageBase64("cachet-eduforci.png").catch(() => null);
+        if (cachetDataUrl) {
+            pdf.addImage(cachetDataUrl, "PNG", largeur / 2 - 13, hauteur - 48, 26, 26);
+        }
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
         pdf.setTextColor(150, 150, 150);
-        pdf.text("Signature EDUFORCI", largeur / 2, hauteur - 22, { align: "center" });
+        pdf.text("Signature EDUFORCI", largeur / 2, hauteur - 19, { align: "center" });
 
         pdf.save(`Certificat-EDUFORCI-${c.numeroCertification}.pdf`);
 
