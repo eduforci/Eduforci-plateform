@@ -1119,16 +1119,24 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
 
         window.hideLoading();
 
-        document.querySelector("#popupAutoriser .actions-grille").style.display = "none";
         document.getElementById("zoneResultatAutorisation").innerHTML = `
             <div class="info-ligne"><span class="cle">Session</span><span class="val">${idAutorisation}</span></div>
             <div class="info-ligne"><span class="cle">Statut</span><span class="val">🟣 Autorisé</span></div>
             <div class="info-ligne"><span class="cle">Matière</span><span class="val">${matiereChoisie || "-"}</span></div>
             <div class="info-ligne"><span class="cle">Niveau</span><span class="val">${niveauChoisi || "-"}</span></div>
+            <div class="info-ligne"><span class="cle">Durée</span><span class="val">${dureeMinutes} min</span></div>
+            <div class="info-ligne"><span class="cle">Questions</span><span class="val">${nombreQuestions}</span></div>
             <div class="info-ligne"><span class="cle">Début possible</span><span class="val">${maintenant.toLocaleDateString("fr-FR")}</span></div>
             <div class="info-ligne"><span class="cle">Expiration</span><span class="val">${dateExpiration.toLocaleDateString("fr-FR")}</span></div>
             <div class="info-ligne" style="border-bottom:none;"><span class="cle">Tentative(s)</span><span class="val">${tentativesAutorisees}</span></div>
+            <button type="button" class="btn-action btn-valider-docs" id="btnFermerApresAutorisation" style="width:100%;margin-top:16px;">✅ C'est bon, fermer</button>
         `;
+
+        document.getElementById("btnFermerApresAutorisation").addEventListener("click", () => {
+            document.getElementById("popupAutoriser").classList.remove("ouvert");
+        });
+
+        window.notify("Autorisation enregistrée. Vous pouvez ajuster les réglages ci-dessus et cliquer de nouveau sur OUI si besoin, ou fermer.", "succes");
 
         await chargerCandidatures();
         await ouvrirModal(candidatureOuverteId);

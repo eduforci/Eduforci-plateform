@@ -43,6 +43,7 @@ td{padding:9px 10px;border-bottom:1px solid #eee;font-size:13.5px;}
 .badge-diff.difficile{background:#fdeaea;color:#d93025;}
 .correcte{color:#28a745;font-weight:700;}
 .btn-suppr{background:#fdeaea;color:#d93025;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;}
+.btn-modifier{background:#eaf1ff;color:#0B63F6;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;}
 
 .aide{background:#eaf1ff;color:#0B63F6;padding:14px 16px;border-radius:10px;font-size:13.5px;margin-top:14px;line-height:1.5;}
 </style>
@@ -74,6 +75,8 @@ td{padding:9px 10px;border-bottom:1px solid #eee;font-size:13.5px;}
 <p class="sub">Ajoutez ici les questions utilisées pour le test de recrutement (30 questions tirées au hasard par matière lors du test). Le champ « matière » doit correspondre exactement à celui saisi par les enseignants (ex : Anglais, Mathématiques...).</p>
 
 <form id="formQuestion">
+
+<h2 id="titreFormulaire" style="color:#153A73;font-size:16px;margin-bottom:4px;">➕ Ajouter une question</h2>
 
 <div class="grid2">
 <div>
@@ -128,7 +131,8 @@ childrens"></textarea>
 <textarea id="corrigeIndicatif" placeholder="Ex : L'élève doit mentionner... Points clés attendus : ..."></textarea>
 </div>
 
-<button type="submit" class="action">➕ Ajouter la question</button>
+<button type="submit" class="action" id="btnSubmitQuestion">➕ Ajouter la question</button>
+<button type="button" class="action" id="btnAnnulerEdition" style="display:none;background:#999;margin-left:10px;">Annuler la modification</button>
 
 </form>
 
@@ -154,9 +158,10 @@ childrens"></textarea>
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, collection, addDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, addDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 let questions = [];
+let idEnEdition = null;
 
 document.getElementById("typeQuestion").addEventListener("change", (e) => {
     const estOuverte = e.target.value === "ouverte";
@@ -216,14 +221,19 @@ function afficherTableau() {
             <td><span class="badge-diff ${q.difficulte}">${q.difficulte}</span></td>
             <td>${q.question.length > 60 ? q.question.slice(0, 60) + "…" : q.question}</td>
             <td class="correcte">${q.type === "ouverte" ? `${q.bareme || 5} pts` : (q.choix?.[q.reponseCorrecte] ?? "-")}</td>
-            <td><button class="btn-suppr" data-id="${q.id}">🗑️</button></td>
+            <td><button class="btn-modifier" data-id="${q.id}">✏️</button> <button class="btn-suppr" data-id="${q.id}">🗑️</button></td>
         </tr>
     `).join("");
+
+    corps.querySelectorAll(".btn-modifier").forEach((btn) => {
+        btn.addEventListener("click", () => chargerPourEdition(btn.dataset.id));
+    });
 
     corps.querySelectorAll(".btn-suppr").forEach((btn) => {
         btn.addEventListener("click", async () => {
             if (!confirm("Supprimer définitivement cette question ?")) return;
             await deleteDoc(doc(db, "questionsRecrutement", btn.dataset.id));
+            if (idEnEdition === btn.dataset.id) annulerEdition();
             await chargerQuestions();
         });
     });
@@ -231,6 +241,56 @@ function afficherTableau() {
 }
 
 document.getElementById("filtreMatiere").addEventListener("change", afficherTableau);
+
+function chargerPourEdition(id) {
+
+    const q = questions.find(x => x.id === id);
+    if (!q) return;
+
+    idEnEdition = id;
+
+    document.getElementById("matiere").value = q.matiere || "";
+    document.getElementById("difficulte").value = q.difficulte || "moyen";
+    document.getElementById("typeQuestion").value = q.type || "qcm";
+    document.getElementById("categorie").value = q.categorie || "disciplinaire";
+    document.getElementById("question").value = q.question || "";
+
+    const estOuverte = q.type === "ouverte";
+    document.getElementById("blocQcm").style.display = estOuverte ? "none" : "block";
+    document.getElementById("blocOuverte").style.display = estOuverte ? "block" : "none";
+    document.getElementById("choix").required = !estOuverte;
+    document.getElementById("bonneReponse").required = !estOuverte;
+
+    if (estOuverte) {
+        document.getElementById("bareme").value = q.bareme || 5;
+        document.getElementById("corrigeIndicatif").value = q.corrigeIndicatif || "";
+    } else {
+        document.getElementById("choix").value = (q.choix || []).join("\n");
+        document.getElementById("bonneReponse").value = (q.reponseCorrecte ?? 0) + 1;
+        document.getElementById("explication").value = q.explication || "";
+    }
+
+    document.getElementById("titreFormulaire").textContent = "✏️ Modifier la question";
+    document.getElementById("btnSubmitQuestion").textContent = "💾 Enregistrer les modifications";
+    document.getElementById("btnAnnulerEdition").style.display = "inline-block";
+
+    document.getElementById("formQuestion").scrollIntoView({ behavior: "smooth", block: "start" });
+
+}
+
+function annulerEdition() {
+    idEnEdition = null;
+    document.getElementById("formQuestion").reset();
+    document.getElementById("bonneReponse").value = 1;
+    document.getElementById("bareme").value = 5;
+    document.getElementById("blocQcm").style.display = "block";
+    document.getElementById("blocOuverte").style.display = "none";
+    document.getElementById("titreFormulaire").textContent = "➕ Ajouter une question";
+    document.getElementById("btnSubmitQuestion").textContent = "➕ Ajouter la question";
+    document.getElementById("btnAnnulerEdition").style.display = "none";
+}
+
+document.getElementById("btnAnnulerEdition").addEventListener("click", annulerEdition);
 
 document.getElementById("formQuestion").addEventListener("submit", async (e) => {
 
@@ -241,25 +301,29 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
     const difficulte = document.getElementById("difficulte").value;
     const enonce = document.getElementById("question").value.trim();
 
-    window.showLoading("Ajout de la question...");
+    window.showLoading(idEnEdition ? "Enregistrement des modifications..." : "Ajout de la question...");
 
     try {
 
         const categorie = document.getElementById("categorie").value;
+        let donnees;
 
         if (type === "ouverte") {
 
             const bareme = Number(document.getElementById("bareme").value) || 5;
 
-            await addDoc(collection(db, "questionsRecrutement"), {
+            donnees = {
                 type: "ouverte",
                 matiere,
                 difficulte,
                 categorie,
                 question: enonce,
                 bareme,
-                corrigeIndicatif: document.getElementById("corrigeIndicatif").value.trim()
-            });
+                corrigeIndicatif: document.getElementById("corrigeIndicatif").value.trim(),
+                choix: null,
+                reponseCorrecte: null,
+                explication: null
+            };
 
         } else {
 
@@ -269,7 +333,7 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
             if (choixListe.length < 2) { window.hideLoading(); window.notify("Il faut au moins 2 choix de réponse.", "avertissement"); return; }
             if (bonneReponseNum < 1 || bonneReponseNum > choixListe.length) { window.hideLoading(); window.notify("Le numéro de la bonne réponse est invalide.", "avertissement"); return; }
 
-            await addDoc(collection(db, "questionsRecrutement"), {
+            donnees = {
                 type: "qcm",
                 matiere,
                 difficulte,
@@ -277,19 +341,24 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
                 question: enonce,
                 choix: choixListe,
                 reponseCorrecte: bonneReponseNum - 1,
-                explication: document.getElementById("explication").value.trim()
-            });
+                explication: document.getElementById("explication").value.trim(),
+                bareme: null,
+                corrigeIndicatif: null
+            };
 
         }
 
-        document.getElementById("formQuestion").reset();
-        document.getElementById("bonneReponse").value = 1;
-        document.getElementById("bareme").value = 5;
-        document.getElementById("blocQcm").style.display = "block";
-        document.getElementById("blocOuverte").style.display = "none";
+        if (idEnEdition) {
+            await updateDoc(doc(db, "questionsRecrutement", idEnEdition), donnees);
+        } else {
+            await addDoc(collection(db, "questionsRecrutement"), donnees);
+        }
+
+        const messageSucces = idEnEdition ? "Question modifiée avec succès." : "Question ajoutée avec succès.";
+        annulerEdition();
 
         window.hideLoading();
-        window.notify("Question ajoutée avec succès.", "succes");
+        window.notify(messageSucces, "succes");
 
         await chargerQuestions();
 
