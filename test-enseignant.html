@@ -32,6 +32,14 @@ body{background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,.85)),url("hero.j
 .accueil .logo{font-size:38px;margin-bottom:6px;}
 .accueil h1{color:#153A73;font-size:20px;letter-spacing:.5px;margin-bottom:4px;}
 .accueil .bienvenue{color:#333;font-size:17px;margin:18px 0 22px;}
+.intro-felicitations{color:#444;font-size:14px;line-height:1.7;text-align:left;background:#f4f9ff;padding:18px 20px;border-radius:14px;margin:18px 0 24px;}
+.date-limite{background:#fff4e0;color:#a05a00;padding:12px 16px;border-radius:10px;font-size:13.5px;text-align:center;margin-bottom:22px;}
+.composition-test{background:#f4f7fc;border-radius:14px;padding:18px 20px;text-align:left;margin-bottom:24px;}
+.composition-titre{color:#153A73;font-weight:700;font-size:14.5px;margin-bottom:10px;}
+.composition-ligne{color:#444;font-size:13.5px;line-height:1.8;}
+.engagement-titre{color:#153A73;font-weight:700;font-size:15px;text-align:left;margin-bottom:6px;}
+.engagement-intro{color:#666;font-size:13px;text-align:left;margin-bottom:14px;}
+.message-equipe{background:#eaf7ee;color:#1f5c30;padding:18px 20px;border-radius:14px;font-size:13.5px;line-height:1.7;text-align:left;margin:22px 0 26px;}
 .infos-test{display:flex;justify-content:center;gap:12px;margin-bottom:26px;flex-wrap:wrap;}
 .infos-test div{background:#f4f7fc;padding:12px 16px;border-radius:12px;min-width:80px;}
 .infos-test .val{color:#0B63F6;font-weight:700;font-size:14.5px;}
@@ -49,7 +57,10 @@ button.demarrer:disabled{background:#ccc;cursor:not-allowed;}
 /* --- écran de test --- */
 .entete-test{background:#153A73;color:white;padding:18px 26px;display:flex;justify-content:space-between;align-items:center;}
 .entete-test .logo{font-weight:700;}
+.entete-droite{display:flex;align-items:center;gap:14px;}
 .chrono{font-weight:700;font-size:18px;font-variant-numeric:tabular-nums;}
+.compteur-avertissements{font-size:12.5px;font-weight:700;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;}
+.compteur-avertissements.actif{background:#d93025;}
 .chrono.urgent{color:#ff6b6b;}
 
 .progression-zone{padding:16px 26px 0;}
@@ -267,20 +278,31 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     if (candidature.statut !== "test_autorise") {
-        afficherEtat("🔒", "Vous n'êtes pas encore autorisé à passer le test.", "Votre dossier doit d'abord être validé par l'équipe EDUFORCI. Consultez le statut de votre candidature pour plus de détails.");
+        afficherEcranEnAttente();
         return;
     }
 
     const expiration = calculerExpiration();
 
     if (expiration && Date.now() > expiration.getTime()) {
-        afficherEtat("⏰", "Délai expiré", `Le délai pour passer ce test (jusqu'au ${formaterDateExpiration(expiration)}) est dépassé. Contactez l'équipe EDUFORCI si vous pensez qu'il s'agit d'une erreur.`);
+        afficherEtat("⏰", "Votre autorisation de test a expiré.", `Le délai de ${EXPIRATION_HEURES} heures est dépassé.<br>Veuillez attendre une nouvelle décision de l'administration.`);
         return;
     }
 
     afficherEcranAccueil(expiration);
 
 });
+
+function afficherEcranEnAttente() {
+    carte.innerHTML = `
+        <div class="etat">
+            <div class="emoji">⏳</div>
+            <h2>Mon test de recrutement</h2>
+            <p>En attente de l'autorisation de l'administrateur.<br><br>Votre dossier est en cours de vérification.<br>Vous serez notifié(e) dès que votre test sera disponible.</p>
+            <button class="demarrer" disabled style="opacity:.5;cursor:not-allowed;margin-top:20px;">▶️ Commencer le test</button>
+            <a href="dashboard-enseignant.html">Retour au tableau de bord</a>
+        </div>`;
+}
 
 function trouverDateAutorisationTest() {
     const entrees = (candidature.historique || []).filter(h => h.action && h.action.startsWith("Test autorisé"));
@@ -294,7 +316,7 @@ function calculerExpiration() {
 }
 
 function formaterDateExpiration(dateExpiration) {
-    return dateExpiration.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) + " à 23h59";
+    return dateExpiration.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) + " à " + dateExpiration.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
 // ==========================================================
@@ -324,36 +346,67 @@ function afficherEcranAccueil(expiration) {
     const nom = [candidature.personnel?.prenom, candidature.personnel?.nom].filter(Boolean).join(" ") || "";
     const matiere = candidature.parametresTest?.matiere || (candidature.matieres && candidature.matieres[0]) || "Générale";
     const niveau = candidature.parametresTest?.niveau || (candidature.niveaux && candidature.niveaux.join(", ")) || "-";
+    const dureeMin = Math.round(DUREE_SECONDES / 60);
+    const nbDisciplinaire = Math.max(0, NB_QUESTIONS - 2 * Math.round(NB_QUESTIONS / 6));
+    const nbPedagogie = Math.round(NB_QUESTIONS / 6);
+    const nbEtudeCas = NB_QUESTIONS - nbDisciplinaire - nbPedagogie;
 
     carte.innerHTML = `
         <div class="accueil">
-            <div class="logo">🧑‍🏫</div>
-            <h1>TEST DE RECRUTEMENT EDUFORCI</h1>
-            <div class="bienvenue">Bienvenue ${nom}</div>
+            <div class="logo">🎉</div>
+            <h1>FÉLICITATIONS !</h1>
+            <p class="intro-felicitations">Après étude attentive de votre dossier, l'équipe EDUFORCI a le plaisir de vous informer que vous êtes autorisé(e) à passer le test de recrutement.<br><br>Cette autorisation signifie que votre candidature a satisfait aux premières exigences de notre processus de sélection. Nous vous invitons à donner le meilleur de vous-même.</p>
 
             <div class="infos-test">
-                <div><div class="val">${matiere}</div><div class="lbl">Matière</div></div>
-                <div><div class="val">${niveau}</div><div class="lbl">Niveau</div></div>
-                <div><div class="val">60 min</div><div class="lbl">Durée</div></div>
-                <div><div class="val">${NB_QUESTIONS} + ${NB_QUESTIONS_OUVERTES}</div><div class="lbl">QCM + Rédaction</div></div>
-                <div><div class="val">${prochaineTentative}/${TENTATIVES_AUTORISEES}</div><div class="lbl">Tentative</div></div>
-                ${expiration ? `<div><div class="val">${formaterDateExpiration(expiration)}</div><div class="lbl">Expire le</div></div>` : ""}
+                <div><div class="val">📚 ${matiere}</div><div class="lbl">Matière</div></div>
+                <div><div class="val">🎓 ${niveau}</div><div class="lbl">Niveau</div></div>
+                <div><div class="val">❓ ${NB_QUESTIONS + NB_QUESTIONS_OUVERTES}</div><div class="lbl">Questions</div></div>
+                <div><div class="val">⏱️ ${dureeMin} min</div><div class="lbl">Durée</div></div>
+                <div><div class="val">🔁 ${prochaineTentative}/${TENTATIVES_AUTORISEES}</div><div class="lbl">Tentative</div></div>
+                <div><div class="val">⏳ ${EXPIRATION_HEURES}h</div><div class="lbl">Validité</div></div>
             </div>
+
+            ${expiration ? `<div class="date-limite">📅 Date limite : <strong>${formaterDateExpiration(expiration)}</strong></div>` : ""}
+
+            <div class="composition-test">
+                <div class="composition-titre">📖 Composition du test</div>
+                <div class="composition-ligne">• ${nbDisciplinaire} questions de connaissances disciplinaires</div>
+                <div class="composition-ligne">• ${nbPedagogie} questions de pédagogie</div>
+                <div class="composition-ligne">• ${nbEtudeCas} études de cas professionnelles</div>
+                ${NB_QUESTIONS_OUVERTES ? `<div class="composition-ligne">• ${NB_QUESTIONS_OUVERTES} questions ouvertes (rédaction)</div>` : ""}
+            </div>
+
+            <div class="engagement-titre">📜 Engagement du candidat</div>
+            <p class="engagement-intro">En cliquant sur « Démarrer ma session de test », je certifie que :</p>
 
             <div class="certif">
                 <input type="checkbox" class="case-certif" id="certif1">
-                <label for="certif1">Je certifie passer ce test sans assistance.</label>
+                <label for="certif1">Je suis le seul auteur de mes réponses.</label>
             </div>
             <div class="certif">
                 <input type="checkbox" class="case-certif" id="certif2">
-                <label for="certif2">Je comprends que toute fraude entraîne l'annulation de ma candidature.</label>
+                <label for="certif2">Je réaliserai cette évaluation avec honnêteté et intégrité.</label>
             </div>
             <div class="certif">
                 <input type="checkbox" class="case-certif" id="certif3">
-                <label for="certif3">Je suis prêt(e).</label>
+                <label for="certif3">Je m'engage à respecter les règles du processus de recrutement EDUFORCI.</label>
+            </div>
+            <div class="certif">
+                <input type="checkbox" class="case-certif" id="certif4">
+                <label for="certif4">J'accepte que ma session de test fasse l'objet de contrôles destinés à garantir l'équité et l'intégrité de l'évaluation.</label>
+            </div>
+            <div class="certif">
+                <input type="checkbox" class="case-certif" id="certif5">
+                <label for="certif5">Je comprends que toute anomalie ou tentative de fraude constatée pendant ou après le test peut entraîner l'annulation immédiate de ma candidature.</label>
             </div>
 
-            <button class="demarrer" id="btnDemarrer" disabled>▶ Commencer le test</button>
+            <div class="message-equipe">
+                🍀 <strong>Message de l'équipe EDUFORCI</strong><br>
+                Chaque enseignant recruté par EDUFORCI représente notre engagement envers l'excellence, la confiance et la qualité de l'enseignement.<br><br>
+                Nous vous souhaitons une excellente réussite. Bonne chance !
+            </div>
+
+            <button class="demarrer" id="btnDemarrer" disabled>▶️ Démarrer ma session de test</button>
         </div>`;
 
     document.querySelectorAll(".case-certif").forEach((cb) => {
@@ -403,7 +456,33 @@ async function demarrerTest() {
             return;
         }
 
-        const questionsQcm = melanger(banqueQcm).slice(0, NB_QUESTIONS).map((q) => ({
+        const nbPedagogieCible = Math.round(NB_QUESTIONS / 6);
+        const nbEtudeCasCible = Math.round(NB_QUESTIONS / 6);
+        const nbDisciplinaireCible = NB_QUESTIONS - nbPedagogieCible - nbEtudeCasCible;
+
+        const parCategorie = (cat) => banqueQcm.filter(q => (q.categorie || "disciplinaire") === cat);
+
+        function piocher(cat, nb, dejaChoisiesIds) {
+            const dispo = melanger(parCategorie(cat)).filter(q => !dejaChoisiesIds.has(q.id));
+            return dispo.slice(0, nb);
+        }
+
+        const idsChoisis = new Set();
+        let selection = [];
+
+        [["disciplinaire", nbDisciplinaireCible], ["pedagogie", nbPedagogieCible], ["etude_de_cas", nbEtudeCasCible]].forEach(([cat, nb]) => {
+            const choisies = piocher(cat, nb, idsChoisis);
+            choisies.forEach(q => idsChoisis.add(q.id));
+            selection = selection.concat(choisies);
+        });
+
+        // Repli : si certaines catégories manquent de questions, on complète avec le reste de la banque QCM
+        if (selection.length < Math.min(NB_QUESTIONS, banqueQcm.length)) {
+            const complement = melanger(banqueQcm.filter(q => !idsChoisis.has(q.id))).slice(0, NB_QUESTIONS - selection.length);
+            selection = selection.concat(complement);
+        }
+
+        const questionsQcm = melanger(selection).slice(0, NB_QUESTIONS).map((q) => ({
             id: q.id,
             type: "qcm",
             question: q.question,
@@ -479,7 +558,10 @@ function demarrerEcranTest() {
     carte.innerHTML = `
         <div class="entete-test">
             <div class="logo">EDUFORCI</div>
-            <div class="chrono" id="chrono">--:--</div>
+            <div class="entete-droite">
+                <div class="compteur-avertissements" id="compteurAvertissements">⚠️ ${avertissements}/${MAX_AVERTISSEMENTS}</div>
+                <div class="chrono" id="chrono">--:--</div>
+            </div>
         </div>
         <div class="progression-zone">
             <div class="progression-txt"><span id="labelQuestion">Question 1 / ${test.questions.length}</span></div>
@@ -732,6 +814,12 @@ async function declencherAvertissement(type, message) {
         console.warn("Erreur de suivi anti-triche :", error.message);
     }
 
+    const compteurEl = document.getElementById("compteurAvertissements");
+    if (compteurEl) {
+        compteurEl.textContent = `⚠️ ${avertissements}/${MAX_AVERTISSEMENTS}`;
+        compteurEl.classList.add("actif");
+    }
+
     if (avertissements >= MAX_AVERTISSEMENTS) {
         finaliserTest("Nombre d'avertissements dépassé", "fraude");
         return;
@@ -843,8 +931,8 @@ async function finaliserTest(motif, type = "normal") {
             carte.innerHTML = `
                 <div class="etat">
                     <div class="emoji">✔️</div>
-                    <h2>Merci.</h2>
-                    <p>Vos réponses sont enregistrées.<br>Votre dossier est en cours d'évaluation.<br>Vous serez notifié(e).</p>
+                    <h2>Votre test est terminé.</h2>
+                    <p>Vos réponses ont été enregistrées.<br>Votre copie a été transmise à l'administration.<br><br>Votre dossier est en cours d'évaluation.<br>Vous recevrez une notification après la décision de l'administrateur.<br><br><em>Aucune note n'est affichée à ce stade.</em></p>
                     <a href="dashboard-enseignant.html">Retour au tableau de bord</a>
                 </div>`;
         }

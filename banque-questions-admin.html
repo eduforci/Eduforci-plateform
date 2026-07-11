@@ -96,6 +96,13 @@ td{padding:9px 10px;border-bottom:1px solid #eee;font-size:13.5px;}
 <option value="ouverte">Question ouverte / rédaction (corrigée manuellement)</option>
 </select>
 
+<label>Catégorie</label>
+<select id="categorie">
+<option value="disciplinaire" selected>📚 Connaissances disciplinaires</option>
+<option value="pedagogie">🍎 Pédagogie</option>
+<option value="etude_de_cas">🧩 Étude de cas professionnelle</option>
+</select>
+
 <label>Question</label>
 <textarea id="question" placeholder="Ex : Quel est le pluriel de « child » ?" required></textarea>
 
@@ -135,7 +142,7 @@ childrens"></textarea>
 <select id="filtreMatiere"><option value="toutes">Toutes les matières</option></select>
 
 <table>
-<thead><tr><th>Type</th><th>Matière</th><th>Difficulté</th><th>Question</th><th>Bonne réponse / Barème</th><th></th></tr></thead>
+<thead><tr><th>Type</th><th>Catégorie</th><th>Matière</th><th>Difficulté</th><th>Question</th><th>Bonne réponse / Barème</th><th></th></tr></thead>
 <tbody id="corpsTableau"></tbody>
 </table>
 
@@ -198,10 +205,13 @@ function afficherTableau() {
 
     document.getElementById("compteur").textContent = liste.length;
 
+    const LIBELLES_CATEGORIE = { disciplinaire: "📚 Disciplinaire", pedagogie: "🍎 Pédagogie", etude_de_cas: "🧩 Étude de cas" };
+
     const corps = document.getElementById("corpsTableau");
     corps.innerHTML = liste.map(q => `
         <tr>
             <td>${q.type === "ouverte" ? "📝 Ouverte" : "☑️ QCM"}</td>
+            <td>${LIBELLES_CATEGORIE[q.categorie] || "📚 Disciplinaire"}</td>
             <td>${q.matiere}</td>
             <td><span class="badge-diff ${q.difficulte}">${q.difficulte}</span></td>
             <td>${q.question.length > 60 ? q.question.slice(0, 60) + "…" : q.question}</td>
@@ -235,6 +245,8 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
 
     try {
 
+        const categorie = document.getElementById("categorie").value;
+
         if (type === "ouverte") {
 
             const bareme = Number(document.getElementById("bareme").value) || 5;
@@ -243,6 +255,7 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
                 type: "ouverte",
                 matiere,
                 difficulte,
+                categorie,
                 question: enonce,
                 bareme,
                 corrigeIndicatif: document.getElementById("corrigeIndicatif").value.trim()
@@ -260,6 +273,7 @@ document.getElementById("formQuestion").addEventListener("submit", async (e) => 
                 type: "qcm",
                 matiere,
                 difficulte,
+                categorie,
                 question: enonce,
                 choix: choixListe,
                 reponseCorrecte: bonneReponseNum - 1,

@@ -55,6 +55,19 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .msg-admin{background:#f4f7fc;padding:16px;border-radius:12px;color:#333;line-height:1.5;font-size:15px;}
 .bandeau-certif{background:linear-gradient(135deg,#28a745,#1f7a35);color:white;padding:16px;border-radius:12px;margin-top:16px;text-align:center;line-height:1.6;font-size:14.5px;}
 
+.bloc-decision{border-radius:14px;padding:20px 22px;margin-bottom:4px;}
+.bloc-decision .decision-titre{font-weight:700;font-size:16px;margin-bottom:10px;}
+.bloc-decision p{color:#444;font-size:14px;line-height:1.6;margin-bottom:4px;}
+.bloc-decision.convocation{background:#eaf1ff;}
+.bloc-decision.convocation .decision-titre{color:#0B63F6;}
+.bloc-decision.admis{background:#eafaf0;}
+.bloc-decision.admis .decision-titre{color:#28a745;}
+.bloc-decision.refuse{background:#f8f8f8;}
+.bloc-decision.refuse .decision-titre{color:#555;}
+.bloc-decision.annulee{background:#fdeaea;}
+.bloc-decision.annulee .decision-titre{color:#d93025;}
+.bloc-decision .ligne{border-bottom:1px solid rgba(0,0,0,.08);}
+
 .btn-modifier{display:block;width:100%;text-align:center;margin-top:26px;padding:15px;background:#0B63F6;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:16px;}
 .btn-modifier:hover{background:#084ec7;}
 .btn-modifier.btn-test{background:#7b2fd6;}
@@ -207,10 +220,7 @@ function rendreDossier(c) {
 
             <hr class="sep">
 
-            <div class="msg-admin-titre">Message de l'administrateur</div>
-            <div class="msg-admin">${c.messageAdmin ? c.messageAdmin : "Aucun message pour le moment."}</div>
-
-            ${statut === "admis" && c.numeroCertification ? `<div class="bandeau-certif">🎖️ ${c.badge || "Enseignant certifié EDUFORCI"}<br><strong>${c.numeroCertification}</strong></div>` : ""}
+            ${rendreBlocDecision(c, statut)}
 
             <a href="candidature-enseignant.html" class="btn-modifier">✏️ Modifier ma candidature</a>
 
@@ -218,6 +228,56 @@ function rendreDossier(c) {
         ${suiviHtml}
         ${statut === "test_autorise" ? rendreBlocTest(c) : ""}
     </div>`;
+}
+
+function rendreBlocDecision(c, statut) {
+
+    if (statut === "convoque_epreuve" || statut === "convoque_entretien") {
+        const conv = c.convocation || {};
+        const libelle = statut === "convoque_epreuve" ? "l'épreuve pédagogique" : "l'entretien";
+        const dateAffichee = conv.date ? new Date(conv.date + "T" + (conv.heure || "00:00")).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "-";
+        return `
+            <div class="bloc-decision convocation">
+                <div class="decision-titre">📅 Convocation</div>
+                <p>Félicitations. Vous êtes convoqué(e) à ${libelle}.</p>
+                <div class="ligne"><span class="cle">Date</span><span class="valeur">${dateAffichee}</span></div>
+                <div class="ligne"><span class="cle">Heure</span><span class="valeur">${conv.heure || "-"}</span></div>
+                <div class="ligne" style="border-bottom:none;"><span class="cle">Lieu / lien</span><span class="valeur">${conv.lieu || "-"}</span></div>
+            </div>`;
+    }
+
+    if (statut === "admis") {
+        return `
+            <div class="bloc-decision admis">
+                <div class="decision-titre">🎉 Félicitations !</div>
+                <p>Votre candidature est acceptée.<br>Bienvenue chez EDUFORCI.</p>
+                ${c.numeroCertification ? `<div class="bandeau-certif">🎖️ ${c.badge || "Enseignant certifié EDUFORCI"}<br><strong>${c.numeroCertification}</strong><br><small>Le certificat téléchargeable sera bientôt disponible dans votre espace.</small></div>` : ""}
+                <p style="margin-top:14px;">Votre profil sera prochainement publié.</p>
+            </div>`;
+    }
+
+    if (statut === "refuse") {
+        return `
+            <div class="bloc-decision refuse">
+                <div class="decision-titre">Décision</div>
+                <p>Nous vous remercions pour votre participation.<br>Après étude de votre dossier, votre candidature n'a pas été retenue.<br><br>Nous vous encourageons à postuler à nouveau lorsque les conditions seront réunies.</p>
+            </div>`;
+    }
+
+    if (statut === "annulee") {
+        return `
+            <div class="bloc-decision annulee">
+                <div class="decision-titre">🚫 Candidature annulée</div>
+                <p>Votre candidature a été annulée.</p>
+                <div class="ligne" style="border-bottom:none;"><span class="cle">Motif</span><span class="valeur" style="text-align:right;">${c.messageAdmin || "Non précisé"}</span></div>
+                <p style="margin-top:10px;">Pour toute information complémentaire, contactez EDUFORCI.</p>
+            </div>`;
+    }
+
+    return `
+        <div class="msg-admin-titre">Message de l'administrateur</div>
+        <div class="msg-admin">${c.messageAdmin ? c.messageAdmin : "Aucun message pour le moment."}</div>`;
+
 }
 
 function rendreBlocTest(c) {

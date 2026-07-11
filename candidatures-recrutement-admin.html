@@ -378,6 +378,33 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 </div>
 </div>
 
+<!-- ================= POPUP CONVOCATION (épreuve pédagogique / entretien) ================= -->
+<div class="modal-overlay" id="popupConvocation">
+<div class="modal-box" style="max-width:420px;">
+
+<div class="modal-entete" style="background:#0B63F6;">
+<h2 id="popupConvocationTitre">📅 Convoquer le candidat</h2>
+<button class="fermer" id="btnFermerPopupConvocation">✕</button>
+</div>
+
+<div style="padding:26px 28px;">
+
+<p id="popupConvocationQuestion" style="color:#333;font-size:15px;margin-bottom:20px;"></p>
+
+<label>Date</label><input type="date" id="convocDate" style="width:100%;">
+<label>Heure</label><input type="time" id="convocHeure" style="width:100%;">
+<label>Lieu ou lien de visioconférence</label><input type="text" id="convocLieu" style="width:100%;" placeholder="Ex : Siège EDUFORCI, Abidjan — ou lien Google Meet">
+
+<div class="actions-grille" style="margin-top:22px;">
+<button class="btn-action btn-rejeter" id="btnConvocationNon">Annuler</button>
+<button class="btn-action btn-valider-docs" id="btnConvocationOui">Confirmer la convocation</button>
+</div>
+
+</div>
+
+</div>
+</div>
+
 <script type="module">
 
 import { auth, db } from "./js/firebase.js";
@@ -1120,22 +1147,74 @@ document.getElementById("btnDemanderModifs").addEventListener("click", () => app
     exigerCommentaire: true
 }));
 
-document.getElementById("btnConvoquerEpreuve").addEventListener("click", () => {
-    if (!confirm("Convoquer ce candidat à l'épreuve pédagogique ?")) return;
-    appliquerAction({
-        nouveauStatut: "convoque_epreuve",
-        actionHistorique: "Candidat convoqué à l'épreuve pédagogique",
-        messageParDefaut: "Félicitations, vous êtes convoqué(e) à l'épreuve pédagogique. Vous recevrez prochainement les modalités."
-    });
+let typeConvocationEnCours = null;
+
+function ouvrirPopupConvocation(type) {
+    const c = candidatures.find(x => x.id === candidatureOuverteId);
+    if (!c) return;
+    typeConvocationEnCours = type;
+    const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || identifiantCourt(c.id);
+    const libelle = type === "convoque_epreuve" ? "l'épreuve pédagogique" : "l'entretien";
+    document.getElementById("popupConvocationTitre").textContent = type === "convoque_epreuve" ? "📅 Convoquer à l'épreuve pédagogique" : "📅 Convoquer à l'entretien";
+    document.getElementById("popupConvocationQuestion").textContent = `Convoquer ${nom} à ${libelle}. Précisez date, heure et lieu (le candidat les verra dans son espace).`;
+    document.getElementById("convocDate").value = "";
+    document.getElementById("convocHeure").value = "";
+    document.getElementById("convocLieu").value = "";
+    document.getElementById("popupConvocation").classList.add("ouvert");
+}
+
+document.getElementById("btnConvoquerEpreuve").addEventListener("click", () => ouvrirPopupConvocation("convoque_epreuve"));
+document.getElementById("btnConvoquerEntretien").addEventListener("click", () => ouvrirPopupConvocation("convoque_entretien"));
+
+document.getElementById("btnFermerPopupConvocation").addEventListener("click", () => {
+    document.getElementById("popupConvocation").classList.remove("ouvert");
+});
+document.getElementById("btnConvocationNon").addEventListener("click", () => {
+    document.getElementById("popupConvocation").classList.remove("ouvert");
 });
 
-document.getElementById("btnConvoquerEntretien").addEventListener("click", () => {
-    if (!confirm("Convoquer ce candidat à l'entretien ?")) return;
-    appliquerAction({
-        nouveauStatut: "convoque_entretien",
-        actionHistorique: "Candidat convoqué à l'entretien",
-        messageParDefaut: "Félicitations, vous êtes convoqué(e) à un entretien. Vous recevrez prochainement les modalités."
-    });
+document.getElementById("btnConvocationOui").addEventListener("click", async () => {
+
+    const c = candidatures.find(x => x.id === candidatureOuverteId);
+    if (!c) return;
+
+    const date = document.getElementById("convocDate").value;
+    const heure = document.getElementById("convocHeure").value;
+    const lieu = document.getElementById("convocLieu").value.trim();
+
+    if (!date || !heure || !lieu) { window.notify("Merci de renseigner la date, l'heure et le lieu.", "avertissement"); return; }
+
+    const libelle = typeConvocationEnCours === "convoque_epreuve" ? "l'épreuve pédagogique" : "l'entretien";
+    const dateAffichee = new Date(date + "T" + heure).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+    window.showLoading("Envoi de la convocation...");
+
+    try {
+
+        const maintenant = new Date().toISOString();
+
+        await updateDoc(doc(db, "candidaturesRecrutement", candidatureOuverteId), {
+            statut: typeConvocationEnCours,
+            convocation: { type: typeConvocationEnCours, date, heure, lieu },
+            messageAdmin: `Vous êtes convoqué(e) à ${libelle} le ${dateAffichee} à ${heure}. Lieu / lien : ${lieu}`,
+            historique: arrayUnion({ date: maintenant, action: `Candidat convoqué à ${libelle} — ${dateAffichee} à ${heure}` })
+        });
+
+        await envoyerNotification(c, `Vous êtes convoqué(e) à ${libelle} le ${dateAffichee} à ${heure}. Lieu / lien : ${lieu}`);
+
+        window.hideLoading();
+        window.notify("Convocation envoyée.", "succes");
+
+        document.getElementById("popupConvocation").classList.remove("ouvert");
+
+        await chargerCandidatures();
+        await ouvrirModal(candidatureOuverteId);
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur : " + error.message, "erreur");
+    }
+
 });
 
 document.getElementById("btnRejeter").addEventListener("click", () => {

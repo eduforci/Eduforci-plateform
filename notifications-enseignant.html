@@ -86,7 +86,9 @@ import { doc, getDoc, collection, query, where, getDocs } from "https://www.gsta
 
 function choisirIcone(texte) {
     const t = (texte || "").toLowerCase();
+    if (t.includes("annul")) return "🚫";
     if (t.includes("refus")) return "❌";
+    if (t.includes("convoqu")) return "📅";
     if (t.includes("admis")) return "🎉";
     if (t.includes("test autorisé") || t.includes("test démarré")) return "📅";
     if (t.includes("valid")) return "✅";
