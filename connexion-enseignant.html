@@ -88,6 +88,11 @@ font-size:15px;
 
 }
 
+.champ-oeil{position:relative;margin-bottom:15px;}
+.champ-oeil input{margin-bottom:0;padding-right:46px;}
+.champ-oeil .toggle-oeil{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;padding:6px;width:auto;line-height:1;opacity:.55;}
+.champ-oeil .toggle-oeil:hover{opacity:1;}
+
 button{
 
 width:100%;
@@ -150,9 +155,15 @@ color:#0B63F6;
 
 <h2>Connexion Enseignant</h2>
 
+<div class="champ-oeil">
 <input type="email" id="email" placeholder="Adresse e-mail" required>
+<button type="button" class="toggle-oeil" data-cible="email">👁️</button>
+</div>
 
-<input type="password" id="password" required>
+<div class="champ-oeil">
+<input type="password" id="password" placeholder="Mot de passe" required>
+<button type="button" class="toggle-oeil" data-cible="password">👁️</button>
+</div>
 
 <button>Se connecter</button>
 
@@ -198,6 +209,15 @@ form.addEventListener("submit", async (e) => {
 
     await motDePasseOublie(email);
 
+});
+
+document.querySelectorAll(".toggle-oeil").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const champ = document.getElementById(btn.dataset.cible);
+        const cache = champ.type === "password" || champ.type === "email";
+        champ.type = cache ? "text" : (btn.dataset.cible === "password" ? "password" : "email");
+        btn.textContent = cache ? "🙈" : "👁️";
+    });
 });
 </script>
 </body>
