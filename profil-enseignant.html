@@ -370,7 +370,7 @@ async function actualiserBoutonFavori() {
 }
 
 function construireLienWhatsapp(prof, docId) {
-    const NUMERO_WHATSAPP = "2250747327309";
+    const NUMERO_WHATSAPP = "2250507938547";
     const texte = `Bonjour, je suis intéressé(e) par les cours de ${prof.nom || "cet enseignant"} (${prof.matiere || "-"}), basé à ${prof.ville || "-"} (Réf : ${prof.identifiant || docId}). Tarif indiqué : ${formaterTarif(prof.tarif, prof.tarifType)}. Pouvez-vous m'aider à réserver ?`;
     return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(texte)}`;
 }

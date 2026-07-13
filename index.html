@@ -220,19 +220,19 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 <p>Notre équipe est à votre écoute pour répondre à toutes vos questions.</p>
 </div>
 
-<a href="tel:+2250747327309" style="text-decoration:none;color:inherit;">
+<a href="tel:+2250507938547" style="text-decoration:none;color:inherit;">
 <div class="contact-card">
 <i class="fas fa-phone"></i>
 <h3>Téléphone</h3>
-<p>+225 07 47 32 73 09</p>
+<p>+225 05 07 93 85 47</p>
 </div>
 </a>
 
-<a href="https://wa.me/2250747327309" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+<a href="https://wa.me/2250507938547" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
 <div class="contact-card">
 <i class="fab fa-whatsapp"></i>
 <h3>WhatsApp</h3>
-<p>+225 07 47 32 73 09</p>
+<p>+225 05 07 93 85 47</p>
 </div>
 </a>
 
@@ -290,7 +290,7 @@ document.getElementById("formContactAccueil").addEventListener("submit", functio
 
     const texte = `Bonjour, je vous contacte depuis le site EDUFORCI.\n\nNom : ${nom}\nEmail : ${email}\nTéléphone : ${telephone || "-"}\n\nMessage : ${message}`;
 
-    window.open("https://wa.me/2250747327309?text=" + encodeURIComponent(texte), "_blank");
+    window.open("https://wa.me/2250507938547?text=" + encodeURIComponent(texte), "_blank");
 
     document.getElementById("formContactAccueil").reset();
 
@@ -303,7 +303,7 @@ document.getElementById("formContactAccueil").addEventListener("submit", functio
 import { db } from "./js/firebase.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-const NUMERO_WHATSAPP = "2250747327309";
+const NUMERO_WHATSAPP = "2250507938547";
 const conteneur = document.getElementById("listeEnseignantsAccueil");
 
 function construireLienWhatsapp(nom, matiere) {
@@ -442,7 +442,7 @@ chargerEnseignantsAccueil();
 
 <div>
 <h4 style="color:#fff;margin-bottom:14px;font-size:16px;">Contact</h4>
-<p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-phone"></i> +225 07 47 32 73 09</p>
+<p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-phone"></i> +225 05 07 93 85 47</p>
 <p style="margin-bottom:10px;font-size:14px;color:#b7c6e6;"><i class="fas fa-envelope"></i> eduforci.formation@gmail.com</p>
 <p style="font-size:14px;color:#b7c6e6;"><i class="fas fa-map-marker-alt"></i> Côte d'Ivoire</p>
 </div>
