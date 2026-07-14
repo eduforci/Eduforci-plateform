@@ -351,47 +351,6 @@ return;
         return;
     }
 
-    const zone = document.getElementById("avatarPreview");
-    zone.innerHTML = "Envoi...";
-
-    try {
-
-        const formData = new FormData();
-
-formData.append("file", fichier);
-formData.append("upload_preset", "eduforci");
-
-const reponse = await fetch(
-  "https://api.cloudinary.com/v1_1/osifmino/image/upload",
-  {
-    method: "POST",
-    body: formData
-  }
-);
-
-const resultat = await reponse.json();
-
-if (!resultat.secure_url) {
-  throw new Error("Échec de l'envoi de l'image.");
-}
-
-await setDoc(
-  doc(db, "enseignants", uid),
-  {
-    photo: resultat.secure_url
-  },
-  { merge: true }
-);
-
-afficherAvatar(resultat.secure_url);
-
-    } catch (error) {
-        alert("Erreur lors de l'envoi de la photo : " + error.message);
-        afficherAvatar("");
-    }
-
-});
-
 document.getElementById("btnEnregistrer").addEventListener("click", async () => {
 
     const msgOk = document.getElementById("msgOk");
