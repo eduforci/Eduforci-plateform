@@ -256,7 +256,6 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("identifiant").value = data.identifiant || "";
         document.getElementById("email").value = data.email || user.email || "";
         document.getElementById("ville").value = data.ville || "";
-        document.getElementById("matiere").value = data.matiere || "";
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
         const tarifActuel = Number(data.tarif) || 0;
