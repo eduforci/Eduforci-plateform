@@ -289,10 +289,11 @@ document.getElementById("entetNote").style.display = (type === "enseignants") ? 
 document.getElementById("entetWave").style.display = (type === "enseignants") ? "table-cell" : "none";
 document.getElementById("entetVerification").style.display = (type === "enseignants") ? "table-cell" : "none";
 
-function formaterTarifAdmin(tarif) {
+function formaterTarifAdmin(tarif, tarifType) {
     const nombre = Number(tarif);
     if (!nombre || nombre <= 0) return "À discuter";
-    return nombre.toLocaleString("fr-FR") + " FCFA/h";
+    const unite = tarifType === "heure" ? " FCFA/h" : " FCFA/mois";
+    return nombre.toLocaleString("fr-FR") + unite;
 }
 
 function getNomAffiche(data, type) {
@@ -370,7 +371,7 @@ async function chargerUtilisateurs() {
                 : "";
 
             const celluleTarif = type === "enseignants"
-                ? `<td>${formaterTarifAdmin(u.tarif)}</td>`
+                ? `<td>${formaterTarifAdmin(u.tarif, u.tarifType)}</td>`
                 : "";
 
             const infoNote = notesParEnseignant[u.identifiant];
