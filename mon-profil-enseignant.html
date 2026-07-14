@@ -224,6 +224,8 @@ import { auth, db } from "./js/firebase.js";
 
 let uid = null;
 let nomActuel = "";
+    let cropper = null;
+let fichierSelectionne = null;
 
 function afficherAvatar(url) {
     const zone = document.getElementById("avatarPreview");
@@ -429,6 +431,24 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 });
 
 </script>
+<div id="cropModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:99999;justify-content:center;align-items:center;">
 
+<div style="background:#fff;padding:20px;border-radius:15px;max-width:500px;width:90%;">
+
+<h3 style="margin-bottom:15px;">📷 Recadrer votre photo</h3>
+
+<img id="cropImage" style="max-width:100%;display:block;">
+
+<div style="display:flex;gap:10px;margin-top:20px;">
+
+<button id="btnValiderCrop">✅ Valider</button>
+
+<button id="btnAnnulerCrop" type="button">❌ Annuler</button>
+
+</div>
+
+</div>
+
+</div>
 </body>
 </html>
