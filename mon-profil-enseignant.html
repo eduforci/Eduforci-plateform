@@ -256,6 +256,9 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("identifiant").value = data.identifiant || "";
         document.getElementById("email").value = data.email || user.email || "";
         document.getElementById("ville").value = data.ville || "";
+        const matieresSauvees = (data.matiere || "").split(",").map(m => m.trim()).filter(Boolean);
+        document.getElementById("matiere1").value = matieresSauvees[0] || "";
+        document.getElementById("matiere2").value = matieresSauvees[1] || "";
         document.getElementById("niveau").value = data.niveau || "Primaire";
         document.getElementById("experience").value = data.experience || "";
         const tarifActuel = Number(data.tarif) || 0;
@@ -315,30 +318,7 @@ document.getElementById("inputPhoto").addEventListener("change", async (e) => {
     const fichier = e.target.files[0];
     fichierSelectionne = fichier;
 
-const modal = document.getElementById("cropModal");
-const image = document.getElementById("cropImage");
-
-image.src = URL.createObjectURL(fichier);
-
-modal.style.display = "flex";
-
-if (cropper) {
-    cropper.destroy();
-}
-
-image.onload = () => {
-    cropper = new Cropper(image, {
-        aspectRatio: 1,
-        viewMode: 1,
-        dragMode: "move",
-        autoCropArea: 1,
-        responsive: true,
-        background: false
-    });
-};
-
-return;
-    if (!fichier || !uid) return;
+    if (!fichier) return;
 
     if (!fichier.type.startsWith("image/")) {
         alert("Merci de choisir un fichier image (JPG ou PNG).");
@@ -349,6 +329,30 @@ return;
         alert("Cette image est trop lourde. Choisissez une photo de moins de 3 Mo.");
         return;
     }
+
+    const modal = document.getElementById("cropModal");
+    const image = document.getElementById("cropImage");
+
+    image.src = URL.createObjectURL(fichier);
+
+    modal.style.display = "flex";
+
+    if (cropper) {
+        cropper.destroy();
+    }
+
+    image.onload = () => {
+        cropper = new Cropper(image, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: "move",
+            autoCropArea: 1,
+            responsive: true,
+            background: false
+        });
+    };
+
+});
 
 document.getElementById("btnEnregistrer").addEventListener("click", async () => {
 
@@ -376,16 +380,17 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
 
     const tarifFinal = typeTarif === "heure" ? tarifHeureSaisi : (typeTarif === "mois" ? tarifMoisSaisi : 0);
 
+    const m1 = document.getElementById("matiere1").value;
+    const m2 = document.getElementById("matiere2").value;
+    let matiere = m1;
+    if (m2 && m2 !== m1) {
+        matiere += ", " + m2;
+    }
+
     try {
 
         nomActuel = document.getElementById("nom").value.trim();
-const m1 = document.getElementById("matiere1").value;
-const m2 = document.getElementById("matiere2").value;
 
-let matiere = m1;
-if (m2 && m2 != m1) {
-    matiere += ", " + m2;
-        }
         await setDoc(doc(db, "enseignants", uid), {
             nom: nomActuel,
             ville: document.getElementById("ville").value.trim(),
@@ -407,8 +412,7 @@ if (m2 && m2 != m1) {
 
 });
 
-document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
-    document.getElementById("btnValiderCrop").addEventListener("click", async () => {
+document.getElementById("btnValiderCrop").addEventListener("click", async () => {
 
     if (!cropper || !uid) return;
 
@@ -462,7 +466,8 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
     }, "image/jpeg", 0.9);
 
 });
-    document.getElementById("btnAnnulerCrop").addEventListener("click", () => {
+
+document.getElementById("btnAnnulerCrop").addEventListener("click", () => {
 
     document.getElementById("cropModal").style.display = "none";
 
@@ -472,6 +477,8 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
     }
 
 });
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
     e.preventDefault();
     await signOut(auth);
     window.location.href = "connexion-enseignant.html";
@@ -498,4 +505,5 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 
 </div>
 </body>
-</html>
+    </html>
+    
