@@ -113,7 +113,34 @@ input:checked + .slider:before{transform:translateX(26px);}
 <input id="ville" type="text" placeholder="Ex : Abidjan">
 
 <label>Matière principale</label>
-<input id="matiere" type="text" placeholder="Ex : Mathématiques">
+<select id="matiere1">
+    <option value="">-- Choisir une matière --</option>
+    <option>Mathématiques</option>
+    <option>Français</option>
+    <option>Anglais</option>
+    <option>Physique-Chimie</option>
+    <option>SVT</option>
+    <option>Histoire-Géographie</option>
+    <option>Philosophie</option>
+    <option>Espagnol</option>
+    <option>Allemand</option>
+    <option>Informatique</option>
+</select>
+
+<label>Deuxième matière (facultative)</label>
+<select id="matiere2">
+    <option value="">-- Aucune --</option>
+    <option>Mathématiques</option>
+    <option>Français</option>
+    <option>Anglais</option>
+    <option>Physique-Chimie</option>
+    <option>SVT</option>
+    <option>Histoire-Géographie</option>
+    <option>Philosophie</option>
+    <option>Espagnol</option>
+    <option>Allemand</option>
+    <option>Informatique</option>
+</select>
 
 <label>Niveau enseigné</label>
 <select id="niveau">
@@ -363,7 +390,13 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
         await setDoc(doc(db, "enseignants", uid), {
             nom: nomActuel,
             ville: document.getElementById("ville").value.trim(),
-            matiere: document.getElementById("matiere").value.trim(),
+            const m1 = document.getElementById("matiere1").value;
+const m2 = document.getElementById("matiere2").value;
+
+let matiere = m1;
+if (m2 && m2 !== m1) {
+    matiere += ", " + m2;
+}
             niveau: document.getElementById("niveau").value,
             experience: document.getElementById("experience").value,
             tarif: tarifFinal,
