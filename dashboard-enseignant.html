@@ -187,6 +187,16 @@ color:#666;
     border-radius:8px;
     font-weight:600;
 }
+
+.menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
+@media (max-width:900px){
+.menu-toggle{display:flex;}
+.sidebar{transform:translateX(-100%);transition:transform .3s ease;z-index:9999;}
+.sidebar.ouvert{transform:translateX(0);}
+.sidebar-overlay.ouvert{display:block;}
+.main{margin-left:0!important;padding:20px!important;padding-top:85px!important;max-width:100%!important;}
+}
 </style>
 
 </head>
@@ -194,7 +204,9 @@ color:#666;
 <body>
 <a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
 
-  <div class="sidebar">
+  <button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
+<div class="sidebar">
 
 <img src="logo.png" alt="EDUFORCI">
 
@@ -304,27 +316,21 @@ color:#666;
     </div>
 
 </div>
-<div class="welcome">
 
-<h2>📢 Note d'information</h2>
+<div class="welcome">
+<h2>📅 Mon planning</h2>
 
 <br>
 
-<div style="background:#fff8e6;border-left:5px solid #f4b400;padding:18px;border-radius:10px;color:#444;line-height:1.7;">
+<p>✔ Lundi : 16h00 - 18h00</p>
 
-<strong>⚠️ Merci de ne pas renseigner votre numéro Wave pour le moment.</strong>
+<p>✔ Mardi : 14h00 - 16h00</p>
 
-<br><br>
+<p>✔ Mercredi : Disponible</p>
 
-Cette information vous sera demandée uniquement lorsque cela sera nécessaire, dans le cadre de votre collaboration avec <strong>EDUFORCI</strong>.
+<p>✔ Jeudi : 08h00 - 10h00</p>
 
-<br><br>
-
-Nous vous inviterons à ajouter votre numéro Wave au moment opportun.
-
-<br><br>
-
-Merci de votre compréhension.
+<p>✔ Vendredi : 15h00 - 18h00</p>
 
 </div>
 
@@ -387,6 +393,20 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
     window.location.href = "connexion-enseignant.html";
 
 });
+</script>
+
+<script>
+(function(){
+  const btn = document.getElementById("menuToggleEduforci");
+  const overlay = document.getElementById("sidebarOverlayEduforci");
+  const sidebar = document.querySelector(".sidebar");
+  if(!btn||!sidebar) return;
+  function ouvrir(){ sidebar.classList.add("ouvert"); overlay.classList.add("ouvert"); }
+  function fermer(){ sidebar.classList.remove("ouvert"); overlay.classList.remove("ouvert"); }
+  btn.addEventListener("click", function(){ sidebar.classList.contains("ouvert") ? fermer() : ouvrir(); });
+  overlay.addEventListener("click", fermer);
+  sidebar.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", fermer); });
+})();
 </script>
 </body>
 

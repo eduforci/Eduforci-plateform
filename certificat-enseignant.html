@@ -76,12 +76,24 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .btn-verifier{flex:1;min-width:220px;padding:16px;background:white;border:2px solid #B8860B;color:#8B6914;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;text-align:center;}
 .btn-verifier:hover{background:#fbf3e0;}
 
+
+.menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
+@media (max-width:900px){
+.menu-toggle{display:flex;}
+.sidebar{transform:translateX(-100%);transition:transform .3s ease;z-index:9999;}
+.sidebar.ouvert{transform:translateX(0);}
+.sidebar-overlay.ouvert{display:block;}
+.main{margin-left:0!important;padding:20px!important;padding-top:85px!important;max-width:100%!important;}
+}
 </style>
 
 </head>
 <body>
 <a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
 
+<button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
 <div class="sidebar">
 <img src="logo.png" alt="EDUFORCI">
 <a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
@@ -370,5 +382,19 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 
 </script>
 
+
+<script>
+(function(){
+  const btn = document.getElementById("menuToggleEduforci");
+  const overlay = document.getElementById("sidebarOverlayEduforci");
+  const sidebar = document.querySelector(".sidebar");
+  if(!btn||!sidebar) return;
+  function ouvrir(){ sidebar.classList.add("ouvert"); overlay.classList.add("ouvert"); }
+  function fermer(){ sidebar.classList.remove("ouvert"); overlay.classList.remove("ouvert"); }
+  btn.addEventListener("click", function(){ sidebar.classList.contains("ouvert") ? fermer() : ouvrir(); });
+  overlay.addEventListener("click", fermer);
+  sidebar.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", fermer); });
+})();
+</script>
 </body>
 </html>
