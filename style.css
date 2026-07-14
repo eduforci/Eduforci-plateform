@@ -232,7 +232,7 @@ box-shadow:0 15px 40px rgba(0,0,0,.10);
 transition:.35s;
 
 text-align:center;
-overflow:hidden;
+
 }
 
 .card:hover{
@@ -455,6 +455,10 @@ box-shadow:0 15px 40px rgba(0,0,0,.08);
 
 transition:.3s;
 
+max-width:100%;
+
+overflow:hidden;
+
 }
 
 .teacher-card:hover{
@@ -512,6 +516,10 @@ color:#153A73;
 margin-bottom:8px;
 
 font-size:19px;
+
+overflow-wrap:break-word;
+
+word-break:break-word;
 
 }
 
@@ -587,6 +595,14 @@ font-size:11px;
 .badge-lieu{background:#eafaf0;color:#1f8a3d;}
 .badge-tarif{background:#fff4e0;color:#b9720b;}
 .badge-avis{background:#fff9e6;color:#b8860b;}
+
+.teacher-badges .badge-item.badge-matiere{
+white-space:normal;
+overflow-wrap:break-word;
+word-break:break-word;
+max-width:100%;
+text-align:left;
+}
 
 .teacher-card p i{
 
@@ -1167,32 +1183,5 @@ padding:25px 20px;
     text-align:center;
     padding:20px;
     color:#0b8f4d;
-}
-
-.logo{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
-.logo img{
-    height:60px;
-}
-
-.site-name{
-    color:#FF8C00; /* Orange EDUFORCI */
-    font-size:28px;
-    font-weight:800;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    text-shadow:0 2px 8px rgba(0,0,0,0.3);
-}
-@media (max-width:768px){
-    .site-name{
-        font-size:20px;
-    }
-
-    .logo img{
-        height:50px;
-    }
-}
+   }
+   
