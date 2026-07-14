@@ -379,17 +379,17 @@ document.getElementById("btnEnregistrer").addEventListener("click", async () => 
     try {
 
         nomActuel = document.getElementById("nom").value.trim();
-
-        await setDoc(doc(db, "enseignants", uid), {
-            nom: nomActuel,
-            ville: document.getElementById("ville").value.trim(),
-            const m1 = document.getElementById("matiere1").value;
+const m1 = document.getElementById("matiere1").value;
 const m2 = document.getElementById("matiere2").value;
 
 let matiere = m1;
-if (m2 && m2 !== m1) {
+if (m2 && m2 != m1) {
     matiere += ", " + m2;
-}
+        }
+        await setDoc(doc(db, "enseignants", uid), {
+            nom: nomActuel,
+            ville: document.getElementById("ville").value.trim(),
+            matiere: matiere,
             niveau: document.getElementById("niveau").value,
             experience: document.getElementById("experience").value,
             tarif: tarifFinal,
