@@ -314,6 +314,31 @@ document.getElementById("btnChangerPhoto").addEventListener("click", () => {
 document.getElementById("inputPhoto").addEventListener("change", async (e) => {
 
     const fichier = e.target.files[0];
+    fichierSelectionne = fichier;
+
+const modal = document.getElementById("cropModal");
+const image = document.getElementById("cropImage");
+
+image.src = URL.createObjectURL(fichier);
+
+modal.style.display = "flex";
+
+if (cropper) {
+    cropper.destroy();
+}
+
+image.onload = () => {
+    cropper = new Cropper(image, {
+        aspectRatio: 1,
+        viewMode: 1,
+        dragMode: "move",
+        autoCropArea: 1,
+        responsive: true,
+        background: false
+    });
+};
+
+return;
     if (!fichier || !uid) return;
 
     if (!fichier.type.startsWith("image/")) {
@@ -425,6 +450,70 @@ if (m2 && m2 !== m1) {
 });
 
 document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    document.getElementById("btnValiderCrop").addEventListener("click", async () => {
+
+    if (!cropper || !uid) return;
+
+    const canvas = cropper.getCroppedCanvas({
+        width: 600,
+        height: 600
+    });
+
+    canvas.toBlob(async (blob) => {
+
+        try {
+
+            const formData = new FormData();
+
+            formData.append("file", blob, "photo.jpg");
+            formData.append("upload_preset", "eduforci");
+
+            const reponse = await fetch(
+                "https://api.cloudinary.com/v1_1/osifmino/image/upload",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const resultat = await reponse.json();
+
+            if (!resultat.secure_url) {
+                throw new Error("Échec de l'envoi.");
+            }
+
+            await setDoc(
+                doc(db, "enseignants", uid),
+                {
+                    photo: resultat.secure_url
+                },
+                { merge: true }
+            );
+
+            afficherAvatar(resultat.secure_url);
+
+            document.getElementById("cropModal").style.display = "none";
+
+            cropper.destroy();
+            cropper = null;
+
+        } catch (e) {
+            alert("Erreur : " + e.message);
+        }
+
+    }, "image/jpeg", 0.9);
+
+});
+    document.getElementById("btnAnnulerCrop").addEventListener("click", () => {
+
+    document.getElementById("cropModal").style.display = "none";
+
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+
+});
     e.preventDefault();
     await signOut(auth);
     window.location.href = "connexion-enseignant.html";
