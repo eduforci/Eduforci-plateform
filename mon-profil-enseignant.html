@@ -61,7 +61,9 @@ input:checked + .slider:before{transform:translateX(26px);}
 .hint-photo{color:#666;font-size:13px;margin-top:10px;}
 
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
 <a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
@@ -93,7 +95,13 @@ input:checked + .slider:before{transform:translateX(26px);}
 <input type="file" id="inputPhoto" accept="image/*" style="display:none;">
 <button type="button" class="btn-photo" id="btnChangerPhoto">📷 Changer ma photo</button>
 
-<p class="hint-photo">Format JPG ou PNG, 3 Mo maximum. Cette photo apparaîtra sur votre profil public et sur la page d'accueil.</p>
+<p class="hint-photo">
+📸 <strong>Recommandations :</strong><br>
+• Utilisez une photo récente et de bonne qualité.<br>
+• Votre visage doit être bien centré et clairement visible.<br>
+• Évitez les selfies, les photos de groupe et les filtres.<br>
+• Formats acceptés : JPG ou PNG (3 Mo maximum).
+</p>
 
 </div>
 
