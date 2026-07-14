@@ -1168,3 +1168,31 @@ padding:25px 20px;
     padding:20px;
     color:#0b8f4d;
 }
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo img{
+    height:60px;
+}
+
+.site-name{
+    color:#FF8C00; /* Orange EDUFORCI */
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    text-shadow:0 2px 8px rgba(0,0,0,0.3);
+}
+@media (max-width:768px){
+    .site-name{
+        font-size:20px;
+    }
+
+    .logo img{
+        height:50px;
+    }
+}
