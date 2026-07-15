@@ -27,11 +27,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 <header>
 
+<div class="header-marquee" aria-hidden="true">
+<div class="marquee-track">
+<span>Bienvenue sur EDUFORCI – Trouvez rapidement un enseignant qualifié partout en Côte d'Ivoire.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Des enseignants vérifiés et certifiés, pour la réussite de vos enfants.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+</div>
+</div>
+
 <div class="navbar">
 
 <div class="logo">
     <img src="logo.png" alt="EDUFORCI">
-    <span class="site-name">EDUFORCI</span>
 </div>
 
 <button id="menuBtn">
@@ -130,6 +135,28 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 
 </section>
 
+<section class="stats-section">
+
+<div class="stat-card">
+<i class="fas fa-chalkboard-teacher"></i>
+<h3 id="statEnseignants">--</h3>
+<p>Enseignants inscrits</p>
+</div>
+
+<div class="stat-card">
+<i class="fas fa-user-friends"></i>
+<h3 id="statParents">--</h3>
+<p>Parents inscrits</p>
+</div>
+
+<div class="stat-card">
+<i class="fas fa-school"></i>
+<h3 id="statEtablissements">--</h3>
+<p>Établissements partenaires</p>
+</div>
+
+</section>
+
 <section class="teachers-preview">
 
 <div class="teachers-preview-title">
@@ -208,6 +235,19 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 <div class="gallery-card">
     <img src="reussites.jpg" alt="Nos réussites" class="gallery-img">
     <h3>Nos réussites</h3>
+</div>
+
+</section>
+
+<section class="testimonials-section" style="max-width:1200px;margin:20px auto 60px;padding:0 20px;">
+
+<div class="teachers-preview-title" style="grid-column:1/-1;width:100%;text-align:center;margin-bottom:30px;">
+<h2>💬 Témoignages</h2>
+<p>Ce que les parents disent des enseignants EDUFORCI.</p>
+</div>
+
+<div class="testimonial-grid" id="listeTemoignages">
+<p style="grid-column:1/-1;text-align:center;color:#999;">Chargement des témoignages...</p>
 </div>
 
 </section>
@@ -300,7 +340,7 @@ document.getElementById("formContactAccueil").addEventListener("submit", functio
 <script type="module">
 
 import { db } from "./js/firebase.js";
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const NUMERO_WHATSAPP = "2250507938547";
 const conteneur = document.getElementById("listeEnseignantsAccueil");
@@ -367,6 +407,98 @@ async function chargerEnseignantsAccueil() {
 }
 
 chargerEnseignantsAccueil();
+
+// ---------------------------------------------
+// Statistiques (enseignants / parents / établissements inscrits)
+// ---------------------------------------------
+
+function animerCompteur(element, valeurFinale) {
+    const duree = 1200;
+    const debut = performance.now();
+    function etape(maintenant) {
+        const progres = Math.min((maintenant - debut) / duree, 1);
+        element.textContent = Math.floor(progres * valeurFinale).toLocaleString("fr-FR");
+        if (progres < 1) requestAnimationFrame(etape);
+        else element.textContent = valeurFinale.toLocaleString("fr-FR");
+    }
+    requestAnimationFrame(etape);
+}
+
+async function chargerStatistiques() {
+
+    const cibles = [
+        { id: "statEnseignants", compteur: "enseignants" },
+        { id: "statParents", compteur: "parents" },
+        { id: "statEtablissements", compteur: "etablissements" }
+    ];
+
+    for (const cible of cibles) {
+        const element = document.getElementById(cible.id);
+        try {
+            const snap = await getDoc(doc(db, "compteurs", cible.compteur));
+            const valeur = snap.exists() ? Number(snap.data().dernierNumero) || 0 : 0;
+            animerCompteur(element, valeur);
+        } catch (error) {
+            element.textContent = "-";
+        }
+    }
+
+}
+
+chargerStatistiques();
+
+// ---------------------------------------------
+// Témoignages (avis des parents sur les enseignants)
+// ---------------------------------------------
+
+async function chargerTemoignagesAccueil() {
+
+    const conteneur = document.getElementById("listeTemoignages");
+
+    try {
+
+        const q = query(collection(db, "avis"), orderBy("dateAvis", "desc"), limit(6));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            conteneur.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#999;">Aucun témoignage pour le moment.</p>`;
+            return;
+        }
+
+        conteneur.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+
+            const d = docSnap.data();
+            const initiales = (d.parentNom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
+            const etoiles = "⭐".repeat(Number(d.note) || 0) + "☆".repeat(5 - (Number(d.note) || 0));
+
+            const carte = document.createElement("div");
+            carte.className = "testimonial-card";
+
+            carte.innerHTML = `
+                <div class="testimonial-stars">${etoiles}</div>
+                <p class="testimonial-text">"${d.commentaire || ""}"</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">${initiales}</div>
+                    <div>
+                        <h5>${d.parentNom || "Parent"}</h5>
+                        <span>à propos de ${d.enseignantNom || "un enseignant"}</span>
+                    </div>
+                </div>
+            `;
+
+            conteneur.appendChild(carte);
+
+        });
+
+    } catch (error) {
+        conteneur.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#999;">Aucun témoignage pour le moment.</p>`;
+    }
+
+}
+
+chargerTemoignagesAccueil();
 
 </script>
 
@@ -459,4 +591,5 @@ chargerEnseignantsAccueil();
 
 </body>
 
-</html>
+    </html>
+    
