@@ -255,7 +255,7 @@ color:#666;
 
 <div class="card">
 
-<h2>12</h2>
+<h2 id="statEleves">…</h2>
 
 <p>Élèves suivis</p>
 
@@ -263,7 +263,7 @@ color:#666;
 
 <div class="card">
 
-<h2>5</h2>
+<h2 id="statDemandes">…</h2>
 
 <p>Nouvelles demandes</p>
 
@@ -271,7 +271,7 @@ color:#666;
 
 <div class="card">
 
-<h2>4.9★</h2>
+<h2 id="statNote">…</h2>
 
 <p>Note moyenne</p>
 
@@ -279,7 +279,7 @@ color:#666;
 
 <div class="card">
 
-<h2>95%</h2>
+<h2 id="statSatisfaction">…</h2>
 
 <p>Taux de satisfaction</p>
 
@@ -348,7 +348,7 @@ Merci de votre compréhension.
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -388,11 +388,87 @@ onAuthStateChanged(auth, async (user) => {
         banniere.textContent = "⏳ Votre profil est en attente de validation par l'équipe EDUFORCI. Il ne sera visible publiquement qu'après approbation.";
     }
 
+    chargerStatistiques(user.uid, data.identifiant);
+
 } else {
     document.getElementById("chargementInfo").textContent = "Impossible de charger votre profil.";
 }
 
 });
+
+// ---------------------------------------------
+// Statistiques du tableau de bord (mises à jour en temps réel selon les données réelles)
+// ---------------------------------------------
+
+async function chargerStatistiques(uid, identifiant) {
+
+    const elEleves = document.getElementById("statEleves");
+    const elDemandes = document.getElementById("statDemandes");
+    const elNote = document.getElementById("statNote");
+    const elSatisfaction = document.getElementById("statSatisfaction");
+
+    // Élèves suivis : missions pour lesquelles cet enseignant a été retenu
+    try {
+        const qRetenues = query(collection(db, "missions"), where("enseignantRetenuId", "==", uid));
+        const snapRetenues = await getDocs(qRetenues);
+        elEleves.textContent = snapRetenues.size;
+    } catch (error) {
+        elEleves.textContent = "-";
+    }
+
+    // Nouvelles demandes : missions proposées à cet enseignant en attente de réponse
+    try {
+        const qProposees = query(collection(db, "missions"), where("enseignantsProposesIds", "array-contains", uid));
+        const snapProposees = await getDocs(qProposees);
+        let enAttente = 0;
+        snapProposees.forEach((docSnap) => {
+            const proposes = docSnap.data().enseignantsProposes || [];
+            const monEntree = proposes.find(p => p.id === uid);
+            if (!monEntree || monEntree.reponse === "en_attente") enAttente++;
+        });
+        elDemandes.textContent = enAttente;
+    } catch (error) {
+        elDemandes.textContent = "-";
+    }
+
+    // Note moyenne et taux de satisfaction : basés sur les avis reçus
+    if (!identifiant) {
+        elNote.textContent = "-";
+        elSatisfaction.textContent = "-";
+        return;
+    }
+
+    try {
+        const qAvis = query(collection(db, "avis"), where("enseignantId", "==", identifiant));
+        const snapAvis = await getDocs(qAvis);
+
+        if (snapAvis.empty) {
+            elNote.textContent = "—";
+            elSatisfaction.textContent = "—";
+            return;
+        }
+
+        let total = 0;
+        let satisfaits = 0;
+        let count = 0;
+
+        snapAvis.forEach((docSnap) => {
+            const note = Number(docSnap.data().note) || 0;
+            total += note;
+            if (note >= 4) satisfaits++;
+            count++;
+        });
+
+        elNote.textContent = (total / count).toFixed(1) + "★";
+        elSatisfaction.textContent = Math.round((satisfaits / count) * 100) + "%";
+
+    } catch (error) {
+        elNote.textContent = "-";
+        elSatisfaction.textContent = "-";
+    }
+
+}
+
 document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
 
     e.preventDefault();
