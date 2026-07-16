@@ -183,6 +183,7 @@ Vous n'avez envoyé aucun message pour le moment. <br><br>
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -216,8 +217,8 @@ onAuthStateChanged(auth, async (user) => {
             const div = document.createElement("div");
             div.className = "message-item";
             div.innerHTML = `
-                <div class="meta">À ${m.enseignantNom || "l'enseignant"} · ${date}</div>
-                <div class="contenu">${m.contenu}</div>
+                <div class="meta">À ${echapperHTML(m.enseignantNom || "l'enseignant")} · ${date}</div>
+                <div class="contenu">${echapperHTML(m.contenu || "")}</div>
             `;
             liste.appendChild(div);
 

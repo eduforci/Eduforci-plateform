@@ -341,6 +341,7 @@ document.getElementById("formContactAccueil").addEventListener("submit", functio
 
 import { db } from "./js/firebase.js";
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const NUMERO_WHATSAPP = "2250507938547";
 const conteneur = document.getElementById("listeEnseignantsAccueil");
@@ -381,12 +382,12 @@ async function chargerEnseignantsAccueil() {
             carte.className = "teacher-card";
 
             carte.innerHTML = `
-                <div class="avatar-circle">${prof.photo ? `<img src="${prof.photo}" alt="${prof.nom || 'Enseignant'}">` : initiales}</div>
-                <h4>${prof.nom || "Enseignant"}</h4>
+                <div class="avatar-circle">${prof.photo ? `<img src="${echapperHTML(prof.photo)}" alt="${echapperHTML(prof.nom || 'Enseignant')}">` : initiales}</div>
+                <h4>${echapperHTML(prof.nom || "Enseignant")}</h4>
                 <span class="badge">${prof.verification ? "✔ Vérifié" : "⏳ En attente"}</span>
                 <div class="teacher-badges">
-                    <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${prof.matiere || "-"}</span>
-                    <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${prof.ville || "-"}</span>
+                    <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${echapperHTML(prof.matiere || "-")}</span>
+                    <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${echapperHTML(prof.ville || "-")}</span>
                     <span class="badge-item badge-tarif"><i class="fas fa-coins"></i> ${tarif}</span>
                     <span class="badge-item badge-avis"><i class="fas fa-star"></i> ${note}</span>
                 </div>
@@ -478,12 +479,12 @@ async function chargerTemoignagesAccueil() {
 
             carte.innerHTML = `
                 <div class="testimonial-stars">${etoiles}</div>
-                <p class="testimonial-text">"${d.commentaire || ""}"</p>
+                <p class="testimonial-text">"${echapperHTML(d.commentaire || "")}"</p>
                 <div class="testimonial-author">
                     <div class="testimonial-avatar">${initiales}</div>
                     <div>
-                        <h5>${d.parentNom || "Parent"}</h5>
-                        <span>à propos de ${d.enseignantNom || "un enseignant"}</span>
+                        <h5>${echapperHTML(d.parentNom || "Parent")}</h5>
+                        <span>à propos de ${echapperHTML(d.enseignantNom || "un enseignant")}</span>
                     </div>
                 </div>
             `;

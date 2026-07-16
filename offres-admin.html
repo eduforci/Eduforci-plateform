@@ -227,6 +227,7 @@ color:#666;
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -282,10 +283,10 @@ async function chargerOffres() {
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${o.poste || "-"}</td>
-                <td>${o.etablissementNom || "-"}</td>
-                <td>${o.ville || "-"}</td>
-                <td>${o.niveau || "-"}</td>
+                <td>${echapperHTML(o.poste || "-")}</td>
+                <td>${echapperHTML(o.etablissementNom || "-")}</td>
+                <td>${echapperHTML(o.ville || "-")}</td>
+                <td>${echapperHTML(o.niveau || "-")}</td>
                 <td style="color:${couleur};"><b>${texte}</b></td>
                 <td>${actionHtml} <button class="btn-supprimer" data-id="${o.id}" data-action="supprimer">Supprimer</button></td>
             `;

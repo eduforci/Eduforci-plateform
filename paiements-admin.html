@@ -236,6 +236,7 @@ color:#666;
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 let toutesConfirmees = [];
 let filtreActuel = "toutes";
@@ -328,9 +329,9 @@ function afficherPaiements() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${r.date || "-"}</td>
-            <td>${r.parentNom || "-"}</td>
-            <td>${r.enseignantNom || "-"}</td>
-            <td>${r.matiere || "-"}</td>
+            <td>${echapperHTML(r.parentNom || "-")}</td>
+            <td>${echapperHTML(r.enseignantNom || "-")}</td>
+            <td>${echapperHTML(r.matiere || "-")}</td>
             <td>${r.tarif || "-"}</td>
             <td>${wave}</td>
             <td style="color:${paye ? "#28a745" : "#e08b00"};font-weight:600;">${paye ? "Payé" : "À payer"}</td>

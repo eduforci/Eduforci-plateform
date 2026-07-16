@@ -237,6 +237,7 @@ Découvrez tous les enseignants inscrits sur EDUFORCI.
 
 import { db } from "./js/firebase.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const liste = document.getElementById("listeEnseignants");
 
@@ -265,15 +266,15 @@ function afficherEnseignants(liste_a_afficher) {
         carte.className = "card";
 
         carte.innerHTML = `
-            <div class="avatar-circle">${prof.photo ? `<img src="${prof.photo}" alt="${prof.nom || 'Enseignant'}">` : initiales}</div>
-            <h2>${prof.nom || "Enseignant"}</h2>
+            <div class="avatar-circle">${prof.photo ? `<img src="${echapperHTML(prof.photo)}" alt="${echapperHTML(prof.nom || 'Enseignant')}">` : initiales}</div>
+            <h2>${echapperHTML(prof.nom || "Enseignant")}</h2>
             <span class="badge ${prof.verification ? "" : "attente"}">${prof.verification ? "✔ Profil vérifié" : "⏳ En attente de vérification"}</span>
             <div class="teacher-badges">
-                <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${prof.matiere || "-"}</span>
-                <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${prof.ville || "-"}</span>
+                <span class="badge-item badge-matiere"><i class="fas fa-book"></i> ${echapperHTML(prof.matiere || "-")}</span>
+                <span class="badge-item badge-lieu"><i class="fas fa-map-marker-alt"></i> ${echapperHTML(prof.ville || "-")}</span>
                 <span class="badge-item badge-tarif"><i class="fas fa-coins"></i> ${formaterTarif(prof.tarif, prof.tarifType)}</span>
             </div>
-            <p><strong>🎓 Niveau :</strong> ${prof.niveau || "-"}</p>
+            <p><strong>🎓 Niveau :</strong> ${echapperHTML(prof.niveau || "-")}</p>
             <p style="color:${prof.disponible !== false ? "#28a745" : "#d93025"};"><strong>${prof.disponible !== false ? "🟢 Disponible" : "🔴 Non disponible"}</strong></p>
             <button onclick="location.href='profil-enseignant.html?id=${docId}'">Voir le profil</button>
         `;

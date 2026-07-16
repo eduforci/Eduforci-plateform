@@ -254,6 +254,7 @@ import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 import { doc, getDoc, collection, query, where, getDocs,orderBy,limit  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
   async function chargerEnseignants() {
 
@@ -282,9 +283,9 @@ import { doc, getDoc, collection, query, where, getDocs,orderBy,limit  } from "h
 
         carte.innerHTML = `
             <h2>👨‍🏫</h2>
-            <p><strong>${e.nom}</strong></p>
-            <p>${e.matiere}</p>
-            <p>📍 ${e.ville}</p>
+            <p><strong>${echapperHTML(e.nom)}</strong></p>
+            <p>${echapperHTML(e.matiere)}</p>
+            <p>📍 ${echapperHTML(e.ville)}</p>
             <p style="color:${e.disponible !== false ? "#28a745" : "#d93025"};font-weight:600;">${e.disponible !== false ? "🟢 Disponible" : "🔴 Non disponible"}</p>
 
             <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">

@@ -104,6 +104,7 @@ h1{color:#153A73;margin-bottom:20px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const LIBELLES_STATUT = {
     en_attente: "⏳ En attente",
@@ -145,13 +146,13 @@ async function chargerMissions(uid) {
 
             carte.innerHTML = `
                 <div class="mission-entete">
-                    <h3>${m.matiere || "-"} — ${m.niveau || "-"}</h3>
+                    <h3>${echapperHTML(m.matiere || "-")} — ${echapperHTML(m.niveau || "-")}</h3>
                     <span class="badge-statut statut-${m.statut}">${LIBELLES_STATUT[m.statut] || m.statut}</span>
                 </div>
                 <div class="details-grille">
-                    <div><strong>Commune</strong>${m.commune || "-"}</div>
-                    <div><strong>Heures</strong>${m.nombreHeures || "-"}</div>
-                    <div><strong>Rémunération</strong>${m.remuneration || "À discuter"}</div>
+                    <div><strong>Commune</strong>${echapperHTML(m.commune || "-")}</div>
+                    <div><strong>Heures</strong>${echapperHTML(m.nombreHeures || "-")}</div>
+                    <div><strong>Rémunération</strong>${echapperHTML(m.remuneration || "À discuter")}</div>
                     <div><strong>Date souhaitée</strong>${formaterDate(m.dateSouhaitee)}</div>
                 </div>
                 ${m.enseignantRetenuId ? `<div class="retenu-info">✅ Un enseignant a été retenu pour cette demande. EDUFORCI va vous mettre en relation.</div>` : ""}

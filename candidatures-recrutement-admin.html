@@ -420,6 +420,7 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs, updateDoc, addDoc, arrayUnion, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 let candidatures = [];   // liste brute { id, ...data }
 let idsTestsTermines = new Set();
@@ -563,11 +564,11 @@ function appliquerFiltres() {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td><div class="avatar-mini">${photoUrl ? `<img src="${photoUrl}" alt="${nom}">` : initiales}</div></td>
-            <td>${nom}</td>
-            <td>${(c.matieres || []).join(", ") || "-"}</td>
-            <td>${c.personnel?.ville || "-"}</td>
-            <td>${c.professionnel?.diplome || "-"}</td>
+            <td><div class="avatar-mini">${photoUrl ? `<img src="${echapperHTML(photoUrl)}" alt="${echapperHTML(nom)}">` : initiales}</div></td>
+            <td>${echapperHTML(nom)}</td>
+            <td>${echapperHTML((c.matieres || []).join(", ") || "-")}</td>
+            <td>${echapperHTML(c.personnel?.ville || "-")}</td>
+            <td>${echapperHTML(c.professionnel?.diplome || "-")}</td>
             <td><span class="badge ${statutAffiche}">${LIBELLES_STATUT[c.statut] || c.statut}</span></td>
             <td>${formaterDate(c.dateCreation)}</td>
             <td><button class="btn-voir" data-id="${c.id}">👁️ Voir</button></td>
@@ -658,7 +659,7 @@ async function ouvrirModal(id) {
     const listeHisto = document.getElementById("listeHistorique");
     const historique = Array.isArray(c.historique) ? [...c.historique].sort((a, b) => new Date(b.date) - new Date(a.date)) : [];
     listeHisto.innerHTML = historique.length
-        ? historique.map(h => `<div class="historique-item"><div class="date">${h.date ? new Date(h.date).toLocaleString("fr-FR") : "-"}</div><div class="action">${h.action}</div></div>`).join("")
+        ? historique.map(h => `<div class="historique-item"><div class="date">${h.date ? new Date(h.date).toLocaleString("fr-FR") : "-"}</div><div class="action">${echapperHTML(h.action)}</div></div>`).join("")
         : `<div class="historique-vide">Aucun historique pour le moment.</div>`;
 
     document.getElementById("zoneTest").innerHTML = `<div class="historique-vide">⏳ Chargement...</div>`;
@@ -878,7 +879,7 @@ async function chargerCorrectionOuvertes(t, c) {
                 <div class="correction-item">
                     <div class="correction-question">${q.question}</div>
                     ${banque?.corrigeIndicatif ? `<div class="correction-indicatif">💡 Corrigé indicatif (usage interne) : ${banque.corrigeIndicatif}</div>` : ""}
-                    <div class="correction-reponse">${reponse ? reponse.replace(/\n/g, "<br>") : "<em>Aucune réponse fournie.</em>"}</div>
+                    <div class="correction-reponse">${reponse ? echapperHTML(reponse).replace(/\n/g, "<br>") : "<em>Aucune réponse fournie.</em>"}</div>
                     <div class="correction-note">
                         <label>Points</label>
                         <input type="number" class="input-note-ouverte" data-id="${q.id}" data-bareme="${bareme}" min="0" max="${bareme}" step="0.5" value="${pointsActuels}">

@@ -197,6 +197,7 @@ Vous n'avez pas encore de réservation. <br><br>
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -238,8 +239,8 @@ onAuthStateChanged(auth, async (user) => {
             ligne.innerHTML = `
                 <td>${r.date || "-"}</td>
                 <td>${r.heure || "-"}</td>
-                <td>${r.enseignantNom || "-"}</td>
-                <td>${r.matiere || "-"}</td>
+                <td>${echapperHTML(r.enseignantNom || "-")}</td>
+                <td>${echapperHTML(r.matiere || "-")}</td>
                 <td>${r.mode || "-"}</td>
                 <td style="color:${couleur};"><b>${texte}</b></td>
             `;

@@ -192,6 +192,7 @@ color:#666;
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -235,9 +236,9 @@ async function chargerCandidatures() {
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${d.enseignantNom || "-"}</td>
-                <td>${d.poste || "-"}</td>
-                <td>${d.message || "-"}</td>
+                <td>${echapperHTML(d.enseignantNom || "-")}</td>
+                <td>${echapperHTML(d.poste || "-")}</td>
+                <td>${echapperHTML(d.message || "-")}</td>
             `;
             table.appendChild(tr);
 

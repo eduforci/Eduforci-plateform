@@ -94,6 +94,7 @@ body{min-height:100vh;background:linear-gradient(rgba(5,32,78,.85),rgba(5,32,78,
 
 import { db } from "./js/firebase.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 async function verifier(numero) {
 
@@ -125,11 +126,11 @@ async function verifier(numero) {
             <div class="resultat resultat-valide">
                 <div class="emoji">✅</div>
                 <h2>Certification authentique</h2>
-                <div class="info-ligne"><span class="cle">Nom</span><span class="val">${c.nom || "-"}</span></div>
-                <div class="info-ligne"><span class="cle">Matière</span><span class="val">${c.matiere || "-"}</span></div>
-                <div class="info-ligne"><span class="cle">Niveau</span><span class="val">${c.niveau || "-"}</span></div>
-                <div class="info-ligne"><span class="cle">Session</span><span class="val">${c.session || "-"}</span></div>
-                <div class="info-ligne"><span class="cle">Numéro</span><span class="val">${c.numeroCertification}</span></div>
+                <div class="info-ligne"><span class="cle">Nom</span><span class="val">${echapperHTML(c.nom || "-")}</span></div>
+                <div class="info-ligne"><span class="cle">Matière</span><span class="val">${echapperHTML(c.matiere || "-")}</span></div>
+                <div class="info-ligne"><span class="cle">Niveau</span><span class="val">${echapperHTML(c.niveau || "-")}</span></div>
+                <div class="info-ligne"><span class="cle">Session</span><span class="val">${echapperHTML(c.session || "-")}</span></div>
+                <div class="info-ligne"><span class="cle">Numéro</span><span class="val">${echapperHTML(c.numeroCertification)}</span></div>
                 <div class="info-ligne"><span class="cle">Délivré le</span><span class="val">${dateAffichee}</span></div>
             </div>`;
 

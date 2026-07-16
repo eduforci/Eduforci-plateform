@@ -78,6 +78,7 @@ h1{color:#153A73;margin-bottom:20px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 async function chargerCandidatures(uid) {
 
@@ -101,9 +102,9 @@ async function chargerCandidatures(uid) {
             el.className = "candidature";
 
             el.innerHTML = `
-                <p><strong>👤 Enseignant :</strong> ${d.enseignantNom || "—"}</p>
-                <p><strong>📢 Offre :</strong> ${d.poste || "—"}</p>
-                <p><strong>💬 Message :</strong> ${d.message || "—"}</p>
+                <p><strong>👤 Enseignant :</strong> ${echapperHTML(d.enseignantNom || "—")}</p>
+                <p><strong>📢 Offre :</strong> ${echapperHTML(d.poste || "—")}</p>
+                <p><strong>💬 Message :</strong> ${echapperHTML(d.message || "—")}</p>
             `;
             container.appendChild(el);
         });

@@ -84,6 +84,7 @@ h1{color:#153A73;margin-bottom:20px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 async function chargerMessages(identifiant) {
 
@@ -115,10 +116,10 @@ async function chargerMessages(identifiant) {
 
             el.innerHTML = `
                 <div class="meta">${date}</div>
-                <p>${d.contenu || ""}</p>
+                <p>${echapperHTML(d.contenu || "")}</p>
                 <div class="reponse">
                 ${d.reponseEnseignant
-                    ? `<div class="deja"><strong>Votre réponse :</strong> ${d.reponseEnseignant}</div>`
+                    ? `<div class="deja"><strong>Votre réponse :</strong> ${echapperHTML(d.reponseEnseignant)}</div>`
                     : `<textarea placeholder="Répondre à ce message..." data-id="${docSnap.id}"></textarea>
                        <button data-reply="${docSnap.id}">Envoyer la réponse</button>`
                 }

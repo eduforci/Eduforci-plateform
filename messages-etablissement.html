@@ -76,6 +76,7 @@ h1{color:#153A73;margin-bottom:20px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 async function chargerMessages(uid) {
 
@@ -102,8 +103,8 @@ async function chargerMessages(uid) {
 
             el.innerHTML = `
                 <div class="meta">${date}</div>
-                <p>${d.contenu || ""}</p>
-                ${d.reponseEnseignant ? `<div class="reponse"><strong>Réponse de l'enseignant :</strong> ${d.reponseEnseignant}</div>` : ""}
+                <p>${echapperHTML(d.contenu || "")}</p>
+                ${d.reponseEnseignant ? `<div class="reponse"><strong>Réponse de l'enseignant :</strong> ${echapperHTML(d.reponseEnseignant)}</div>` : ""}
             `;
             container.appendChild(el);
         });

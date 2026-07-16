@@ -247,6 +247,7 @@ color:#666;
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 let toutesReservations = [];
 let filtreActuel = "toutes";
@@ -332,9 +333,9 @@ function afficherReservations() {
         tr.innerHTML = `
             <td>${r.date || "-"}</td>
             <td>${r.heure || "-"}</td>
-            <td>${r.parentNom || "-"}</td>
-            <td>${r.enseignantNom || "-"}</td>
-            <td>${r.matiere || "-"}</td>
+            <td>${echapperHTML(r.parentNom || "-")}</td>
+            <td>${echapperHTML(r.enseignantNom || "-")}</td>
+            <td>${echapperHTML(r.matiere || "-")}</td>
             <td style="color:${couleur};"><b>${texte}</b></td>
             <td>${actionHtml}</td>
         `;

@@ -276,6 +276,7 @@ En cliquant sur <strong>Confirmer la réservation</strong>, votre demande sera e
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const params = new URLSearchParams(window.location.search);
 const teacherDocId = params.get("id");
@@ -315,11 +316,11 @@ async function chargerEnseignant() {
     const initiales = (enseignant.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
     carte.innerHTML = `
-        <div class="avatar-circle">${enseignant.photo ? `<img src="${enseignant.photo}" alt="${enseignant.nom || 'Enseignant'}">` : initiales}</div>
-        <h2 style="color:#153A73;margin-bottom:10px;">${enseignant.nom || "Enseignant"}</h2>
-        <p><strong>ID :</strong> ${enseignant.identifiant || "-"}</p>
-        <p>📚 ${enseignant.matiere || "-"}</p>
-        <p>📍 ${enseignant.ville || "-"}</p>
+        <div class="avatar-circle">${enseignant.photo ? `<img src="${echapperHTML(enseignant.photo)}" alt="${echapperHTML(enseignant.nom || 'Enseignant')}">` : initiales}</div>
+        <h2 style="color:#153A73;margin-bottom:10px;">${echapperHTML(enseignant.nom || "Enseignant")}</h2>
+        <p><strong>ID :</strong> ${echapperHTML(enseignant.identifiant || "-")}</p>
+        <p>📚 ${echapperHTML(enseignant.matiere || "-")}</p>
+        <p>📍 ${echapperHTML(enseignant.ville || "-")}</p>
         <p>💰 ${formaterTarif(enseignant.tarif, enseignant.tarifType)}</p>
         <p style="color:${enseignant.disponible ? "green" : "#d93025"};"><strong>${enseignant.disponible ? "🟢 Disponible" : "🔴 Non disponible actuellement"}</strong></p>
     `;

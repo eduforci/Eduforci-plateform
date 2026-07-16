@@ -234,6 +234,7 @@ Vous n'avez publié aucune offre pour le moment. <a href="publier-offre.html" st
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -274,9 +275,9 @@ onAuthStateChanged(auth, async (user) => {
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td style="padding:15px;">${o.poste || "-"}</td>
-                    <td>${o.niveau || "-"}</td>
-                    <td>${o.ville || "-"}</td>
+                    <td style="padding:15px;">${echapperHTML(o.poste || "-")}</td>
+                    <td>${echapperHTML(o.niveau || "-")}</td>
+                    <td>${echapperHTML(o.ville || "-")}</td>
                     <td style="color:${couleur};"><b>${texte}</b></td>
                 `;
                 table.appendChild(tr);

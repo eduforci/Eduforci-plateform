@@ -150,6 +150,7 @@ h1{color:#153A73;margin-bottom:6px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs, query, where, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const LIBELLES_STATUT = {
     en_attente: "⏳ En attente",
@@ -257,20 +258,20 @@ function afficherMissions() {
         carte.innerHTML = `
             <div class="mission-entete">
                 <div>
-                    <h3>${m.matiere || "Matière non précisée"} — ${m.niveau || "-"}</h3>
-                    <span class="origine">${m.demandeurType === "etablissement" ? "🏫" : "👨‍👩‍👧"} Demande de ${m.demandeurNom || "—"} · ${formaterDate(m.dateCreation)}</span>
+                    <h3>${echapperHTML(m.matiere || "Matière non précisée")} — ${echapperHTML(m.niveau || "-")}</h3>
+                    <span class="origine">${m.demandeurType === "etablissement" ? "🏫" : "👨‍👩‍👧"} Demande de ${echapperHTML(m.demandeurNom || "—")} · ${formaterDate(m.dateCreation)}</span>
                 </div>
                 <span class="badge-statut statut-${m.statut}">${LIBELLES_STATUT[m.statut] || m.statut}</span>
             </div>
 
             <div class="details-grille">
-                <div><strong>Commune</strong>${m.commune || "-"}</div>
-                <div><strong>Heures</strong>${m.nombreHeures || "-"}</div>
-                <div><strong>Rémunération</strong>${m.remuneration || "À discuter"}</div>
+                <div><strong>Commune</strong>${echapperHTML(m.commune || "-")}</div>
+                <div><strong>Heures</strong>${echapperHTML(m.nombreHeures || "-")}</div>
+                <div><strong>Rémunération</strong>${echapperHTML(m.remuneration || "À discuter")}</div>
                 <div><strong>Date souhaitée</strong>${formaterDate(m.dateSouhaitee)}</div>
             </div>
 
-            ${m.description ? `<div class="description-demande">${m.description}</div>` : ""}
+            ${m.description ? `<div class="description-demande">${echapperHTML(m.description)}</div>` : ""}
 
             ${infoRetenu}
 
@@ -309,8 +310,8 @@ function afficherMissions() {
             zone.style.display = "flex";
             zone.innerHTML = resultats.map(e => `
                 <div class="candidat-ligne">
-                    <span>👤 ${e.nom} — ${e.matiere || "-"} (${e.ville || "-"})</span>
-                    <button class="btnProposer" data-mission-id="${missionId}" data-ens-id="${e.id}" data-ens-nom="${e.nom}" data-ens-matiere="${e.matiere}" ${dejaProposesIds.includes(e.id) ? "disabled" : ""}>
+                    <span>👤 ${echapperHTML(e.nom)} — ${echapperHTML(e.matiere || "-")} (${echapperHTML(e.ville || "-")})</span>
+                    <button class="btnProposer" data-mission-id="${missionId}" data-ens-id="${e.id}" data-ens-nom="${echapperHTML(e.nom)}" data-ens-matiere="${echapperHTML(e.matiere)}" ${dejaProposesIds.includes(e.id) ? "disabled" : ""}>
                         ${dejaProposesIds.includes(e.id) ? "Déjà proposé" : "Proposer"}
                     </button>
                 </div>

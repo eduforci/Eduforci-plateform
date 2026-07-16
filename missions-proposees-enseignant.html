@@ -101,6 +101,7 @@ h1{color:#153A73;margin-bottom:6px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 function formaterDate(iso) {
     if (!iso) return "-";
@@ -148,20 +149,20 @@ async function chargerMissions() {
             carte.innerHTML = `
                 <div class="mission-entete">
                     <div>
-                        <h3>${m.matiere || "Matière non précisée"} — ${m.niveau || "-"}</h3>
-                        <span class="origine">${m.demandeurType === "etablissement" ? "🏫" : "👨‍👩‍👧"} Demande de ${m.demandeurNom || "—"} · ${formaterDate(m.dateCreation)}</span>
+                        <h3>${echapperHTML(m.matiere || "Matière non précisée")} — ${echapperHTML(m.niveau || "-")}</h3>
+                        <span class="origine">${m.demandeurType === "etablissement" ? "🏫" : "👨‍👩‍👧"} Demande de ${echapperHTML(m.demandeurNom || "—")} · ${formaterDate(m.dateCreation)}</span>
                     </div>
                     <span class="badge-statut reponse-${monEntree.reponse}">${libellesReponse[monEntree.reponse] || monEntree.reponse}</span>
                 </div>
 
                 <div class="details-grille">
-                    <div><strong>Commune</strong>${m.commune || "-"}</div>
-                    <div><strong>Heures</strong>${m.nombreHeures || "-"}</div>
-                    <div><strong>Rémunération</strong>${m.remuneration || "À discuter"}</div>
+                    <div><strong>Commune</strong>${echapperHTML(m.commune || "-")}</div>
+                    <div><strong>Heures</strong>${echapperHTML(m.nombreHeures || "-")}</div>
+                    <div><strong>Rémunération</strong>${echapperHTML(m.remuneration || "À discuter")}</div>
                     <div><strong>Date souhaitée</strong>${formaterDate(m.dateSouhaitee)}</div>
                 </div>
 
-                ${m.description ? `<div class="description-demande">${m.description}</div>` : ""}
+                ${m.description ? `<div class="description-demande">${echapperHTML(m.description)}</div>` : ""}
 
                 ${estRetenu ? `<div class="retenu-info">✅ Vous avez été retenu(e) pour cette mission. EDUFORCI va vous mettre en relation.</div>` : ""}
                 ${unAutreRetenu ? `<div class="non-retenu-info">Un autre enseignant a été retenu pour cette mission.</div>` : ""}

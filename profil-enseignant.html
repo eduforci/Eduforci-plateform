@@ -277,6 +277,7 @@ color:#999;
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { collection, addDoc, doc, getDoc, setDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const params = new URLSearchParams(window.location.search);
 const teacherDocId = params.get("id");
@@ -302,7 +303,7 @@ function construireDisponibiliteHTML() {
     return joursOrdre.map((cle) => {
         const info = dispo[cle];
         if (info && info.actif) {
-            return `<div class="dispo-item"><span>${joursLabels[cle]}</span><span class="dispo-oui">✔ ${info.horaire || "Disponible"}</span></div>`;
+            return `<div class="dispo-item"><span>${joursLabels[cle]}</span><span class="dispo-oui">✔ ${echapperHTML(info.horaire || "Disponible")}</span></div>`;
         }
         return `<div class="dispo-item"><span>${joursLabels[cle]}</span><span class="dispo-non">Indisponible</span></div>`;
     }).join("");
@@ -333,8 +334,8 @@ async function chargerAvisEtNote() {
             total += Number(d.note) || 0;
             html += `
                 <div class="avis-item">
-                    <div class="haut"><span>${d.parentNom || "Parent"}</span><span>${"⭐".repeat(Number(d.note) || 0)}</span></div>
-                    <p style="color:#555;">${d.commentaire || ""}</p>
+                    <div class="haut"><span>${echapperHTML(d.parentNom || "Parent")}</span><span>${"⭐".repeat(Number(d.note) || 0)}</span></div>
+                    <p style="color:#555;">${echapperHTML(d.commentaire || "")}</p>
                 </div>
             `;
         });
@@ -485,9 +486,9 @@ async function chargerProfil() {
 
     <div class="card">
 
-    <div class="avatar-circle">${enseignant.photo ? `<img src="${enseignant.photo}" alt="${enseignant.nom || 'Enseignant'}">` : initiales}</div>
+    <div class="avatar-circle">${enseignant.photo ? `<img src="${echapperHTML(enseignant.photo)}" alt="${echapperHTML(enseignant.nom || 'Enseignant')}">` : initiales}</div>
 
-    <h2>${enseignant.nom || "Enseignant"}</h2>
+    <h2>${echapperHTML(enseignant.nom || "Enseignant")}</h2>
 
     <div style="text-align:center;margin-bottom:20px;">
     <span class="badge ${enseignant.verification ? "" : "attente"}">${enseignant.verification ? "✔ Profil vérifié" : "⏳ Vérification en attente"}</span>
@@ -495,13 +496,13 @@ async function chargerProfil() {
 
     <div class="info">
 
-    <p><strong>📚 Matière :</strong> ${enseignant.matiere || "-"}</p>
+    <p><strong>📚 Matière :</strong> ${echapperHTML(enseignant.matiere || "-")}</p>
 
-    <p><strong>🎓 Diplôme :</strong> ${enseignant.diplome || "-"}</p>
+    <p><strong>🎓 Diplôme :</strong> ${echapperHTML(enseignant.diplome || "-")}</p>
 
-    <p><strong>💼 Expérience :</strong> ${enseignant.experience || "0"} an(s)</p>
+    <p><strong>💼 Expérience :</strong> ${echapperHTML(enseignant.experience || "0")} an(s)</p>
 
-    <p><strong>📍 Ville :</strong> ${enseignant.ville || "-"}</p>
+    <p><strong>📍 Ville :</strong> ${echapperHTML(enseignant.ville || "-")}</p>
 
     <p><strong>⭐ Note :</strong> <span id="zoneNote">...</span></p>
 
@@ -533,7 +534,7 @@ ${enseignant.disponible !== false
     <h2 style="text-align:left;">Présentation</h2>
 
     <p style="margin-top:20px;line-height:1.8;color:#555;">
-    ${enseignant.presentation || "Ce professeur n'a pas encore ajouté de présentation."}
+    ${enseignant.presentation ? echapperHTML(enseignant.presentation) : "Ce professeur n'a pas encore ajouté de présentation."}
     </p>
 
     <br>

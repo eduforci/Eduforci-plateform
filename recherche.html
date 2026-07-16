@@ -184,6 +184,7 @@ import {
   where,
   getDocs
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const liste = document.getElementById("listeEnseignants");
 async function chargerFiltres() {
@@ -214,15 +215,15 @@ async function chargerFiltres() {
     });
 
     [...matieres].sort().forEach((m) => {
-        matiereSelect.innerHTML += `<option value="${m}">${m}</option>`;
+        matiereSelect.innerHTML += `<option value="${echapperHTML(m)}">${echapperHTML(m)}</option>`;
     });
 
     [...niveaux].sort().forEach((n) => {
-        niveauSelect.innerHTML += `<option value="${n}">${n}</option>`;
+        niveauSelect.innerHTML += `<option value="${echapperHTML(n)}">${echapperHTML(n)}</option>`;
     });
 
     [...villes].sort().forEach((v) => {
-        villeSelect.innerHTML += `<option value="${v}">${v}</option>`;
+        villeSelect.innerHTML += `<option value="${echapperHTML(v)}">${echapperHTML(v)}</option>`;
     });
 
     }
@@ -254,16 +255,16 @@ async function chargerEnseignants() {
 
         <div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
 
-            <img src="${prof.photo || 'images/professeur.jpg'}"
+            <img src="${echapperHTML(prof.photo || 'images/professeur.jpg')}"
             style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
 
-            <h3>${prof.nom}</h3>
+            <h3>${echapperHTML(prof.nom)}</h3>
 
-            <p>📚 ${prof.matiere}</p>
+            <p>📚 ${echapperHTML(prof.matiere)}</p>
 
-            <p>📍 ${prof.ville}</p>
+            <p>📍 ${echapperHTML(prof.ville)}</p>
 
-            <p>🎓 ${prof.niveau}</p>
+            <p>🎓 ${echapperHTML(prof.niveau)}</p>
 
             <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">
                 Voir le profil

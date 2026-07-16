@@ -90,6 +90,7 @@ h1{color:#153A73;margin-bottom:20px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 const libellesStatut = {
     en_attente: "🟠 En attente",
@@ -127,11 +128,11 @@ async function chargerDemandes(identifiant) {
 
             el.innerHTML = `
                 <span class="statut ${statut}">${libellesStatut[statut] || statut}</span>
-                <p><strong>👤 Parent :</strong> ${d.parentNom || "—"}</p>
-                <p><strong>📚 Matière :</strong> ${d.matiere || "—"}</p>
-                <p><strong>📅 Date :</strong> ${d.date || "—"} à ${d.heure || "—"}</p>
-                <p><strong>📍 Mode :</strong> ${d.mode || "—"} ${d.adresse ? "— " + d.adresse : ""}</p>
-                <p><strong>💬 Message :</strong> ${d.message || "—"}</p>
+                <p><strong>👤 Parent :</strong> ${echapperHTML(d.parentNom || "—")}</p>
+                <p><strong>📚 Matière :</strong> ${echapperHTML(d.matiere || "—")}</p>
+                <p><strong>📅 Date :</strong> ${echapperHTML(d.date || "—")} à ${echapperHTML(d.heure || "—")}</p>
+                <p><strong>📍 Mode :</strong> ${echapperHTML(d.mode || "—")} ${d.adresse ? "— " + echapperHTML(d.adresse) : ""}</p>
+                <p><strong>💬 Message :</strong> ${echapperHTML(d.message || "—")}</p>
                 ${statut === "en_attente" ? `
                 <div class="actions">
                     <button class="btn-accepter" data-id="${docSnap.id}">✔ Accepter</button>

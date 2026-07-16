@@ -85,6 +85,7 @@ h1{color:#153A73;margin-bottom:10px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 async function chargerAvis(identifiant) {
 
@@ -123,10 +124,10 @@ async function chargerAvis(identifiant) {
 
             el.innerHTML = `
                 <div class="haut">
-                    <span class="parent">${d.parentNom || "Parent"}</span>
+                    <span class="parent">${echapperHTML(d.parentNom || "Parent")}</span>
                     <span class="etoiles">${"⭐".repeat(note)}</span>
                 </div>
-                <p>${d.commentaire || ""}</p>
+                <p>${echapperHTML(d.commentaire || "")}</p>
             `;
 
             container.appendChild(el);
