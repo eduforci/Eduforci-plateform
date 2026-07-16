@@ -2,6 +2,10 @@
 <html lang="fr">
 
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <script src="js/notify.js?v=4"></script>
 
 <meta charset="UTF-8">
@@ -36,7 +40,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 <div class="navbar">
 
 <div class="logo">
-    <img src="logo.png" alt="EDUFORCI">
+    <img decoding="async" src="logo.png" alt="EDUFORCI">
 </div>
 
 <button id="menuBtn">
@@ -210,30 +214,30 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 </div>
 
 <div class="gallery-card">
-    <img src="cours-domicile.jpg" alt="Cours à domicile" class="gallery-img">
+    <img loading="lazy" decoding="async" src="cours-domicile.jpg" alt="Cours à domicile" class="gallery-img">
     <h3>Cours à domicile</h3>
 </div>
 <div class="gallery-card">
-    <img src="cours-ligne.jpg" alt="Cours en ligne" class="gallery-img">
+    <img loading="lazy" decoding="async" src="cours-ligne.jpg" alt="Cours en ligne" class="gallery-img">
     <h3>Cours en ligne</h3>
 </div>
 
 <div class="gallery-card">
-    <img src="enseignants.jpg" alt="Nos enseignants" class="gallery-img">
+    <img loading="lazy" decoding="async" src="enseignants.jpg" alt="Nos enseignants" class="gallery-img">
     <h3>Nos enseignants</h3>
 </div>
 <div class="gallery-card">
-    <img src="eleves.jpg" alt="Nos élèves" class="gallery-img">
+    <img loading="lazy" decoding="async" src="eleves.jpg" alt="Nos élèves" class="gallery-img">
     <h3>Nos élèves</h3>
 </div>
     
 <div class="gallery-card">
-    <img src="activites.jpg" alt="Nos activités" class="gallery-img">
+    <img loading="lazy" decoding="async" src="activites.jpg" alt="Nos activités" class="gallery-img">
     <h3>Nos activités</h3>
 </div>
 
 <div class="gallery-card">
-    <img src="reussites.jpg" alt="Nos réussites" class="gallery-img">
+    <img loading="lazy" decoding="async" src="reussites.jpg" alt="Nos réussites" class="gallery-img">
     <h3>Nos réussites</h3>
 </div>
 
@@ -382,7 +386,7 @@ async function chargerEnseignantsAccueil() {
             carte.className = "teacher-card";
 
             carte.innerHTML = `
-                <div class="avatar-circle">${prof.photo ? `<img src="${echapperHTML(prof.photo)}" alt="${echapperHTML(prof.nom || 'Enseignant')}">` : initiales}</div>
+                <div class="avatar-circle">${prof.photo ? `<img loading="lazy" decoding="async" src="${echapperHTML(prof.photo)}" alt="${echapperHTML(prof.nom || 'Enseignant')}">` : initiales}</div>
                 <h4>${echapperHTML(prof.nom || "Enseignant")}</h4>
                 <span class="badge">${prof.verification ? "✔ Vérifié" : "⏳ En attente"}</span>
                 <div class="teacher-badges">
@@ -511,7 +515,7 @@ chargerTemoignagesAccueil();
 
 </button>
 
-<img src="logo.png" alt="EDUFORCI" style="height:60px;margin-bottom:20px;">
+<img decoding="async" src="logo.png" alt="EDUFORCI" style="height:60px;margin-bottom:20px;">
 
 <h4>Navigation</h4>
 
@@ -552,7 +556,7 @@ chargerTemoignagesAccueil();
 <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:30px;padding-bottom:35px;">
 
 <div>
-<img src="logo.png" alt="EDUFORCI" style="height:50px;margin-bottom:14px;">
+<img decoding="async" src="logo.png" alt="EDUFORCI" style="height:50px;margin-bottom:14px;">
 <p style="font-size:14px;line-height:1.7;color:#b7c6e6;">La plateforme qui connecte élèves, parents, enseignants et établissements partout en Côte d'Ivoire.</p>
 </div>
 

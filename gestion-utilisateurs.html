@@ -2,6 +2,9 @@
 <html lang="fr">
 
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
 <script src="js/notify.js?v=4"></script>
 
 <meta charset="UTF-8">
@@ -205,7 +208,7 @@ overflow:hidden;
 <div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
 <div class="sidebar">
 
-<img src="logo.png" alt="EDUFORCI">
+<img decoding="async" src="logo.png" alt="EDUFORCI">
 
 <a href="dashboard-admin.html">📊 Tableau de bord</a>
 
@@ -376,7 +379,7 @@ async function chargerUtilisateurs() {
             const initiales = (u.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
             const cellulePhoto = type === "enseignants"
-                ? `<td><div class="avatar-mini">${u.photo ? `<img src="${echapperHTML(u.photo)}" alt="${echapperHTML(u.nom || 'Enseignant')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initiales}</div></td>`
+                ? `<td><div class="avatar-mini">${u.photo ? `<img loading="lazy" decoding="async" src="${echapperHTML(u.photo)}" alt="${echapperHTML(u.nom || 'Enseignant')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initiales}</div></td>`
                 : "";
 
             const celluleVille = type === "enseignants"

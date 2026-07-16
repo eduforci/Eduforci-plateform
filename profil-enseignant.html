@@ -2,6 +2,9 @@
 <html lang="fr">
 
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
 <script src="js/notify.js?v=4"></script>
 
 <meta charset="UTF-8">
@@ -260,7 +263,7 @@ color:#999;
 
 <div class="header">
 
-<img src="logo.png">
+<img decoding="async" src="logo.png">
 
 </div>
 
@@ -486,7 +489,7 @@ async function chargerProfil() {
 
     <div class="card">
 
-    <div class="avatar-circle">${enseignant.photo ? `<img src="${echapperHTML(enseignant.photo)}" alt="${echapperHTML(enseignant.nom || 'Enseignant')}">` : initiales}</div>
+    <div class="avatar-circle">${enseignant.photo ? `<img loading="lazy" decoding="async" src="${echapperHTML(enseignant.photo)}" alt="${echapperHTML(enseignant.nom || 'Enseignant')}">` : initiales}</div>
 
     <h2>${echapperHTML(enseignant.nom || "Enseignant")}</h2>
 
@@ -519,6 +522,7 @@ ${enseignant.disponible !== false
     <a id="btnWhatsapp"
    href="#"
    target="_blank"
+   rel="noopener"
    style="display:block;text-decoration:none;">
     <button type="button">
         📲 Réserver via WhatsApp

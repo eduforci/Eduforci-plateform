@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
 <script src="js/notify.js?v=4"></script>
 
 <meta charset="UTF-8">
@@ -72,7 +75,7 @@ h1{color:#153A73;margin-bottom:20px;}
 <button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
 <div class="sidebar">
-<img src="logo.png" alt="EDUFORCI">
+<img decoding="async" src="logo.png" alt="EDUFORCI">
 <a href="dashboard-etablissement.html">🏠 Tableau de bord</a>
 <a href="publier-offre.html">📢 Publier une offre</a>
 <a href="recherche-enseignant-etablissement.html" class="active">👨‍🏫 Rechercher un enseignant</a>
@@ -137,7 +140,7 @@ function afficherListe(liste) {
         const card = document.createElement("div");
         card.className = "teacher-card";
         card.innerHTML = `
-            <div class="avatar">${ens.photo ? `<img src="${echapperHTML(ens.photo)}" alt="${echapperHTML(ens.nom || 'Enseignant')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initiales}</div>
+            <div class="avatar">${ens.photo ? `<img loading="lazy" decoding="async" src="${echapperHTML(ens.photo)}" alt="${echapperHTML(ens.nom || 'Enseignant')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initiales}</div>
             <h4>${echapperHTML(ens.nom || "Enseignant")}</h4>
             <p>📚 ${echapperHTML(ens.matiere || "—")}</p>
             <p>📍 ${echapperHTML(ens.ville || "—")}</p>

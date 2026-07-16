@@ -2,6 +2,9 @@
 <html lang="fr">
 
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
 <script src="js/notify.js"></script>
 
 <meta charset="UTF-8">
@@ -199,7 +202,7 @@ color:#999;
 
 <header>
 
-<img src="logo.png">
+<img decoding="async" src="logo.png">
 
 </header>
 
@@ -316,7 +319,7 @@ async function chargerEnseignant() {
     const initiales = (enseignant.nom || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
 
     carte.innerHTML = `
-        <div class="avatar-circle">${enseignant.photo ? `<img src="${echapperHTML(enseignant.photo)}" alt="${echapperHTML(enseignant.nom || 'Enseignant')}">` : initiales}</div>
+        <div class="avatar-circle">${enseignant.photo ? `<img loading="lazy" decoding="async" src="${echapperHTML(enseignant.photo)}" alt="${echapperHTML(enseignant.nom || 'Enseignant')}">` : initiales}</div>
         <h2 style="color:#153A73;margin-bottom:10px;">${echapperHTML(enseignant.nom || "Enseignant")}</h2>
         <p><strong>ID :</strong> ${echapperHTML(enseignant.identifiant || "-")}</p>
         <p>📚 ${echapperHTML(enseignant.matiere || "-")}</p>

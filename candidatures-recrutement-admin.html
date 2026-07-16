@@ -2,6 +2,9 @@
 <html lang="fr">
 
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
 <script src="js/notify.js?v=4"></script>
 
 <meta charset="UTF-8">
@@ -175,7 +178,7 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
 <div class="sidebar">
-<img src="logo.png" alt="EDUFORCI">
+<img decoding="async" src="logo.png" alt="EDUFORCI">
 <a href="dashboard-admin.html">📊 Tableau de bord</a>
 <a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
 <a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
@@ -564,7 +567,7 @@ function appliquerFiltres() {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td><div class="avatar-mini">${photoUrl ? `<img src="${echapperHTML(photoUrl)}" alt="${echapperHTML(nom)}">` : initiales}</div></td>
+            <td><div class="avatar-mini">${photoUrl ? `<img loading="lazy" decoding="async" src="${echapperHTML(photoUrl)}" alt="${echapperHTML(nom)}">` : initiales}</div></td>
             <td>${echapperHTML(nom)}</td>
             <td>${echapperHTML((c.matieres || []).join(", ") || "-")}</td>
             <td>${echapperHTML(c.personnel?.ville || "-")}</td>

@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
 <script src="js/notify.js?v=4"></script>
 
 <meta charset="UTF-8">
@@ -79,7 +82,7 @@ input:checked + .slider:before{transform:translateX(26px);}
 <button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
 <div class="sidebar">
-<img src="logo.png" alt="EDUFORCI">
+<img decoding="async" src="logo.png" alt="EDUFORCI">
 <a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
 <a href="mon-profil-enseignant.html" class="active">👤 Mon profil</a>
 <a href="mes-matieres-enseignant.html">📚 Mes matières</a>
@@ -238,7 +241,7 @@ let fichierSelectionne = null;
 function afficherAvatar(url) {
     const zone = document.getElementById("avatarPreview");
     if (url) {
-        zone.innerHTML = `<img src="${url}" alt="Photo de profil">`;
+        zone.innerHTML = `<img loading="lazy" decoding="async" src="${url}" alt="Photo de profil">`;
     } else {
         const initiales = (nomActuel || "??").split(" ").map(m => m[0]).join("").substring(0, 2).toUpperCase();
         zone.innerHTML = initiales;
