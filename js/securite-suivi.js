@@ -54,7 +54,7 @@ export async function enregistrerAudit(db, { uid, role, identifiant, nom, action
         });
     } catch (error) {
         // Le journal ne doit jamais faire planter une action utilisateur.
-        alert("DIAGNOSTIC journalAudit : " + error.code + " — " + error.message);
+        console.warn("Journal d'audit indisponible :", error.message);
     }
 }
 
@@ -95,7 +95,7 @@ export async function enregistrerConnexion(db, { uid, role, identifiant, nom }) 
             });
         }
     } catch (error) {
-        alert("DIAGNOSTIC session : " + error.code + " — " + error.message);
+        console.warn("Suivi de session indisponible :", error.message);
     }
 
     try {
@@ -105,7 +105,7 @@ export async function enregistrerConnexion(db, { uid, role, identifiant, nom }) 
             categorie: "connexion"
         });
     } catch (error) {
-        alert("DIAGNOSTIC audit : " + error.code + " — " + error.message);
+        console.warn("Journal d'audit (connexion) indisponible :", error.message);
     }
 }
 
