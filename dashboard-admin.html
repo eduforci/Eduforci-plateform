@@ -247,21 +247,27 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 
 <div class="welcome">
 
-<h2>📈 Activité de la journée</h2>
+<h2>📈 Activité du jour — <span id="dateAujourdhui"></span></h2>
 
 <br>
 
-<p>👨‍🏫 Nouveaux enseignants : <strong>5</strong></p>
+<p>👨‍🏫 Nouveaux enseignants : <strong id="actNouveauxEnseignants">…</strong></p>
 
-<p>👨‍👩‍👧 Nouveaux parents : <strong>12</strong></p>
+<p>👨‍👩‍👧 Nouveaux parents : <strong id="actNouveauxParents">…</strong></p>
 
-<p>🏫 Nouveaux établissements : <strong>2</strong></p>
+<p>🏫 Nouveaux établissements : <strong id="actNouveauxEtablissements">…</strong></p>
 
-<p>📅 Réservations créées : <strong>8</strong></p>
+<p>📅 Réservations créées aujourd'hui : <strong id="actReservationsCreees">…</strong></p>
 
-<p>✅ Réservations validées : <strong>6</strong></p>
+<hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
 
-<p>❌ Réservations refusées : <strong>1</strong></p>
+<p style="color:#888;font-size:13px;margin-bottom:8px;">État actuel de toutes les réservations (pas seulement celles du jour) :</p>
+
+<p>✅ Confirmées : <strong id="actReservationsConfirmees">…</strong></p>
+
+<p>⏳ En attente : <strong id="actReservationsAttente">…</strong></p>
+
+<p>❌ Refusées : <strong id="actReservationsRefusees">…</strong></p>
 
 </div>
 
@@ -312,6 +318,48 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("nbParents").innerHTML = parentsRes.status === "fulfilled" ? parentsRes.value.size : "!";
     document.getElementById("nbEtablissements").innerHTML = etablissementsRes.status === "fulfilled" ? etablissementsRes.value.size : "!";
     document.getElementById("nbReservations").innerHTML = reservationsRes.status === "fulfilled" ? reservationsRes.value.size : "!";
+
+    // ---------- Activité du jour (calculée à partir des vraies données) ----------
+
+    const aujourdhuiISO = new Date().toDateString();
+    document.getElementById("dateAujourdhui").textContent = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+
+    function estAujourdhui(dateCreation) {
+        if (!dateCreation) return false;
+        const d = new Date(dateCreation);
+        return !isNaN(d) && d.toDateString() === aujourdhuiISO;
+    }
+
+    function compterNouveauxAujourdhui(snapshotResult) {
+        if (snapshotResult.status !== "fulfilled") return "!";
+        let n = 0;
+        snapshotResult.value.forEach(d => { if (estAujourdhui(d.data().dateCreation)) n++; });
+        return n;
+    }
+
+    document.getElementById("actNouveauxEnseignants").textContent = compterNouveauxAujourdhui(enseignantsRes);
+    document.getElementById("actNouveauxParents").textContent = compterNouveauxAujourdhui(parentsRes);
+    document.getElementById("actNouveauxEtablissements").textContent = compterNouveauxAujourdhui(etablissementsRes);
+
+    if (reservationsRes.status === "fulfilled") {
+        const reservations = [];
+        reservationsRes.value.forEach(d => reservations.push(d.data()));
+
+        document.getElementById("actReservationsCreees").textContent =
+            reservations.filter(r => estAujourdhui(r.dateCreation)).length;
+
+        document.getElementById("actReservationsConfirmees").textContent =
+            reservations.filter(r => r.statut === "confirme").length;
+
+        document.getElementById("actReservationsAttente").textContent =
+            reservations.filter(r => r.statut === "en_attente").length;
+
+        document.getElementById("actReservationsRefusees").textContent =
+            reservations.filter(r => r.statut === "refuse").length;
+    } else {
+        ["actReservationsCreees", "actReservationsConfirmees", "actReservationsAttente", "actReservationsRefusees"]
+            .forEach(id => document.getElementById(id).textContent = "!");
+    }
 
     if (candidaturesRes.status === "fulfilled") {
         const candidatures = [];
@@ -365,3 +413,4 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 </body>
 
 </html>
+  
