@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase.js";
+ import { auth, db } from "./firebase.js";
 
 import {
   createUserWithEmailAndPassword,
@@ -15,6 +15,8 @@ import {
   updateDoc,
   increment
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+import { enregistrerConnexion, enregistrerAudit, enregistrerDeconnexion } from "./securite-suivi.js";
 
 // ======================================
 // GÉNÉRATION DES IDENTIFIANTS
@@ -77,6 +79,14 @@ async function creerCompteParent(nom, telephone, email, motDePasse) {
     });
 
     await sendEmailVerification(user);
+
+    await enregistrerAudit(db, {
+      uid: user.uid, role: "parent", identifiant, nom,
+      action: "Création de compte",
+      categorie: "compte",
+      details: `Inscription parent — ${email}`
+    });
+
     await signOut(auth);
 
     await alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu avant de vous connecter.\n\n⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier \"Spam\" ou \"Courrier indésirable\" de votre boîte mail : c'est souvent là qu'il atterrit la première fois.");
@@ -144,6 +154,12 @@ Après avoir confirmé votre adresse e-mail, revenez vous connecter.`,
       return;
 
     }
+
+    await enregistrerConnexion(db, {
+      uid: user.uid, role: "parent",
+      identifiant: parentSnap.data().identifiant,
+      nom: parentSnap.data().nom
+    });
 
     window.location.href = "dashboard-parent.html";
 
@@ -223,6 +239,14 @@ disponibilite: "Disponible",
 });
 
     await sendEmailVerification(user);
+
+    await enregistrerAudit(db, {
+      uid: user.uid, role: "enseignant", identifiant, nom,
+      action: "Création de compte",
+      categorie: "compte",
+      details: `Inscription enseignant — ${email}`
+    });
+
     await signOut(auth);
 
     await alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu avant de vous connecter.\n\n⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier \"Spam\" ou \"Courrier indésirable\" de votre boîte mail : c'est souvent là qu'il atterrit la première fois.");
@@ -277,6 +301,12 @@ async function connexionEnseignant(email, motDePasse) {
       return;
 
     }
+
+    await enregistrerConnexion(db, {
+      uid: user.uid, role: "enseignant",
+      identifiant: enseignantSnap.data().identifiant,
+      nom: enseignantSnap.data().nom
+    });
 
     window.location.href = "dashboard-enseignant.html";
 
@@ -338,6 +368,14 @@ async function creerCompteEtablissement(
     });
 
     await sendEmailVerification(user);
+
+    await enregistrerAudit(db, {
+      uid: user.uid, role: "etablissement", identifiant, nom,
+      action: "Création de compte",
+      categorie: "compte",
+      details: `Inscription établissement — ${email}`
+    });
+
     await signOut(auth);
 
     await alert("Compte créé avec succès ! Un e-mail de confirmation a été envoyé à " + email + ". Merci de cliquer sur le lien reçu avant de vous connecter.\n\n⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier \"Spam\" ou \"Courrier indésirable\" de votre boîte mail : c'est souvent là qu'il atterrit la première fois.");
@@ -394,6 +432,12 @@ async function connexionEtablissement(email, motDePasse) {
 
     }
 
+    await enregistrerConnexion(db, {
+      uid: user.uid, role: "etablissement",
+      identifiant: etablissementSnap.data().identifiant,
+      nom: etablissementSnap.data().nom
+    });
+
     window.location.href = "dashboard-etablissement.html";
 
   } catch (error) {
@@ -430,6 +474,12 @@ async function connexionAdmin(email, motDePasse) {
       return;
 
     }
+
+    await enregistrerConnexion(db, {
+      uid: user.uid, role: "admin",
+      identifiant: adminSnap.data().identifiant || user.email,
+      nom: adminSnap.data().nom || "Administrateur"
+    });
 
     window.location.href = "dashboard-admin.html";
 
