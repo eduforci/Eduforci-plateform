@@ -196,6 +196,39 @@ color:#999;
 padding:20px;
 }
 
+.barre-filtres{
+display:flex;
+flex-wrap:wrap;
+gap:12px;
+margin-bottom:18px;
+}
+
+.barre-filtres input[type="text"]{
+flex:1;
+min-width:180px;
+padding:10px 14px;
+border:1px solid #ddd;
+border-radius:10px;
+font-family:Poppins,sans-serif;
+font-size:13.5px;
+}
+
+.barre-filtres select{
+padding:10px 14px;
+border:1px solid #ddd;
+border-radius:10px;
+font-family:Poppins,sans-serif;
+font-size:13.5px;
+background:#fff;
+color:#333;
+}
+
+.compteur-filtre{
+color:#888;
+font-size:12.5px;
+margin-bottom:12px;
+}
+
 .menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
 .sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
 @media (max-width:900px){
@@ -261,6 +294,24 @@ table{min-width:560px;}
 <div class="panneau">
     <h3>📱 Sessions & appareils</h3>
     <p style="color:#888;font-size:13px;margin-bottom:15px;">Un appareil est considéré "actif" s'il s'est connecté sans se déconnecter depuis. La déconnexion à distance prend effet la prochaine fois que la personne ouvre une page de son tableau de bord.</p>
+
+    <div class="barre-filtres">
+        <input type="text" id="rechercheSessions" placeholder="🔍 Rechercher un nom ou identifiant...">
+        <select id="filtreRoleSessions">
+            <option value="">Tous les rôles</option>
+            <option value="enseignant">Enseignant</option>
+            <option value="parent">Parent</option>
+            <option value="etablissement">Établissement</option>
+            <option value="admin">Admin</option>
+        </select>
+        <select id="filtreStatutSessions">
+            <option value="">Tous les statuts</option>
+            <option value="actif">🟢 Actif</option>
+            <option value="inactif">⚪ Inactif</option>
+        </select>
+    </div>
+    <p class="compteur-filtre" id="compteurSessions"></p>
+
     <table>
         <thead>
             <tr>
@@ -282,6 +333,27 @@ table{min-width:560px;}
 
 <div class="panneau">
     <h3>📜 Journal d'audit (immuable — 100 dernières actions)</h3>
+
+    <div class="barre-filtres">
+        <input type="text" id="rechercheAudit" placeholder="🔍 Rechercher un nom ou identifiant...">
+        <select id="filtreRoleAudit">
+            <option value="">Tous les rôles</option>
+            <option value="enseignant">Enseignant</option>
+            <option value="parent">Parent</option>
+            <option value="etablissement">Établissement</option>
+            <option value="admin">Admin</option>
+        </select>
+        <select id="filtreCategorieAudit">
+            <option value="">Toutes les catégories</option>
+            <option value="connexion">Connexion</option>
+            <option value="compte">Compte</option>
+            <option value="enseignant">Enseignant</option>
+            <option value="parent">Parent</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+    <p class="compteur-filtre" id="compteurAudit"></p>
+
     <table>
         <thead>
             <tr>
@@ -318,69 +390,158 @@ function formaterDate(valeur) {
     return d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+let SESSIONS_DATA = [];
+
+function brancherBoutonsDeconnexion() {
+    document.querySelectorAll(".btn-deco").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            btn.disabled = true;
+            btn.textContent = "Demande envoyée";
+            try {
+                await updateDoc(doc(db, "sessionsActives", id), { forceDeconnexion: true });
+                await enregistrerAudit(db, {
+                    uid: ADMIN_UID, role: "admin",
+                    action: "Déconnexion à distance déclenchée",
+                    categorie: "admin",
+                    details: `Session ciblée : ${id}`
+                });
+                const s = SESSIONS_DATA.find(x => x.id === id);
+                if (s) s.data.forceDeconnexion = true;
+            } catch (error) {
+                alert("Erreur : " + error.message);
+                btn.disabled = false;
+                btn.textContent = "Déconnecter";
+            }
+        });
+    });
+}
+
+function afficherSessions() {
+
+    const corps = document.getElementById("corpsSessions");
+    const compteur = document.getElementById("compteurSessions");
+    const recherche = document.getElementById("rechercheSessions").value.trim().toLowerCase();
+    const role = document.getElementById("filtreRoleSessions").value;
+    const statut = document.getElementById("filtreStatutSessions").value;
+
+    let filtrees = SESSIONS_DATA.filter(({ data: s }) => {
+        if (role && s.role !== role) return false;
+        if (statut === "actif" && !s.actif) return false;
+        if (statut === "inactif" && s.actif) return false;
+        if (recherche) {
+            const cible = `${s.nom || ""} ${s.identifiant || ""}`.toLowerCase();
+            if (!cible.includes(recherche)) return false;
+        }
+        return true;
+    });
+
+    let actifsTotal = 0;
+    SESSIONS_DATA.forEach(({ data: s }) => { if (s.actif) actifsTotal++; });
+    document.getElementById("statAppareilsActifs").textContent = actifsTotal;
+    document.getElementById("statAppareilsTotal").textContent = SESSIONS_DATA.length;
+
+    if (SESSIONS_DATA.length === 0) {
+        corps.innerHTML = `<tr><td colspan="8" class="vide">Aucune session enregistrée pour le moment.</td></tr>`;
+        compteur.textContent = "";
+        return;
+    }
+
+    if (filtrees.length === 0) {
+        corps.innerHTML = `<tr><td colspan="8" class="vide">Aucun résultat pour ces filtres.</td></tr>`;
+        compteur.textContent = `0 résultat sur ${SESSIONS_DATA.length}`;
+        return;
+    }
+
+    compteur.textContent = `${filtrees.length} résultat(s) sur ${SESSIONS_DATA.length}`;
+
+    corps.innerHTML = filtrees.map(({ id, data: s }) => `
+        <tr>
+            <td>${echapperHTML(s.nom || s.identifiant || "—")}</td>
+            <td><span class="badge-role">${echapperHTML(s.role || "-")}</span></td>
+            <td>${echapperHTML(s.appareil || "-")}</td>
+            <td>${echapperHTML(s.navigateur || "-")}</td>
+            <td>${Number(s.nombreConnexions) || 1}</td>
+            <td>${formaterDate(s.derniereConnexion)}</td>
+            <td><span class="badge-statut ${s.actif ? "actif" : "inactif"}">${s.actif ? "🟢 Actif" : "⚪ Inactif"}</span></td>
+            <td><button class="btn-deco" data-id="${id}" ${(!s.actif || s.forceDeconnexion) ? "disabled" : ""}>${s.forceDeconnexion ? "Demande envoyée" : "Déconnecter"}</button></td>
+        </tr>
+    `).join("");
+
+    brancherBoutonsDeconnexion();
+
+}
+
 async function chargerSessions() {
 
     const corps = document.getElementById("corpsSessions");
 
     try {
         const snap = await getDocs(collection(db, "sessionsActives"));
-
-        if (snap.empty) {
-            corps.innerHTML = `<tr><td colspan="8" class="vide">Aucune session enregistrée pour le moment.</td></tr>`;
-            document.getElementById("statAppareilsActifs").textContent = "0";
-            document.getElementById("statAppareilsTotal").textContent = "0";
-            return;
-        }
-
-        let actifs = 0;
-        const lignes = [];
-
-        snap.forEach((docSnap) => {
-            const s = docSnap.data();
-            if (s.actif) actifs++;
-
-            lignes.push(`
-                <tr>
-                    <td>${echapperHTML(s.nom || s.identifiant || "—")}</td>
-                    <td><span class="badge-role">${echapperHTML(s.role || "-")}</span></td>
-                    <td>${echapperHTML(s.appareil || "-")}</td>
-                    <td>${echapperHTML(s.navigateur || "-")}</td>
-                    <td>${Number(s.nombreConnexions) || 1}</td>
-                    <td>${formaterDate(s.derniereConnexion)}</td>
-                    <td><span class="badge-statut ${s.actif ? "actif" : "inactif"}">${s.actif ? "🟢 Actif" : "⚪ Inactif"}</span></td>
-                    <td><button class="btn-deco" data-id="${docSnap.id}" ${(!s.actif || s.forceDeconnexion) ? "disabled" : ""}>${s.forceDeconnexion ? "Demande envoyée" : "Déconnecter"}</button></td>
-                </tr>
-            `);
-        });
-
-        corps.innerHTML = lignes.join("");
-        document.getElementById("statAppareilsActifs").textContent = actifs;
-        document.getElementById("statAppareilsTotal").textContent = snap.size;
-
-        document.querySelectorAll(".btn-deco").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-                const id = btn.dataset.id;
-                btn.disabled = true;
-                btn.textContent = "Demande envoyée";
-                try {
-                    await updateDoc(doc(db, "sessionsActives", id), { forceDeconnexion: true });
-                    await enregistrerAudit(db, {
-                        uid: ADMIN_UID, role: "admin",
-                        action: "Déconnexion à distance déclenchée",
-                        categorie: "admin",
-                        details: `Session ciblée : ${id}`
-                    });
-                } catch (error) {
-                    alert("Erreur : " + error.message);
-                    btn.disabled = false;
-                    btn.textContent = "Déconnecter";
-                }
-            });
-        });
-
+        SESSIONS_DATA = [];
+        snap.forEach((docSnap) => SESSIONS_DATA.push({ id: docSnap.id, data: docSnap.data() }));
+        afficherSessions();
     } catch (error) {
         corps.innerHTML = `<tr><td colspan="8" class="vide">Erreur lors du chargement : ${echapperHTML(error.message)}</td></tr>`;
     }
+
+}
+
+let AUDIT_DATA = [];
+
+function afficherAudit() {
+
+    const corps = document.getElementById("corpsAudit");
+    const compteur = document.getElementById("compteurAudit");
+    const recherche = document.getElementById("rechercheAudit").value.trim().toLowerCase();
+    const role = document.getElementById("filtreRoleAudit").value;
+    const categorie = document.getElementById("filtreCategorieAudit").value;
+
+    const aujourdhui = new Date().toDateString();
+    let connexionsAujourdhui = 0;
+    AUDIT_DATA.forEach((a) => {
+        const dateObj = a.date && a.date.toDate ? a.date.toDate() : null;
+        if (dateObj && dateObj.toDateString() === aujourdhui && a.action === "Connexion réussie") {
+            connexionsAujourdhui++;
+        }
+    });
+    document.getElementById("statEntreesAudit").textContent = AUDIT_DATA.length + (AUDIT_DATA.length === 100 ? "+" : "");
+    document.getElementById("statConnexionsAujourdhui").textContent = connexionsAujourdhui;
+
+    if (AUDIT_DATA.length === 0) {
+        corps.innerHTML = `<tr><td colspan="6" class="vide">Aucune entrée dans le journal pour le moment.</td></tr>`;
+        compteur.textContent = "";
+        return;
+    }
+
+    const filtrees = AUDIT_DATA.filter((a) => {
+        if (role && a.role !== role) return false;
+        if (categorie && a.categorie !== categorie) return false;
+        if (recherche) {
+            const cible = `${a.nom || ""} ${a.identifiant || ""}`.toLowerCase();
+            if (!cible.includes(recherche)) return false;
+        }
+        return true;
+    });
+
+    if (filtrees.length === 0) {
+        corps.innerHTML = `<tr><td colspan="6" class="vide">Aucun résultat pour ces filtres.</td></tr>`;
+        compteur.textContent = `0 résultat sur ${AUDIT_DATA.length}`;
+        return;
+    }
+
+    compteur.textContent = `${filtrees.length} résultat(s) sur ${AUDIT_DATA.length}`;
+
+    corps.innerHTML = filtrees.map((a) => `
+        <tr>
+            <td>${formaterDate(a.date)}</td>
+            <td>${echapperHTML(a.nom || a.identifiant || "—")}</td>
+            <td><span class="badge-role">${echapperHTML(a.role || "-")}</span></td>
+            <td>${echapperHTML(a.categorie || "-")}</td>
+            <td>${echapperHTML(a.action || "-")}</td>
+            <td>${echapperHTML(a.details || "-")}</td>
+        </tr>
+    `).join("");
 
 }
 
@@ -391,42 +552,9 @@ async function chargerAudit() {
     try {
         const q = query(collection(db, "journalAudit"), orderBy("date", "desc"), limit(100));
         const snap = await getDocs(q);
-
-        if (snap.empty) {
-            corps.innerHTML = `<tr><td colspan="6" class="vide">Aucune entrée dans le journal pour le moment.</td></tr>`;
-            document.getElementById("statEntreesAudit").textContent = "0";
-            document.getElementById("statConnexionsAujourdhui").textContent = "0";
-            return;
-        }
-
-        const aujourdhui = new Date().toDateString();
-        let connexionsAujourdhui = 0;
-        const lignes = [];
-
-        snap.forEach((docSnap) => {
-            const a = docSnap.data();
-            const dateObj = a.date && a.date.toDate ? a.date.toDate() : null;
-
-            if (dateObj && dateObj.toDateString() === aujourdhui && a.action === "Connexion réussie") {
-                connexionsAujourdhui++;
-            }
-
-            lignes.push(`
-                <tr>
-                    <td>${formaterDate(a.date)}</td>
-                    <td>${echapperHTML(a.nom || a.identifiant || "—")}</td>
-                    <td><span class="badge-role">${echapperHTML(a.role || "-")}</span></td>
-                    <td>${echapperHTML(a.categorie || "-")}</td>
-                    <td>${echapperHTML(a.action || "-")}</td>
-                    <td>${echapperHTML(a.details || "-")}</td>
-                </tr>
-            `);
-        });
-
-        corps.innerHTML = lignes.join("");
-        document.getElementById("statEntreesAudit").textContent = snap.size + (snap.size === 100 ? "+" : "");
-        document.getElementById("statConnexionsAujourdhui").textContent = connexionsAujourdhui;
-
+        AUDIT_DATA = [];
+        snap.forEach((docSnap) => AUDIT_DATA.push(docSnap.data()));
+        afficherAudit();
     } catch (error) {
         corps.innerHTML = `<tr><td colspan="6" class="vide">Erreur lors du chargement : ${echapperHTML(error.message)}</td></tr>`;
     }
@@ -465,6 +593,14 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
     window.location.href = "index.html";
 });
 
+document.getElementById("rechercheSessions").addEventListener("input", afficherSessions);
+document.getElementById("filtreRoleSessions").addEventListener("change", afficherSessions);
+document.getElementById("filtreStatutSessions").addEventListener("change", afficherSessions);
+
+document.getElementById("rechercheAudit").addEventListener("input", afficherAudit);
+document.getElementById("filtreRoleAudit").addEventListener("change", afficherAudit);
+document.getElementById("filtreCategorieAudit").addEventListener("change", afficherAudit);
+
 </script>
 
 
@@ -483,4 +619,5 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 </script>
 </body>
 
-</html>
+            </html>
+    
