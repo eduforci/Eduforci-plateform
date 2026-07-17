@@ -167,6 +167,8 @@ margin-bottom:10px;
 
 <a href="paiements-admin.html">💳 Paiements</a>
 
+<a href="securite-admin.html">🛡️ Centre de sécurité</a>
+
 <a href="parametres-admin.html">⚙️ Paramètres</a>
 
 <a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
@@ -270,6 +272,7 @@ Voici le centre de contrôle d'EDUFORCI. Vous pouvez gérer les utilisateurs, le
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { enregistrerDeconnexion, verifierDeconnexionForcee } from "./js/securite-suivi.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -283,6 +286,13 @@ onAuthStateChanged(auth, async (user) => {
     if (!adminSnap.exists()) {
         await signOut(auth);
         alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    if (await verifierDeconnexionForcee(db, user.uid)) {
+        await signOut(auth);
+        alert("Votre session a été fermée à distance.");
         window.location.href = "connexion-admin.html";
         return;
     }
@@ -329,6 +339,9 @@ onAuthStateChanged(auth, async (user) => {
 
 document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
     e.preventDefault();
+    if (auth.currentUser) {
+        await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "admin" });
+    }
     await signOut(auth);
     window.location.href = "index.html";
 });

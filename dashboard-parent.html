@@ -184,7 +184,7 @@ margin-bottom:10px;
 
 <a href="parametres-parent.html">⚙️ Paramètres</a>
 
-<a href="index.html">🚪 Déconnexion</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
 
 </div>
 
@@ -254,10 +254,11 @@ Retrouvez vos professeurs, vos réservations et vos messages en un seul endroit.
 
 import { auth, db } from "./js/firebase.js";
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 import { doc, getDoc, collection, query, where, getDocs,orderBy,limit  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { echapperHTML } from "./js/securite.js";
+import { enregistrerDeconnexion, verifierDeconnexionForcee } from "./js/securite-suivi.js";
 
   async function chargerEnseignants() {
 
@@ -308,6 +309,13 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+    if (await verifierDeconnexionForcee(db, user.uid)) {
+        await signOut(auth);
+        alert("Votre session a été fermée à distance par un administrateur.");
+        window.location.href = "connexion-parent.html";
+        return;
+    }
+
     const docRef = doc(db, "parents", user.uid);
     const docSnap = await getDoc(docRef);
 
@@ -316,7 +324,7 @@ onAuthStateChanged(auth, async (user) => {
         const parent = docSnap.data();
 
         document.getElementById("nomParent").innerHTML =
-            "Bonjour, " + parent.nom + " 👋";
+            "Bonjour, " + echapperHTML(parent.nom) + " 👋";
 
     }
 
@@ -352,6 +360,20 @@ onAuthStateChanged(auth, async (user) => {
         console.log(error.message);
     }
 await chargerEnseignants();
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    if (auth.currentUser) {
+        await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "parent" });
+    }
+
+    await signOut(auth);
+
+    window.location.href = "connexion-parent.html";
+
 });
 
 </script>

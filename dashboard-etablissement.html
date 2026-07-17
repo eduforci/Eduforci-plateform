@@ -238,6 +238,7 @@ import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { echapperHTML } from "./js/securite.js";
+import { enregistrerDeconnexion, verifierDeconnexionForcee } from "./js/securite-suivi.js";
 
 onAuthStateChanged(auth, async (user) => {
 
@@ -246,11 +247,18 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+    if (await verifierDeconnexionForcee(db, user.uid)) {
+        await signOut(auth);
+        alert("Votre session a été fermée à distance par un administrateur.");
+        window.location.href = "connexion-etablissement.html";
+        return;
+    }
+
     const docSnap = await getDoc(doc(db, "etablissements", user.uid));
 
     if (docSnap.exists()) {
         const etab = docSnap.data();
-        document.getElementById("titreBienvenue").innerHTML = "Bienvenue, " + (etab.nom || "") + " 👋";
+        document.getElementById("titreBienvenue").innerHTML = "Bienvenue, " + echapperHTML(etab.nom || "") + " 👋";
     }
 
     try {
@@ -297,8 +305,11 @@ onAuthStateChanged(auth, async (user) => {
 
 document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
     e.preventDefault();
+    if (auth.currentUser) {
+        await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "etablissement" });
+    }
     await signOut(auth);
-    window.location.href = "index.html";
+    window.location.href = "connexion-etablissement.html";
 });
 
 </script>

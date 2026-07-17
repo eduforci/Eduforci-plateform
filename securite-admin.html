@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Centre de sécurité | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;
+display:flex;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#153A73;
+color:#fff;
+position:fixed;
+left:0;
+top:0;
+padding:30px 20px;
+overflow-y:auto;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:270px;
+width:100%;
+padding:35px;
+}
+
+h1{
+color:#fff;
+margin-bottom:25px;
+}
+
+.stats-row{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+margin-bottom:30px;
+}
+
+.stat-mini{
+background:#fff;
+padding:22px;
+border-radius:16px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+text-align:center;
+}
+
+.stat-mini h2{
+font-size:30px;
+color:#0B63F6;
+}
+
+.stat-mini p{
+color:#555;
+font-size:13.5px;
+margin-top:4px;
+}
+
+.panneau{
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+overflow-x:auto;
+}
+
+.panneau h3{
+color:#153A73;
+margin-bottom:18px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:650px;
+}
+
+th{
+background:#153A73;
+color:white;
+padding:12px;
+text-align:left;
+font-size:13.5px;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #eee;
+font-size:13.5px;
+}
+
+tr:nth-child(even){
+background:#f8f9fc;
+}
+
+.badge-role{
+display:inline-block;
+padding:4px 10px;
+border-radius:14px;
+font-size:12px;
+font-weight:600;
+background:#eaf1ff;
+color:#0B63F6;
+}
+
+.badge-statut{
+display:inline-block;
+padding:4px 10px;
+border-radius:14px;
+font-size:12px;
+font-weight:600;
+}
+
+.badge-statut.actif{
+background:#e6f7ec;
+color:#28a745;
+}
+
+.badge-statut.inactif{
+background:#f1f1f1;
+color:#888;
+}
+
+.btn-deco{
+padding:7px 14px;
+background:#dc3545;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:12.5px;
+}
+
+.btn-deco:hover{
+background:#b02a37;
+}
+
+.btn-deco:disabled{
+background:#ccc;
+cursor:not-allowed;
+}
+
+.vide{
+text-align:center;
+color:#999;
+padding:20px;
+}
+
+.menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
+@media (max-width:900px){
+.menu-toggle{display:flex;}
+.sidebar{left:-300px;transition:.3s;z-index:9999;}
+.sidebar.ouvert{left:0;}
+.sidebar-overlay.ouvert{display:block;}
+.main{margin-left:0;padding:25px 18px;padding-top:80px;}
+table{min-width:560px;}
+}
+
+</style>
+</head>
+
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
+<div class="sidebar">
+
+<img decoding="async" src="logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="gestion-utilisateurs.html?type=enseignants" id="lienEnseignants">👨‍🏫 Enseignants</a>
+
+<a href="gestion-utilisateurs.html?type=parents" id="lienParents">👨‍👩‍👧 Parents</a>
+
+<a href="gestion-utilisateurs.html?type=etablissements" id="lienEtablissements">🏫 Établissements</a>
+
+<a href="gestion-affectations.html">🎯 Affectations</a>
+
+<a href="reservations-admin.html">📅 Réservations</a>
+
+<a href="offres-admin.html">📢 Offres d'emploi</a>
+
+<a href="candidatures-admin.html">📄 Candidatures</a>
+<a href="candidatures-recrutement-admin.html">🧑‍🏫 Recrutement enseignants</a>
+<a href="banque-questions-admin.html">❓ Banque de questions</a>
+
+<a href="paiements-admin.html">💳 Paiements</a>
+
+<a href="securite-admin.html" class="active">🛡️ Centre de sécurité</a>
+
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<h1>🛡️ Centre de sécurité</h1>
+
+<div class="stats-row">
+    <div class="stat-mini"><h2 id="statEntreesAudit">…</h2><p>Actions enregistrées (total)</p></div>
+    <div class="stat-mini"><h2 id="statConnexionsAujourdhui">…</h2><p>Connexions aujourd'hui</p></div>
+    <div class="stat-mini"><h2 id="statAppareilsActifs">…</h2><p>Appareils actuellement actifs</p></div>
+    <div class="stat-mini"><h2 id="statAppareilsTotal">…</h2><p>Appareils connus (total)</p></div>
+</div>
+
+<div class="panneau">
+    <h3>📱 Sessions & appareils</h3>
+    <p style="color:#888;font-size:13px;margin-bottom:15px;">Un appareil est considéré "actif" s'il s'est connecté sans se déconnecter depuis. La déconnexion à distance prend effet la prochaine fois que la personne ouvre une page de son tableau de bord.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Utilisateur</th>
+                <th>Rôle</th>
+                <th>Appareil</th>
+                <th>Navigateur</th>
+                <th>Connexions</th>
+                <th>Dernière connexion</th>
+                <th>Statut</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="corpsSessions">
+            <tr><td colspan="8" class="vide">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="panneau">
+    <h3>📜 Journal d'audit (immuable — 100 dernières actions)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Utilisateur</th>
+                <th>Rôle</th>
+                <th>Catégorie</th>
+                <th>Action</th>
+                <th>Détails</th>
+            </tr>
+        </thead>
+        <tbody id="corpsAudit">
+            <tr><td colspan="6" class="vide">Chargement...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
+import { enregistrerDeconnexion, enregistrerAudit } from "./js/securite-suivi.js";
+
+let ADMIN_UID = null;
+
+function formaterDate(valeur) {
+    if (!valeur) return "-";
+    const d = valeur.toDate ? valeur.toDate() : new Date(valeur);
+    if (isNaN(d)) return "-";
+    return d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+async function chargerSessions() {
+
+    const corps = document.getElementById("corpsSessions");
+
+    try {
+        const snap = await getDocs(collection(db, "sessionsActives"));
+
+        if (snap.empty) {
+            corps.innerHTML = `<tr><td colspan="8" class="vide">Aucune session enregistrée pour le moment.</td></tr>`;
+            document.getElementById("statAppareilsActifs").textContent = "0";
+            document.getElementById("statAppareilsTotal").textContent = "0";
+            return;
+        }
+
+        let actifs = 0;
+        const lignes = [];
+
+        snap.forEach((docSnap) => {
+            const s = docSnap.data();
+            if (s.actif) actifs++;
+
+            lignes.push(`
+                <tr>
+                    <td>${echapperHTML(s.nom || s.identifiant || "—")}</td>
+                    <td><span class="badge-role">${echapperHTML(s.role || "-")}</span></td>
+                    <td>${echapperHTML(s.appareil || "-")}</td>
+                    <td>${echapperHTML(s.navigateur || "-")}</td>
+                    <td>${Number(s.nombreConnexions) || 1}</td>
+                    <td>${formaterDate(s.derniereConnexion)}</td>
+                    <td><span class="badge-statut ${s.actif ? "actif" : "inactif"}">${s.actif ? "🟢 Actif" : "⚪ Inactif"}</span></td>
+                    <td><button class="btn-deco" data-id="${docSnap.id}" ${(!s.actif || s.forceDeconnexion) ? "disabled" : ""}>${s.forceDeconnexion ? "Demande envoyée" : "Déconnecter"}</button></td>
+                </tr>
+            `);
+        });
+
+        corps.innerHTML = lignes.join("");
+        document.getElementById("statAppareilsActifs").textContent = actifs;
+        document.getElementById("statAppareilsTotal").textContent = snap.size;
+
+        document.querySelectorAll(".btn-deco").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const id = btn.dataset.id;
+                btn.disabled = true;
+                btn.textContent = "Demande envoyée";
+                try {
+                    await updateDoc(doc(db, "sessionsActives", id), { forceDeconnexion: true });
+                    await enregistrerAudit(db, {
+                        uid: ADMIN_UID, role: "admin",
+                        action: "Déconnexion à distance déclenchée",
+                        categorie: "admin",
+                        details: `Session ciblée : ${id}`
+                    });
+                } catch (error) {
+                    alert("Erreur : " + error.message);
+                    btn.disabled = false;
+                    btn.textContent = "Déconnecter";
+                }
+            });
+        });
+
+    } catch (error) {
+        corps.innerHTML = `<tr><td colspan="8" class="vide">Erreur lors du chargement : ${echapperHTML(error.message)}</td></tr>`;
+    }
+
+}
+
+async function chargerAudit() {
+
+    const corps = document.getElementById("corpsAudit");
+
+    try {
+        const q = query(collection(db, "journalAudit"), orderBy("date", "desc"), limit(100));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            corps.innerHTML = `<tr><td colspan="6" class="vide">Aucune entrée dans le journal pour le moment.</td></tr>`;
+            document.getElementById("statEntreesAudit").textContent = "0";
+            document.getElementById("statConnexionsAujourdhui").textContent = "0";
+            return;
+        }
+
+        const aujourdhui = new Date().toDateString();
+        let connexionsAujourdhui = 0;
+        const lignes = [];
+
+        snap.forEach((docSnap) => {
+            const a = docSnap.data();
+            const dateObj = a.date && a.date.toDate ? a.date.toDate() : null;
+
+            if (dateObj && dateObj.toDateString() === aujourdhui && a.action === "Connexion réussie") {
+                connexionsAujourdhui++;
+            }
+
+            lignes.push(`
+                <tr>
+                    <td>${formaterDate(a.date)}</td>
+                    <td>${echapperHTML(a.nom || a.identifiant || "—")}</td>
+                    <td><span class="badge-role">${echapperHTML(a.role || "-")}</span></td>
+                    <td>${echapperHTML(a.categorie || "-")}</td>
+                    <td>${echapperHTML(a.action || "-")}</td>
+                    <td>${echapperHTML(a.details || "-")}</td>
+                </tr>
+            `);
+        });
+
+        corps.innerHTML = lignes.join("");
+        document.getElementById("statEntreesAudit").textContent = snap.size + (snap.size === 100 ? "+" : "");
+        document.getElementById("statConnexionsAujourdhui").textContent = connexionsAujourdhui;
+
+    } catch (error) {
+        corps.innerHTML = `<tr><td colspan="6" class="vide">Erreur lors du chargement : ${echapperHTML(error.message)}</td></tr>`;
+    }
+
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    ADMIN_UID = user.uid;
+
+    await chargerSessions();
+    await chargerAudit();
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (auth.currentUser) {
+        await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "admin" });
+    }
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+
+<script>
+(function(){
+  const btn = document.getElementById("menuToggleEduforci");
+  const overlay = document.getElementById("sidebarOverlayEduforci");
+  const sidebar = document.querySelector(".sidebar");
+  if(!btn||!sidebar) return;
+  function ouvrir(){ sidebar.classList.add("ouvert"); overlay.classList.add("ouvert"); }
+  function fermer(){ sidebar.classList.remove("ouvert"); overlay.classList.remove("ouvert"); }
+  btn.addEventListener("click", function(){ sidebar.classList.contains("ouvert") ? fermer() : ouvrir(); });
+  overlay.addEventListener("click", fermer);
+  sidebar.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", fermer); });
+})();
+</script>
+</body>
+
+</html>
