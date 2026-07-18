@@ -1,1 +1,939 @@
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Registres internes | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;
+display:flex;
+}
+
+.sidebar{
+width:270px;
+height:100vh;
+background:#153A73;
+color:#fff;
+position:fixed;
+left:0;
+top:0;
+padding:30px 20px;
+overflow-y:auto;
+}
+
+.sidebar img{
+height:65px;
+display:block;
+margin:auto;
+margin-bottom:25px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+transition:.3s;
+}
+
+.sidebar a:hover{
+background:#0B63F6;
+}
+
+.sidebar a.active{
+background:#0B63F6;
+}
+
+.main{
+margin-left:270px;
+width:100%;
+padding:35px;
+}
+
+h1{
+color:#fff;
+margin-bottom:8px;
+}
+
+.sous-titre{
+color:#cdd9f0;
+font-size:13.5px;
+margin-bottom:25px;
+}
+
+.onglets{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-bottom:25px;
+}
+
+.onglet-btn{
+background:rgba(255,255,255,.12);
+color:#fff;
+border:none;
+padding:12px 18px;
+border-radius:12px;
+font-family:Poppins,sans-serif;
+font-weight:600;
+font-size:13.5px;
+cursor:pointer;
+transition:.25s;
+}
+
+.onglet-btn.actif{
+background:#FDB813;
+color:#05204E;
+}
+
+.panneau{
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:30px;
+overflow-x:auto;
+display:none;
+}
+
+.panneau.actif{
+display:block;
+}
+
+.panneau-entete{
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+gap:12px;
+margin-bottom:8px;
+}
+
+.panneau h3{
+color:#153A73;
+}
+
+.panneau .note{
+color:#888;
+font-size:12.5px;
+margin-bottom:18px;
+}
+
+.btn-ajouter{
+background:#0B63F6;
+color:#fff;
+border:none;
+padding:10px 18px;
+border-radius:10px;
+font-family:Poppins,sans-serif;
+font-weight:600;
+font-size:13.5px;
+cursor:pointer;
+}
+
+.btn-ajouter:hover{
+background:#084bbf;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:750px;
+}
+
+th{
+background:#153A73;
+color:white;
+padding:11px;
+text-align:left;
+font-size:12.5px;
+white-space:nowrap;
+}
+
+td{
+padding:11px;
+border-bottom:1px solid #eee;
+font-size:13px;
+}
+
+tr:nth-child(even){
+background:#f8f9fc;
+}
+
+.badge-statut{
+display:inline-block;
+padding:4px 10px;
+border-radius:14px;
+font-size:11.5px;
+font-weight:600;
+}
+
+.statut-en_cours,.statut-enseignant_retenu{background:#e6f7ec;color:#28a745;}
+.statut-termine,.statut-terminee{background:#eee;color:#666;}
+.statut-suspendu{background:#fdeaea;color:#d93025;}
+.statut-en_attente{background:#fff4e0;color:#e08b00;}
+.statut-proposition_envoyee{background:#eaf1ff;color:#0B63F6;}
+.statut-enseignant_disponible{background:#eafaf0;color:#1f8a3d;}
+
+.btn-icone{
+background:none;
+border:none;
+cursor:pointer;
+font-size:15px;
+padding:4px 6px;
+}
+
+.vide{
+text-align:center;
+color:#999;
+padding:20px;
+}
+
+input[type="text"], input[type="number"], input[type="date"], select, textarea{
+width:100%;
+padding:9px 12px;
+border:1px solid #ddd;
+border-radius:8px;
+font-family:Poppins,sans-serif;
+font-size:13.5px;
+margin-bottom:12px;
+}
+
+label{
+font-size:12.5px;
+color:#555;
+font-weight:600;
+display:block;
+margin-bottom:4px;
+}
+
+.overlay-modal{
+display:none;
+position:fixed;
+top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,.5);
+z-index:99998;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.overlay-modal.ouvert{
+display:flex;
+}
+
+.modal{
+background:#fff;
+border-radius:18px;
+padding:25px;
+width:100%;
+max-width:420px;
+max-height:85vh;
+overflow-y:auto;
+}
+
+.modal h4{
+color:#153A73;
+margin-bottom:16px;
+}
+
+.modal-actions{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+
+.modal-actions button{
+flex:1;
+padding:12px;
+border:none;
+border-radius:10px;
+font-weight:700;
+font-family:Poppins,sans-serif;
+cursor:pointer;
+}
+
+.btn-enregistrer{background:#0B63F6;color:#fff;}
+.btn-annuler{background:#eee;color:#333;}
+
+.editable-select{
+padding:4px 8px;
+border-radius:8px;
+border:1px solid #ddd;
+font-family:Poppins,sans-serif;
+font-size:12px;
+}
+
+.menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
+@media (max-width:900px){
+.menu-toggle{display:flex;}
+.sidebar{left:-300px;transition:.3s;z-index:9999;}
+.sidebar.ouvert{left:0;}
+.sidebar-overlay.ouvert{display:block;}
+.main{margin-left:0;padding:25px 18px;padding-top:80px;}
+table{min-width:600px;}
+}
+
+</style>
+</head>
+
+<body>
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
+
+<button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
+<div class="sidebar">
+
+<img decoding="async" src="logo.png" alt="EDUFORCI">
+
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+
+<a href="gestion-affectations.html">🎯 Affectations</a>
+
+<a href="reservations-admin.html">📅 Réservations</a>
+
+<a href="offres-admin.html">📢 Offres d'emploi</a>
+
+<a href="candidatures-admin.html">📄 Candidatures</a>
+<a href="candidatures-recrutement-admin.html">🧑‍🏫 Recrutement enseignants</a>
+<a href="banque-questions-admin.html">❓ Banque de questions</a>
+
+<a href="paiements-admin.html">💳 Paiements (commissions)</a>
+
+<a href="registres-admin.html" class="active">📋 Registres</a>
+
+<a href="securite-admin.html">🛡️ Centre de sécurité</a>
+
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+
+</div>
+
+<div class="main">
+
+<h1>📋 Registres internes</h1>
+<p class="sous-titre">Outils de gestion interne — non remis aux parents ni aux enseignants.</p>
+
+<div class="onglets">
+<button class="onglet-btn actif" data-cible="pnlEleves">EDU-DOC-028 · Élèves</button>
+<button class="onglet-btn" data-cible="pnlEnseignants">EDU-DOC-029 · Enseignants</button>
+<button class="onglet-btn" data-cible="pnlPaiements">EDU-DOC-030 · Paiements</button>
+<button class="onglet-btn" data-cible="pnlMissions">EDU-DOC-031 · Missions</button>
+</div>
+
+<!-- ================= EDU-DOC-028 : ÉLÈVES ================= -->
+<div class="panneau actif" id="pnlEleves">
+<div class="panneau-entete">
+<h3>Registre des élèves</h3>
+<button class="btn-ajouter" id="btnAjouterEleve">+ Ajouter un élève</button>
+</div>
+<p class="note">⚠️ Saisie manuelle : la plateforme ne collecte pas encore le nom de l'élève dans les formulaires, donc rien n'est automatique ici.</p>
+<table>
+<thead><tr>
+<th>N° Dossier</th><th>Élève</th><th>Parent</th><th>Classe</th><th>Enseignant</th><th>Matière(s)</th><th>Date de début</th><th>Statut</th><th></th>
+</tr></thead>
+<tbody id="corpsEleves"><tr><td colspan="9" class="vide">Chargement...</td></tr></tbody>
+</table>
+</div>
+
+<!-- ================= EDU-DOC-029 : ENSEIGNANTS ================= -->
+<div class="panneau" id="pnlEnseignants">
+<div class="panneau-entete">
+<h3>Registre des enseignants</h3>
+</div>
+<p class="note">✅ Automatique — généré à partir des profils enseignants et des missions réellement attribuées.</p>
+<table>
+<thead><tr>
+<th>Identifiant</th><th>Nom</th><th>Discipline</th><th>Téléphone</th><th>Commune</th><th>Disponibilité</th><th>Missions réalisées</th>
+</tr></thead>
+<tbody id="corpsEnseignants"><tr><td colspan="7" class="vide">Chargement...</td></tr></tbody>
+</table>
+</div>
+
+<!-- ================= EDU-DOC-030 : PAIEMENTS ================= -->
+<div class="panneau" id="pnlPaiements">
+<div class="panneau-entete">
+<h3>Registre des paiements</h3>
+<button class="btn-ajouter" id="btnAjouterPaiement">+ Ajouter un paiement</button>
+</div>
+<p class="note">⚠️ Saisie manuelle : les paiements se font hors plateforme (Wave, espèces...), il n'y a pas de montant enregistré automatiquement.</p>
+<table>
+<thead><tr>
+<th>N° Reçu</th><th>Parent</th><th>Élève</th><th>Montant</th><th>Date</th><th>Mode</th><th>Solde restant</th><th></th>
+</tr></thead>
+<tbody id="corpsPaiements"><tr><td colspan="8" class="vide">Chargement...</td></tr></tbody>
+</table>
+</div>
+
+<!-- ================= EDU-DOC-031 : MISSIONS ================= -->
+<div class="panneau" id="pnlMissions">
+<div class="panneau-entete">
+<h3>Tableau de suivi des missions</h3>
+</div>
+<p class="note">✅ Automatique (missions avec un enseignant retenu). La colonne "Élève" et "Date de fin" sont modifiables directement dans le tableau — EDUFORCI ne les connaît pas encore par défaut.</p>
+<table>
+<thead><tr>
+<th>N° Mission</th><th>Enseignant</th><th>Élève</th><th>Date de début</th><th>Date de fin</th><th>État</th>
+</tr></thead>
+<tbody id="corpsMissions"><tr><td colspan="6" class="vide">Chargement...</td></tr></tbody>
+</table>
+</div>
+
+</div>
+
+<!-- ================= MODALE ÉLÈVE ================= -->
+<div class="overlay-modal" id="modalEleve">
+<div class="modal">
+<h4 id="titreModalEleve">Ajouter un élève</h4>
+<label>Nom de l'élève</label>
+<input type="text" id="champEleveNom">
+<label>Parent</label>
+<input type="text" id="champEleveParent">
+<label>Classe</label>
+<input type="text" id="champEleveClasse" placeholder="Ex : CM2, 3ème...">
+<label>Enseignant</label>
+<input type="text" id="champEleveEnseignant">
+<label>Matière(s)</label>
+<input type="text" id="champEleveMatieres">
+<label>Date de début</label>
+<input type="date" id="champEleveDate">
+<label>Statut</label>
+<select id="champEleveStatut">
+<option value="en_cours">En cours</option>
+<option value="termine">Terminé</option>
+<option value="suspendu">Suspendu</option>
+</select>
+<div class="modal-actions">
+<button class="btn-annuler" id="btnAnnulerEleve">Annuler</button>
+<button class="btn-enregistrer" id="btnEnregistrerEleve">Enregistrer</button>
+</div>
+</div>
+</div>
+
+<!-- ================= MODALE PAIEMENT ================= -->
+<div class="overlay-modal" id="modalPaiement">
+<div class="modal">
+<h4 id="titreModalPaiement">Ajouter un paiement</h4>
+<label>Parent</label>
+<input type="text" id="champPaiementParent">
+<label>Élève</label>
+<input type="text" id="champPaiementEleve">
+<label>Montant (FCFA)</label>
+<input type="number" id="champPaiementMontant" min="0">
+<label>Date</label>
+<input type="date" id="champPaiementDate">
+<label>Mode de paiement</label>
+<select id="champPaiementMode">
+<option value="especes">Espèces</option>
+<option value="wave">Wave</option>
+<option value="mobile_money">Mobile Money</option>
+<option value="virement">Virement</option>
+<option value="autre">Autre</option>
+</select>
+<label>Solde restant (FCFA)</label>
+<input type="number" id="champPaiementSolde" min="0">
+<div class="modal-actions">
+<button class="btn-annuler" id="btnAnnulerPaiement">Annuler</button>
+<button class="btn-enregistrer" id="btnEnregistrerPaiement">Enregistrer</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+    doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, increment
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
+import { enregistrerDeconnexion, enregistrerAudit, verifierDeconnexionForcee } from "./js/securite-suivi.js";
+
+let ADMIN_UID = null;
+
+// ---------- Onglets ----------
+document.querySelectorAll(".onglet-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".onglet-btn").forEach(b => b.classList.remove("actif"));
+        document.querySelectorAll(".panneau").forEach(p => p.classList.remove("actif"));
+        btn.classList.add("actif");
+        document.getElementById(btn.dataset.cible).classList.add("actif");
+    });
+});
+
+function formaterDateCourte(valeur) {
+    if (!valeur) return "-";
+    const d = new Date(valeur);
+    if (isNaN(d)) return "-";
+    return d.toLocaleDateString("fr-FR");
+}
+
+async function genererNumero(compteurId, prefixe) {
+    const ref = doc(db, "compteurs", compteurId);
+    const snap = await getDoc(ref);
+    let numero = 1;
+    if (snap.exists()) {
+        numero = (snap.data().dernierNumero || 0) + 1;
+        await updateDoc(ref, { dernierNumero: increment(1) });
+    } else {
+        await setDoc(ref, { dernierNumero: 1 });
+    }
+    return `${prefixe}-${String(numero).padStart(6, "0")}`;
+}
+
+// ============================================================
+// EDU-DOC-028 : ÉLÈVES (registre manuel)
+// ============================================================
+
+const LIBELLES_STATUT_ELEVE = { en_cours: "En cours", termine: "Terminé", suspendu: "Suspendu" };
+let ELEVE_EN_EDITION = null;
+
+async function chargerEleves() {
+    const corps = document.getElementById("corpsEleves");
+    try {
+        const q = query(collection(db, "registreEleves"), orderBy("dateCreationDossier", "desc"));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            corps.innerHTML = `<tr><td colspan="9" class="vide">Aucun élève enregistré pour le moment.</td></tr>`;
+            return;
+        }
+
+        corps.innerHTML = snap.docs.map((d) => {
+            const e = d.data();
+            return `
+            <tr>
+                <td>${echapperHTML(e.dossier || "-")}</td>
+                <td>${echapperHTML(e.nomEleve || "-")}</td>
+                <td>${echapperHTML(e.parentNom || "-")}</td>
+                <td>${echapperHTML(e.classe || "-")}</td>
+                <td>${echapperHTML(e.enseignantNom || "-")}</td>
+                <td>${echapperHTML(e.matieres || "-")}</td>
+                <td>${formaterDateCourte(e.dateDebut)}</td>
+                <td><span class="badge-statut statut-${e.statut}">${LIBELLES_STATUT_ELEVE[e.statut] || e.statut}</span></td>
+                <td>
+                    <button class="btn-icone" data-modifier="${d.id}" title="Modifier">✏️</button>
+                    <button class="btn-icone" data-supprimer="${d.id}" title="Supprimer">🗑️</button>
+                </td>
+            </tr>`;
+        }).join("");
+
+        brancherActionsEleves(snap);
+
+    } catch (error) {
+        corps.innerHTML = `<tr><td colspan="9" class="vide">Erreur : ${echapperHTML(error.message)}</td></tr>`;
+    }
+}
+
+function brancherActionsEleves(snap) {
+    document.querySelectorAll("[data-modifier]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const docSnap = snap.docs.find(d => d.id === btn.dataset.modifier);
+            if (!docSnap) return;
+            const e = docSnap.data();
+            ELEVE_EN_EDITION = docSnap.id;
+            document.getElementById("titreModalEleve").textContent = "Modifier l'élève";
+            document.getElementById("champEleveNom").value = e.nomEleve || "";
+            document.getElementById("champEleveParent").value = e.parentNom || "";
+            document.getElementById("champEleveClasse").value = e.classe || "";
+            document.getElementById("champEleveEnseignant").value = e.enseignantNom || "";
+            document.getElementById("champEleveMatieres").value = e.matieres || "";
+            document.getElementById("champEleveDate").value = e.dateDebut || "";
+            document.getElementById("champEleveStatut").value = e.statut || "en_cours";
+            document.getElementById("modalEleve").classList.add("ouvert");
+        });
+    });
+    document.querySelectorAll("[data-supprimer]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            if (!confirm("Supprimer définitivement cette fiche élève ?")) return;
+            await deleteDoc(doc(db, "registreEleves", btn.dataset.supprimer));
+            await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Suppression fiche élève (registre)", categorie: "admin" });
+            await chargerEleves();
+        });
+    });
+}
+
+document.getElementById("btnAjouterEleve").addEventListener("click", () => {
+    ELEVE_EN_EDITION = null;
+    document.getElementById("titreModalEleve").textContent = "Ajouter un élève";
+    ["champEleveNom","champEleveParent","champEleveClasse","champEleveEnseignant","champEleveMatieres","champEleveDate"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("champEleveStatut").value = "en_cours";
+    document.getElementById("modalEleve").classList.add("ouvert");
+});
+
+document.getElementById("btnAnnulerEleve").addEventListener("click", () => {
+    document.getElementById("modalEleve").classList.remove("ouvert");
+});
+
+document.getElementById("btnEnregistrerEleve").addEventListener("click", async () => {
+
+    const nomEleve = document.getElementById("champEleveNom").value.trim();
+    if (!nomEleve) { alert("Le nom de l'élève est obligatoire."); return; }
+
+    const donnees = {
+        nomEleve,
+        parentNom: document.getElementById("champEleveParent").value.trim(),
+        classe: document.getElementById("champEleveClasse").value.trim(),
+        enseignantNom: document.getElementById("champEleveEnseignant").value.trim(),
+        matieres: document.getElementById("champEleveMatieres").value.trim(),
+        dateDebut: document.getElementById("champEleveDate").value,
+        statut: document.getElementById("champEleveStatut").value
+    };
+
+    try {
+        if (ELEVE_EN_EDITION) {
+            await updateDoc(doc(db, "registreEleves", ELEVE_EN_EDITION), donnees);
+            await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Modification fiche élève (registre)", categorie: "admin", details: nomEleve });
+        } else {
+            donnees.dossier = await genererNumero("registreEleves", "EDU-ELV");
+            donnees.dateCreationDossier = new Date().toISOString();
+            await setDoc(doc(collection(db, "registreEleves")), donnees);
+            await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Ajout fiche élève (registre)", categorie: "admin", details: nomEleve });
+        }
+        document.getElementById("modalEleve").classList.remove("ouvert");
+        await chargerEleves();
+    } catch (error) {
+        alert("Erreur : " + error.message);
+    }
+
+});
+
+// ============================================================
+// EDU-DOC-029 : ENSEIGNANTS (automatique)
+// ============================================================
+
+async function chargerEnseignantsRegistre() {
+    const corps = document.getElementById("corpsEnseignants");
+    try {
+        const [enseignantsSnap, missionsSnap] = await Promise.all([
+            getDocs(collection(db, "enseignants")),
+            getDocs(collection(db, "missions"))
+        ]);
+
+        const missionsParEnseignant = {};
+        missionsSnap.forEach((d) => {
+            const m = d.data();
+            if (m.enseignantRetenuId) {
+                missionsParEnseignant[m.enseignantRetenuId] = (missionsParEnseignant[m.enseignantRetenuId] || 0) + 1;
+            }
+        });
+
+        if (enseignantsSnap.empty) {
+            corps.innerHTML = `<tr><td colspan="7" class="vide">Aucun enseignant inscrit.</td></tr>`;
+            return;
+        }
+
+        corps.innerHTML = enseignantsSnap.docs.map((d) => {
+            const e = d.data();
+            return `
+            <tr>
+                <td>${echapperHTML(e.identifiant || "-")}</td>
+                <td>${echapperHTML(e.nom || "-")}</td>
+                <td>${echapperHTML(e.matiere || "-")}</td>
+                <td>${echapperHTML(e.telephone || "-")}</td>
+                <td>${echapperHTML(e.ville || "-")}</td>
+                <td>${echapperHTML(e.disponibilite || "-")}</td>
+                <td>${missionsParEnseignant[d.id] || 0}</td>
+            </tr>`;
+        }).join("");
+
+    } catch (error) {
+        corps.innerHTML = `<tr><td colspan="7" class="vide">Erreur : ${echapperHTML(error.message)}</td></tr>`;
+    }
+}
+
+// ============================================================
+// EDU-DOC-030 : PAIEMENTS (registre manuel)
+// ============================================================
+
+let PAIEMENT_EN_EDITION = null;
+
+async function chargerPaiementsRegistre() {
+    const corps = document.getElementById("corpsPaiements");
+    try {
+        const q = query(collection(db, "registrePaiements"), orderBy("dateCreationRecu", "desc"));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            corps.innerHTML = `<tr><td colspan="8" class="vide">Aucun paiement enregistré pour le moment.</td></tr>`;
+            return;
+        }
+
+        corps.innerHTML = snap.docs.map((d) => {
+            const p = d.data();
+            return `
+            <tr>
+                <td>${echapperHTML(p.numeroRecu || "-")}</td>
+                <td>${echapperHTML(p.parentNom || "-")}</td>
+                <td>${echapperHTML(p.eleveNom || "-")}</td>
+                <td>${Number(p.montant || 0).toLocaleString("fr-FR")} F</td>
+                <td>${formaterDateCourte(p.date)}</td>
+                <td>${echapperHTML(p.mode || "-")}</td>
+                <td>${Number(p.soldeRestant || 0).toLocaleString("fr-FR")} F</td>
+                <td>
+                    <button class="btn-icone" data-modifierp="${d.id}" title="Modifier">✏️</button>
+                    <button class="btn-icone" data-supprimerp="${d.id}" title="Supprimer">🗑️</button>
+                </td>
+            </tr>`;
+        }).join("");
+
+        brancherActionsPaiements(snap);
+
+    } catch (error) {
+        corps.innerHTML = `<tr><td colspan="8" class="vide">Erreur : ${echapperHTML(error.message)}</td></tr>`;
+    }
+}
+
+function brancherActionsPaiements(snap) {
+    document.querySelectorAll("[data-modifierp]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const docSnap = snap.docs.find(d => d.id === btn.dataset.modifierp);
+            if (!docSnap) return;
+            const p = docSnap.data();
+            PAIEMENT_EN_EDITION = docSnap.id;
+            document.getElementById("titreModalPaiement").textContent = "Modifier le paiement";
+            document.getElementById("champPaiementParent").value = p.parentNom || "";
+            document.getElementById("champPaiementEleve").value = p.eleveNom || "";
+            document.getElementById("champPaiementMontant").value = p.montant || "";
+            document.getElementById("champPaiementDate").value = p.date || "";
+            document.getElementById("champPaiementMode").value = p.mode || "especes";
+            document.getElementById("champPaiementSolde").value = p.soldeRestant || 0;
+            document.getElementById("modalPaiement").classList.add("ouvert");
+        });
+    });
+    document.querySelectorAll("[data-supprimerp]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            if (!confirm("Supprimer définitivement ce reçu ?")) return;
+            await deleteDoc(doc(db, "registrePaiements", btn.dataset.supprimerp));
+            await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Suppression reçu (registre paiements)", categorie: "admin" });
+            await chargerPaiementsRegistre();
+        });
+    });
+}
+
+document.getElementById("btnAjouterPaiement").addEventListener("click", () => {
+    PAIEMENT_EN_EDITION = null;
+    document.getElementById("titreModalPaiement").textContent = "Ajouter un paiement";
+    ["champPaiementParent","champPaiementEleve","champPaiementMontant","champPaiementDate","champPaiementSolde"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("champPaiementMode").value = "especes";
+    document.getElementById("modalPaiement").classList.add("ouvert");
+});
+
+document.getElementById("btnAnnulerPaiement").addEventListener("click", () => {
+    document.getElementById("modalPaiement").classList.remove("ouvert");
+});
+
+document.getElementById("btnEnregistrerPaiement").addEventListener("click", async () => {
+
+    const parentNom = document.getElementById("champPaiementParent").value.trim();
+    const montant = Number(document.getElementById("champPaiementMontant").value);
+
+    if (!parentNom || !montant) { alert("Le parent et le montant sont obligatoires."); return; }
+
+    const donnees = {
+        parentNom,
+        eleveNom: document.getElementById("champPaiementEleve").value.trim(),
+        montant,
+        date: document.getElementById("champPaiementDate").value,
+        mode: document.getElementById("champPaiementMode").value,
+        soldeRestant: Number(document.getElementById("champPaiementSolde").value) || 0
+    };
+
+    try {
+        if (PAIEMENT_EN_EDITION) {
+            await updateDoc(doc(db, "registrePaiements", PAIEMENT_EN_EDITION), donnees);
+            await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Modification reçu (registre paiements)", categorie: "admin", details: `${parentNom} — ${montant} F` });
+        } else {
+            donnees.numeroRecu = await genererNumero("registrePaiements", "EDU-REC");
+            donnees.dateCreationRecu = new Date().toISOString();
+            await setDoc(doc(collection(db, "registrePaiements")), donnees);
+            await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Ajout reçu (registre paiements)", categorie: "admin", details: `${parentNom} — ${montant} F` });
+        }
+        document.getElementById("modalPaiement").classList.remove("ouvert");
+        await chargerPaiementsRegistre();
+    } catch (error) {
+        alert("Erreur : " + error.message);
+    }
+
+});
+
+// ============================================================
+// EDU-DOC-031 : SUIVI DES MISSIONS (automatique + champs modifiables)
+// ============================================================
+
+const LIBELLES_STATUT_MISSION = {
+    en_attente: "⏳ En attente",
+    proposition_envoyee: "📨 Proposition envoyée",
+    enseignant_disponible: "🟢 Disponible",
+    enseignant_retenu: "✅ Enseignant retenu",
+    terminee: "🏁 Terminée"
+};
+
+async function chargerMissionsRegistre() {
+    const corps = document.getElementById("corpsMissions");
+    try {
+        const snap = await getDocs(query(collection(db, "missions"), orderBy("dateCreation", "desc")));
+
+        const retenues = snap.docs.filter(d => d.data().enseignantRetenuId);
+
+        if (retenues.length === 0) {
+            corps.innerHTML = `<tr><td colspan="6" class="vide">Aucune mission avec un enseignant retenu pour le moment.</td></tr>`;
+            return;
+        }
+
+        corps.innerHTML = retenues.map((d) => {
+            const m = d.data();
+            const numero = "EDU-MIS-" + d.id.substring(0, 6).toUpperCase();
+            const optionsStatut = Object.keys(LIBELLES_STATUT_MISSION).map(cle =>
+                `<option value="${cle}" ${m.statut === cle ? "selected" : ""}>${LIBELLES_STATUT_MISSION[cle]}</option>`
+            ).join("");
+
+            return `
+            <tr>
+                <td>${numero}</td>
+                <td>${echapperHTML(m.enseignantRetenuNom || "-")}</td>
+                <td><input type="text" class="editable-select" data-eleve-mission="${d.id}" value="${echapperHTML(m.eleveNom || "")}" placeholder="À renseigner" style="width:120px;"></td>
+                <td>${formaterDateCourte(m.dateCreation)}</td>
+                <td><input type="date" class="editable-select" data-datefin-mission="${d.id}" value="${m.dateFin || ""}"></td>
+                <td><select class="editable-select" data-statut-mission="${d.id}">${optionsStatut}</select></td>
+            </tr>`;
+        }).join("");
+
+        brancherEditionMissions();
+
+    } catch (error) {
+        corps.innerHTML = `<tr><td colspan="6" class="vide">Erreur : ${echapperHTML(error.message)}</td></tr>`;
+    }
+}
+
+function brancherEditionMissions() {
+
+    document.querySelectorAll("[data-eleve-mission]").forEach(champ => {
+        champ.addEventListener("change", async () => {
+            try {
+                await updateDoc(doc(db, "missions", champ.dataset.eleveMission), { eleveNom: champ.value.trim() });
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+    });
+
+    document.querySelectorAll("[data-datefin-mission]").forEach(champ => {
+        champ.addEventListener("change", async () => {
+            try {
+                await updateDoc(doc(db, "missions", champ.dataset.datefinMission), { dateFin: champ.value });
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+    });
+
+    document.querySelectorAll("[data-statut-mission]").forEach(champ => {
+        champ.addEventListener("change", async () => {
+            try {
+                await updateDoc(doc(db, "missions", champ.dataset.statutMission), { statut: champ.value });
+                await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Changement de statut mission (registre)", categorie: "admin", details: champ.value });
+            } catch (error) {
+                alert("Erreur : " + error.message);
+            }
+        });
+    });
+
+}
+
+// ============================================================
+// INITIALISATION
+// ============================================================
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    if (await verifierDeconnexionForcee(db, user.uid)) {
+        await signOut(auth);
+        alert("Votre session a été fermée à distance.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    ADMIN_UID = user.uid;
+
+    await chargerEleves();
+    await chargerEnseignantsRegistre();
+    await chargerPaiementsRegistre();
+    await chargerMissionsRegistre();
+
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (auth.currentUser) {
+        await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "admin" });
+    }
+    await signOut(auth);
+    window.location.href = "index.html";
+});
+
+</script>
+
+
+<script>
+(function(){
+  const btn = document.getElementById("menuToggleEduforci");
+  const overlay = document.getElementById("sidebarOverlayEduforci");
+  const sidebar = document.querySelector(".sidebar");
+  if(!btn||!sidebar) return;
+  function ouvrir(){ sidebar.classList.add("ouvert"); overlay.classList.add("ouvert"); }
+  function fermer(){ sidebar.classList.remove("ouvert"); overlay.classList.remove("ouvert"); }
+  btn.addEventListener("click", function(){ sidebar.classList.contains("ouvert") ? fermer() : ouvrir(); });
+  overlay.addEventListener("click", fermer);
+  sidebar.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", fermer); });
+})();
+</script>
+</body>
+
+</html>
