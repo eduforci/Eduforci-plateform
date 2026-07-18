@@ -362,9 +362,9 @@ table{min-width:600px;}
 <p class="note">⚠️ Saisie manuelle : la plateforme ne collecte pas encore le nom de l'élève dans les formulaires, donc rien n'est automatique ici.</p>
 <table>
 <thead><tr>
-<th>N° Dossier</th><th>Élève</th><th>Parent</th><th>Classe</th><th>Enseignant</th><th>Matière(s)</th><th>Date de début</th><th>Statut</th><th></th>
+<th>N° Dossier</th><th>Élève</th><th>Parent</th><th>Classe</th><th>Enseignant</th><th>Matière(s)</th><th>Date de début</th><th>Statut</th><th>Dossier</th><th></th>
 </tr></thead>
-<tbody id="corpsEleves"><tr><td colspan="9" class="vide">Chargement...</td></tr></tbody>
+<tbody id="corpsEleves"><tr><td colspan="10" class="vide">Chargement...</td></tr></tbody>
 </table>
 </div>
 
@@ -527,7 +527,7 @@ async function chargerEleves() {
         const snap = await getDocs(q);
 
         if (snap.empty) {
-            corps.innerHTML = `<tr><td colspan="9" class="vide">Aucun élève enregistré pour le moment.</td></tr>`;
+            corps.innerHTML = `<tr><td colspan="10" class="vide">Aucun élève enregistré pour le moment.</td></tr>`;
             return;
         }
 
@@ -543,6 +543,7 @@ async function chargerEleves() {
                 <td>${echapperHTML(e.matieres || "-")}</td>
                 <td>${formaterDateCourte(e.dateDebut)}</td>
                 <td><span class="badge-statut statut-${e.statut}">${LIBELLES_STATUT_ELEVE[e.statut] || e.statut}</span></td>
+                <td><a href="dossier-eleve-admin.html?id=${d.id}" class="btn-ajouter" style="display:inline-block;padding:7px 12px;font-size:12px;text-decoration:none;">📁 Ouvrir</a></td>
                 <td>
                     <button class="btn-icone" data-modifier="${d.id}" title="Modifier">✏️</button>
                     <button class="btn-icone" data-supprimer="${d.id}" title="Supprimer">🗑️</button>
@@ -553,7 +554,7 @@ async function chargerEleves() {
         brancherActionsEleves(snap);
 
     } catch (error) {
-        corps.innerHTML = `<tr><td colspan="9" class="vide">Erreur : ${echapperHTML(error.message)}</td></tr>`;
+        corps.innerHTML = `<tr><td colspan="10" class="vide">Erreur : ${echapperHTML(error.message)}</td></tr>`;
     }
 }
 

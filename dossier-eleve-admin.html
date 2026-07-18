@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+<script src="js/notify.js?v=4"></script>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dossier élève | EDUFORCI</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;
+min-height:100vh;
+padding-bottom:60px;
+}
+
+.entete{
+max-width:1000px;
+margin:0 auto;
+padding:25px 20px 0;
+}
+
+.retour{
+display:inline-flex;
+align-items:center;
+gap:6px;
+color:#fff;
+text-decoration:none;
+background:rgba(255,255,255,.12);
+padding:10px 16px;
+border-radius:30px;
+font-size:13.5px;
+font-weight:600;
+margin-bottom:20px;
+}
+
+.fiche-eleve{
+background:#fff;
+border-radius:20px;
+padding:22px 25px;
+margin-bottom:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.fiche-eleve h1{
+color:#153A73;
+font-size:22px;
+margin-bottom:8px;
+}
+
+.fiche-eleve .meta{
+display:flex;
+flex-wrap:wrap;
+gap:16px;
+color:#555;
+font-size:13px;
+}
+
+.fiche-eleve .meta span strong{
+color:#153A73;
+}
+
+.onglets{
+max-width:1000px;
+margin:0 auto 20px;
+padding:0 20px;
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+}
+
+.onglet-btn{
+background:rgba(255,255,255,.12);
+color:#fff;
+border:none;
+padding:10px 14px;
+border-radius:10px;
+font-family:Poppins,sans-serif;
+font-weight:600;
+font-size:12.5px;
+cursor:pointer;
+}
+
+.onglet-btn.actif{
+background:#FDB813;
+color:#05204E;
+}
+
+.contenu{
+max-width:1000px;
+margin:0 auto;
+padding:0 20px;
+}
+
+.panneau{
+background:#fff;
+border-radius:20px;
+padding:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.1);
+display:none;
+}
+
+.panneau.actif{
+display:block;
+}
+
+.panneau h2{
+color:#153A73;
+font-size:18px;
+margin-bottom:4px;
+}
+
+.panneau .code{
+color:#0B63F6;
+font-size:12px;
+font-weight:700;
+margin-bottom:16px;
+display:block;
+}
+
+.grille{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:0 16px;
+}
+
+@media (max-width:640px){
+.grille{grid-template-columns:1fr;}
+}
+
+label{
+font-size:12.5px;
+color:#555;
+font-weight:600;
+display:block;
+margin-bottom:4px;
+margin-top:10px;
+}
+
+input[type="text"], input[type="number"], input[type="date"], select, textarea{
+width:100%;
+padding:10px 12px;
+border:1px solid #ddd;
+border-radius:8px;
+font-family:Poppins,sans-serif;
+font-size:13.5px;
+}
+
+textarea{
+min-height:80px;
+resize:vertical;
+}
+
+.pleine-largeur{
+grid-column:1/-1;
+}
+
+.btn-enregistrer{
+margin-top:20px;
+background:#0B63F6;
+color:#fff;
+border:none;
+padding:13px 22px;
+border-radius:10px;
+font-weight:700;
+font-family:Poppins,sans-serif;
+font-size:14px;
+cursor:pointer;
+}
+
+.btn-enregistrer:hover{
+background:#084bbf;
+}
+
+.statut-enregistrement{
+margin-top:12px;
+font-size:12.5px;
+color:#28a745;
+font-weight:600;
+min-height:16px;
+}
+
+.derniere-maj{
+font-size:11.5px;
+color:#999;
+margin-top:4px;
+}
+
+/* Séances (022) */
+.seance-item{
+border:1px solid #eee;
+border-radius:12px;
+padding:14px;
+margin-bottom:10px;
+}
+
+.seance-item .ligne1{
+display:flex;
+justify-content:space-between;
+font-size:13px;
+color:#153A73;
+font-weight:700;
+margin-bottom:6px;
+}
+
+.seance-item p{
+font-size:13px;
+color:#555;
+margin-bottom:3px;
+}
+
+.btn-supprimer-seance{
+background:none;
+border:none;
+color:#d93025;
+cursor:pointer;
+font-size:13px;
+}
+
+.btn-ajouter-seance{
+background:#eaf1ff;
+color:#0B63F6;
+border:none;
+padding:10px 16px;
+border-radius:10px;
+font-weight:600;
+font-family:Poppins,sans-serif;
+font-size:13px;
+cursor:pointer;
+margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="entete">
+<a class="retour" href="registres-admin.html">← Retour aux registres</a>
+
+<div class="fiche-eleve">
+<h1 id="nomEleveAffiche">Chargement...</h1>
+<div class="meta">
+<span>👨‍👩‍👧 Parent : <strong id="metaParent">-</strong></span>
+<span>🏫 Classe : <strong id="metaClasse">-</strong></span>
+<span>👨‍🏫 Enseignant : <strong id="metaEnseignant">-</strong></span>
+<span>📁 Dossier : <strong id="metaDossier">-</strong></span>
+</div>
+</div>
+</div>
+
+<div class="onglets" id="barreOnglets">
+<button class="onglet-btn actif" data-cible="pnl018">EDU-DOC-018</button>
+<button class="onglet-btn" data-cible="pnl019">EDU-DOC-019</button>
+<button class="onglet-btn" data-cible="pnl020">EDU-DOC-020</button>
+<button class="onglet-btn" data-cible="pnl021">EDU-DOC-021</button>
+<button class="onglet-btn" data-cible="pnl022">EDU-DOC-022</button>
+<button class="onglet-btn" data-cible="pnl023">EDU-DOC-023</button>
+<button class="onglet-btn" data-cible="pnl024">EDU-DOC-024</button>
+<button class="onglet-btn" data-cible="pnl025">EDU-DOC-025</button>
+<button class="onglet-btn" data-cible="pnl026">EDU-DOC-026</button>
+<button class="onglet-btn" data-cible="pnl027">EDU-DOC-027</button>
+</div>
+
+<div class="contenu">
+
+<!-- 018 : Fiche d'affectation -->
+<div class="panneau actif" id="pnl018">
+<h2>Fiche d'affectation de l'enseignant</h2>
+<span class="code">EDU-DOC-018 — Désignation officielle de l'enseignant pour cet élève</span>
+<div class="grille">
+<div><label>Date d'affectation</label><input type="date" id="c018_date"></div>
+<div><label>Enseignant affecté</label><input type="text" id="c018_enseignant"></div>
+<div><label>Matière</label><input type="text" id="c018_matiere"></div>
+<div><label>Niveau</label><input type="text" id="c018_niveau"></div>
+<div><label>Modalité</label><select id="c018_modalite"><option value="domicile">À domicile</option><option value="ligne">En ligne</option><option value="mixte">Mixte</option></select></div>
+<div><label>Décision prise par</label><input type="text" id="c018_decidePar" placeholder="Nom de l'admin / conseiller"></div>
+<div class="pleine-largeur"><label>Commentaire</label><textarea id="c018_commentaire"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="018">Enregistrer</button>
+<div class="statut-enregistrement" id="statut018"></div>
+</div>
+
+<!-- 019 : Prise de contact parent -->
+<div class="panneau" id="pnl019">
+<h2>Fiche de prise de contact avec le parent</h2>
+<span class="code">EDU-DOC-019</span>
+<div class="grille">
+<div><label>Date du contact</label><input type="date" id="c019_date"></div>
+<div><label>Moyen utilisé</label><select id="c019_moyen"><option value="telephone">Téléphone</option><option value="whatsapp">WhatsApp</option><option value="en_personne">En personne</option><option value="autre">Autre</option></select></div>
+<div class="pleine-largeur"><label>Résumé de l'échange</label><textarea id="c019_resume"></textarea></div>
+<div><label>Disponibilités du parent</label><input type="text" id="c019_dispo"></div>
+<div><label>Attentes exprimées</label><input type="text" id="c019_attentes"></div>
+</div>
+<button class="btn-enregistrer" data-save="019">Enregistrer</button>
+<div class="statut-enregistrement" id="statut019"></div>
+</div>
+
+<!-- 020 : Évaluation diagnostique -->
+<div class="panneau" id="pnl020">
+<h2>Fiche d'évaluation diagnostique de l'élève</h2>
+<span class="code">EDU-DOC-020 — Niveau de départ</span>
+<div class="grille">
+<div><label>Date de l'évaluation</label><input type="date" id="c020_date"></div>
+<div><label>Niveau constaté</label><input type="text" id="c020_niveau"></div>
+<div class="pleine-largeur"><label>Points forts</label><textarea id="c020_forces"></textarea></div>
+<div class="pleine-largeur"><label>Points faibles / lacunes</label><textarea id="c020_faiblesses"></textarea></div>
+<div class="pleine-largeur"><label>Recommandations initiales</label><textarea id="c020_recommandations"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="020">Enregistrer</button>
+<div class="statut-enregistrement" id="statut020"></div>
+</div>
+
+<!-- 021 : Plan pédagogique individualisé -->
+<div class="panneau" id="pnl021">
+<h2>Plan pédagogique individualisé</h2>
+<span class="code">EDU-DOC-021</span>
+<div class="grille">
+<div><label>Date d'élaboration</label><input type="date" id="c021_date"></div>
+<div><label>Fréquence des séances</label><input type="text" id="c021_frequence" placeholder="Ex : 2 fois/semaine"></div>
+<div><label>Durée par séance</label><input type="text" id="c021_duree" placeholder="Ex : 1h30"></div>
+<div><label>Matériel nécessaire</label><input type="text" id="c021_materiel"></div>
+<div class="pleine-largeur"><label>Objectifs pédagogiques</label><textarea id="c021_objectifs"></textarea></div>
+<div class="pleine-largeur"><label>Méthode pédagogique retenue</label><textarea id="c021_methode"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="021">Enregistrer</button>
+<div class="statut-enregistrement" id="statut021"></div>
+</div>
+
+<!-- 022 : Suivi des séances (liste) -->
+<div class="panneau" id="pnl022">
+<h2>Fiche de suivi des séances</h2>
+<span class="code">EDU-DOC-022 — Historique de toutes les séances</span>
+
+<div id="listeSeances"><p style="color:#999;font-size:13px;">Chargement...</p></div>
+
+<div class="grille" style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;">
+<div><label>Date de la séance</label><input type="date" id="c022_date"></div>
+<div><label>Durée</label><input type="text" id="c022_duree" placeholder="Ex : 1h30"></div>
+<div class="pleine-largeur"><label>Contenu abordé</label><textarea id="c022_contenu"></textarea></div>
+<div><label>Comportement / participation</label><input type="text" id="c022_comportement"></div>
+<div><label>Devoirs donnés</label><input type="text" id="c022_devoirs"></div>
+</div>
+<button class="btn-ajouter-seance" id="btnAjouterSeance">+ Ajouter cette séance</button>
+<div class="statut-enregistrement" id="statut022"></div>
+</div>
+
+<!-- 023 : Rapport mensuel -->
+<div class="panneau" id="pnl023">
+<h2>Rapport mensuel de progression</h2>
+<span class="code">EDU-DOC-023</span>
+<div class="grille">
+<div><label>Mois concerné</label><input type="text" id="c023_mois" placeholder="Ex : Juillet 2026"></div>
+<div><label>Note de progression (/10)</label><input type="number" id="c023_note" min="0" max="10"></div>
+<div class="pleine-largeur"><label>Évolution générale</label><textarea id="c023_evolution"></textarea></div>
+<div class="pleine-largeur"><label>Points forts observés</label><textarea id="c023_pointsForts"></textarea></div>
+<div class="pleine-largeur"><label>Points à améliorer</label><textarea id="c023_pointsAmeliorer"></textarea></div>
+<div class="pleine-largeur"><label>Recommandations pour la suite</label><textarea id="c023_recommandations"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="023">Enregistrer</button>
+<div class="statut-enregistrement" id="statut023"></div>
+</div>
+
+<!-- 024 : Évaluation enseignant par parent -->
+<div class="panneau" id="pnl024">
+<h2>Évaluation de l'enseignant par le parent</h2>
+<span class="code">EDU-DOC-024</span>
+<div class="grille">
+<div><label>Date</label><input type="date" id="c024_date"></div>
+<div><label>Note globale (/5)</label><input type="number" id="c024_note" min="1" max="5"></div>
+<div><label>Ponctualité</label><select id="c024_ponctualite"><option value="excellente">Excellente</option><option value="bonne">Bonne</option><option value="moyenne">Moyenne</option><option value="faible">Faible</option></select></div>
+<div><label>Pédagogie</label><select id="c024_pedagogie"><option value="excellente">Excellente</option><option value="bonne">Bonne</option><option value="moyenne">Moyenne</option><option value="faible">Faible</option></select></div>
+<div><label>Communication</label><select id="c024_communication"><option value="excellente">Excellente</option><option value="bonne">Bonne</option><option value="moyenne">Moyenne</option><option value="faible">Faible</option></select></div>
+<div class="pleine-largeur"><label>Commentaire du parent</label><textarea id="c024_commentaire"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="024">Enregistrer</button>
+<div class="statut-enregistrement" id="statut024"></div>
+</div>
+
+<!-- 025 : Rapport final -->
+<div class="panneau" id="pnl025">
+<h2>Rapport final de fin d'accompagnement</h2>
+<span class="code">EDU-DOC-025</span>
+<div class="grille">
+<div><label>Date de fin</label><input type="date" id="c025_date"></div>
+<div><label>Durée totale de l'accompagnement</label><input type="text" id="c025_duree" placeholder="Ex : 4 mois"></div>
+<div class="pleine-largeur"><label>Objectifs atteints</label><textarea id="c025_objectifs"></textarea></div>
+<div class="pleine-largeur"><label>Bilan général</label><textarea id="c025_bilan"></textarea></div>
+<div class="pleine-largeur"><label>Recommandations pour la suite</label><textarea id="c025_recommandations"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="025">Enregistrer</button>
+<div class="statut-enregistrement" id="statut025"></div>
+</div>
+
+<!-- 026 : Certificat de suivi pédagogique -->
+<div class="panneau" id="pnl026">
+<h2>Certificat de suivi pédagogique</h2>
+<span class="code">EDU-DOC-026</span>
+<div class="grille">
+<div><label>Date d'émission</label><input type="date" id="c026_date"></div>
+<div><label>Période couverte</label><input type="text" id="c026_periode" placeholder="Ex : Mars à Juillet 2026"></div>
+<div><label>Signé par</label><input type="text" id="c026_signePar"></div>
+<div class="pleine-largeur"><label>Résumé du suivi</label><textarea id="c026_resume"></textarea></div>
+</div>
+<button class="btn-enregistrer" data-save="026">Enregistrer</button>
+<div class="statut-enregistrement" id="statut026"></div>
+</div>
+
+<!-- 027 : Attestation de réussite -->
+<div class="panneau" id="pnl027">
+<h2>Attestation de réussite de l'accompagnement</h2>
+<span class="code">EDU-DOC-027</span>
+<div class="grille">
+<div><label>Date d'émission</label><input type="date" id="c027_date"></div>
+<div><label>Résultat final</label><input type="text" id="c027_resultat" placeholder="Ex : Admis en classe supérieure"></div>
+<div><label>Mention</label><input type="text" id="c027_mention" placeholder="Ex : Très satisfaisant"></div>
+<div><label>Signé par</label><input type="text" id="c027_signePar"></div>
+</div>
+<button class="btn-enregistrer" data-save="027">Enregistrer</button>
+<div class="statut-enregistrement" id="statut027"></div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+    doc, getDoc, setDoc, collection, addDoc, deleteDoc, getDocs, query, orderBy
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
+import { enregistrerAudit, verifierDeconnexionForcee } from "./js/securite-suivi.js";
+
+const params = new URLSearchParams(window.location.search);
+const ELEVE_ID = params.get("id");
+let ADMIN_UID = null;
+
+if (!ELEVE_ID) {
+    document.body.innerHTML = "<p style='color:#fff;text-align:center;margin-top:40px;'>Aucun élève sélectionné. <a href='registres-admin.html' style='color:#FDB813;'>Retour aux registres</a></p>";
+    throw new Error("id manquant");
+}
+
+// ---------- Onglets ----------
+document.querySelectorAll(".onglet-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".onglet-btn").forEach(b => b.classList.remove("actif"));
+        document.querySelectorAll(".panneau").forEach(p => p.classList.remove("actif"));
+        btn.classList.add("actif");
+        document.getElementById(btn.dataset.cible).classList.add("actif");
+    });
+});
+
+// ---------- Correspondance section <-> champs ----------
+
+const SECTIONS = {
+    "018": ["date", "enseignant", "matiere", "niveau", "modalite", "decidePar", "commentaire"],
+    "019": ["date", "moyen", "resume", "dispo", "attentes"],
+    "020": ["date", "niveau", "forces", "faiblesses", "recommandations"],
+    "021": ["date", "frequence", "duree", "materiel", "objectifs", "methode"],
+    "023": ["mois", "note", "evolution", "pointsForts", "pointsAmeliorer", "recommandations"],
+    "024": ["date", "note", "ponctualite", "pedagogie", "communication", "commentaire"],
+    "025": ["date", "duree", "objectifs", "bilan", "recommandations"],
+    "026": ["date", "periode", "signePar", "resume"],
+    "027": ["date", "resultat", "mention", "signePar"]
+};
+
+async function chargerDossier() {
+
+    const ref = doc(db, "dossiersPedagogiques", ELEVE_ID);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    Object.keys(SECTIONS).forEach((code) => {
+        const section = data[code];
+        if (!section) return;
+        SECTIONS[code].forEach((champ) => {
+            const el = document.getElementById(`c${code}_${champ}`);
+            if (el && section[champ] !== undefined) el.value = section[champ];
+        });
+        if (section.dateMaj) {
+            const statutEl = document.getElementById("statut" + code);
+            if (statutEl) statutEl.textContent = "Dernière mise à jour : " + new Date(section.dateMaj).toLocaleString("fr-FR");
+        }
+    });
+
+}
+
+document.querySelectorAll("[data-save]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+
+        const code = btn.dataset.save;
+        const donnees = {};
+
+        SECTIONS[code].forEach((champ) => {
+            const el = document.getElementById(`c${code}_${champ}`);
+            donnees[champ] = el ? el.value : "";
+        });
+
+        donnees.dateMaj = new Date().toISOString();
+
+        try {
+            await setDoc(doc(db, "dossiersPedagogiques", ELEVE_ID), { [code]: donnees }, { merge: true });
+            await enregistrerAudit(db, {
+                uid: ADMIN_UID, role: "admin",
+                action: `Mise à jour EDU-DOC-${code}`,
+                categorie: "admin",
+                details: `Dossier élève : ${ELEVE_ID}`
+            });
+            document.getElementById("statut" + code).textContent = "✅ Enregistré à l'instant.";
+        } catch (error) {
+            alert("Erreur : " + error.message);
+        }
+
+    });
+});
+
+// ---------- 022 : Séances (liste, sous-collection) ----------
+
+async function chargerSeances() {
+
+    const zone = document.getElementById("listeSeances");
+
+    try {
+        const q = query(collection(db, "dossiersPedagogiques", ELEVE_ID, "seances"), orderBy("date", "desc"));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            zone.innerHTML = `<p style="color:#999;font-size:13px;">Aucune séance enregistrée pour le moment.</p>`;
+            return;
+        }
+
+        zone.innerHTML = snap.docs.map((d) => {
+            const s = d.data();
+            return `
+            <div class="seance-item">
+                <div class="ligne1">
+                    <span>${s.date || "-"} ${s.duree ? "· " + echapperHTML(s.duree) : ""}</span>
+                    <button class="btn-supprimer-seance" data-supprimer-seance="${d.id}">🗑️ Supprimer</button>
+                </div>
+                <p><strong>Contenu :</strong> ${echapperHTML(s.contenu || "-")}</p>
+                <p><strong>Comportement :</strong> ${echapperHTML(s.comportement || "-")}</p>
+                <p><strong>Devoirs :</strong> ${echapperHTML(s.devoirs || "-")}</p>
+            </div>`;
+        }).join("");
+
+        document.querySelectorAll("[data-supprimer-seance]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                if (!confirm("Supprimer cette séance ?")) return;
+                await deleteDoc(doc(db, "dossiersPedagogiques", ELEVE_ID, "seances", btn.dataset.supprimerSeance));
+                await chargerSeances();
+            });
+        });
+
+    } catch (error) {
+        zone.innerHTML = `<p style="color:#d93025;font-size:13px;">Erreur : ${echapperHTML(error.message)}</p>`;
+    }
+
+}
+
+document.getElementById("btnAjouterSeance").addEventListener("click", async () => {
+
+    const date = document.getElementById("c022_date").value;
+    const contenu = document.getElementById("c022_contenu").value.trim();
+
+    if (!date || !contenu) { alert("La date et le contenu de la séance sont obligatoires."); return; }
+
+    const donnees = {
+        date,
+        duree: document.getElementById("c022_duree").value.trim(),
+        contenu,
+        comportement: document.getElementById("c022_comportement").value.trim(),
+        devoirs: document.getElementById("c022_devoirs").value.trim(),
+        dateCreation: new Date().toISOString()
+    };
+
+    try {
+        await addDoc(collection(db, "dossiersPedagogiques", ELEVE_ID, "seances"), donnees);
+        await enregistrerAudit(db, { uid: ADMIN_UID, role: "admin", action: "Ajout séance EDU-DOC-022", categorie: "admin", details: `Dossier élève : ${ELEVE_ID}` });
+
+        ["c022_date","c022_duree","c022_contenu","c022_comportement","c022_devoirs"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("statut022").textContent = "✅ Séance ajoutée.";
+        await chargerSeances();
+    } catch (error) {
+        alert("Erreur : " + error.message);
+    }
+
+});
+
+// ---------- Initialisation ----------
+
+async function chargerEnTeteEleve() {
+    try {
+        const snap = await getDoc(doc(db, "registreEleves", ELEVE_ID));
+        if (!snap.exists()) {
+            document.getElementById("nomEleveAffiche").textContent = "Élève introuvable";
+            return;
+        }
+        const e = snap.data();
+        document.getElementById("nomEleveAffiche").textContent = e.nomEleve || "Élève";
+        document.getElementById("metaParent").textContent = e.parentNom || "-";
+        document.getElementById("metaClasse").textContent = e.classe || "-";
+        document.getElementById("metaEnseignant").textContent = e.enseignantNom || "-";
+        document.getElementById("metaDossier").textContent = e.dossier || "-";
+    } catch (error) {
+        document.getElementById("nomEleveAffiche").textContent = "Erreur de chargement";
+    }
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    const adminSnap = await getDoc(doc(db, "admins", user.uid));
+
+    if (!adminSnap.exists()) {
+        await signOut(auth);
+        alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    if (await verifierDeconnexionForcee(db, user.uid)) {
+        await signOut(auth);
+        alert("Votre session a été fermée à distance.");
+        window.location.href = "connexion-admin.html";
+        return;
+    }
+
+    ADMIN_UID = user.uid;
+
+    await chargerEnTeteEleve();
+    await chargerDossier();
+    await chargerSeances();
+
+});
+
+</script>
+
+</body>
+</html>
