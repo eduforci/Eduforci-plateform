@@ -1195,26 +1195,30 @@ padding:25px 20px;
 
 .header-marquee{
     position:absolute;
-    top:0;
+    top:50%;
     left:0;
+    transform:translateY(-50%);
     width:100%;
-    height:100%;
+    height:46px;
     overflow:hidden;
     z-index:1;
     display:flex;
     align-items:center;
     pointer-events:none;
+    background:#FDB813;
+    border-top:2px solid #05204E;
+    border-bottom:2px solid #05204E;
 }
 
 .marquee-track{
     display:inline-block;
     white-space:nowrap;
     padding-left:100%;
-    animation:marqueeScroll 36s linear infinite;
-    font-size:15px;
-    font-weight:600;
+    animation:marqueeScroll 30s linear infinite;
+    font-size:18px;
+    font-weight:700;
     letter-spacing:.3px;
-    color:rgba(255,255,255,.32);
+    color:#05204E;
 }
 
 @keyframes marqueeScroll{
@@ -1227,8 +1231,11 @@ padding:25px 20px;
 }
 
 @media (max-width:600px){
+    .header-marquee{
+        height:38px;
+    }
     .marquee-track{
-        font-size:12px;
+        font-size:14px;
     }
 }
 
@@ -1354,5 +1361,6 @@ padding:25px 20px;
     font-size:13px;
     color:#888;
 }
+
 
    
