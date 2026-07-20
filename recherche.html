@@ -89,33 +89,37 @@ font-size:16px;
 
 }
 
-.communes-chips{
+.recherche-ville-inline{
 display:flex;
-flex-wrap:wrap;
 gap:10px;
+flex-wrap:wrap;
+max-width:500px;
 }
 
-.commune-chip{
-background:#fff;
-color:#153A73;
-border:2px solid transparent;
-padding:9px 16px;
-border-radius:30px;
-font-size:13.5px;
-font-weight:600;
-cursor:pointer;
-transition:.2s;
+.recherche-ville-inline input{
+flex:1;
+min-width:180px;
+padding:14px 16px;
+border:none;
+border-radius:10px;
+font-family:Poppins,sans-serif;
+font-size:14.5px;
 }
 
-.commune-chip:hover{
+.recherche-ville-inline button{
 background:#FDB813;
 color:#05204E;
+border:none;
+padding:14px 20px;
+border-radius:10px;
+font-family:Poppins,sans-serif;
+font-weight:700;
+font-size:14px;
+cursor:pointer;
 }
 
-.commune-chip.actif{
-background:#0B63F6;
-color:#fff;
-border-color:#fff;
+.recherche-ville-inline button:hover{
+background:#e0a20f;
 }
 
 select{
@@ -184,11 +188,34 @@ background:#084ec7;
 
 <div style="margin:20px 0;">
 
-<p style="color:#fff;font-weight:600;margin-bottom:10px;">📍 Communes d'Abidjan :</p>
-<div class="communes-chips" id="chipsAbidjan"></div>
+<p style="color:#fff;font-weight:600;margin-bottom:10px;">📍 Chercher par commune ou ville :</p>
 
-<p style="color:#fff;font-weight:600;margin:16px 0 10px;">🏙️ Autres grandes villes :</p>
-<div class="communes-chips" id="chipsAutres"></div>
+<div class="recherche-ville-inline">
+<input type="text" id="champVilleRapide" list="listeVillesEduforci" placeholder="Ex : Cocody, Yopougon, Bouaké..." autocomplete="off">
+<button type="button" id="btnVilleRapide">Voir</button>
+</div>
+
+<datalist id="listeVillesEduforci">
+<option value="Abobo">
+<option value="Adjamé">
+<option value="Anyama">
+<option value="Attécoubé">
+<option value="Bingerville">
+<option value="Cocody">
+<option value="Koumassi">
+<option value="Marcory">
+<option value="Plateau">
+<option value="Port-Bouët">
+<option value="Songon">
+<option value="Treichville">
+<option value="Yopougon">
+<option value="Bouaké">
+<option value="Yamoussoukro">
+<option value="San-Pédro">
+<option value="Korhogo">
+<option value="Daloa">
+<option value="Man">
+</datalist>
 
 </div>
 
@@ -230,41 +257,12 @@ import { echapperHTML } from "./js/securite.js";
 
 const liste = document.getElementById("listeEnseignants");
 
-const COMMUNES_ABIDJAN = ["Abobo","Adjamé","Anyama","Attécoubé","Bingerville","Cocody","Koumassi","Marcory","Plateau","Port-Bouët","Songon","Treichville","Yopougon"];
-const AUTRES_VILLES = ["Bouaké","Yamoussoukro","San-Pédro","Korhogo","Daloa","Man"];
-
 function normaliser(texte) {
     return (texte || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 }
 
-function afficherChips() {
-
-    const zoneAbidjan = document.getElementById("chipsAbidjan");
-    const zoneAutres = document.getElementById("chipsAutres");
-    const villeActuelle = new URLSearchParams(window.location.search).get("ville") || "";
-
-    COMMUNES_ABIDJAN.forEach((commune) => {
-        const chip = document.createElement("button");
-        chip.className = "commune-chip" + (normaliser(commune) === normaliser(villeActuelle) ? " actif" : "");
-        chip.textContent = commune;
-        chip.addEventListener("click", () => selectionnerVille(commune));
-        zoneAbidjan.appendChild(chip);
-    });
-
-    AUTRES_VILLES.forEach((ville) => {
-        const chip = document.createElement("button");
-        chip.className = "commune-chip" + (normaliser(ville) === normaliser(villeActuelle) ? " actif" : "");
-        chip.textContent = ville;
-        chip.addEventListener("click", () => selectionnerVille(ville));
-        zoneAutres.appendChild(chip);
-    });
-
-}
-
 function selectionnerVille(ville) {
-    document.querySelectorAll(".commune-chip").forEach((c) => {
-        c.classList.toggle("actif", normaliser(c.textContent) === normaliser(ville));
-    });
+    document.getElementById("champVilleRapide").value = ville;
     document.getElementById("ville").value = "";
     window.villeChipSelectionnee = ville;
     chargerEnseignants();
@@ -377,13 +375,25 @@ async function chargerEnseignants() {
 
 document.getElementById("ville").addEventListener("change", () => {
     window.villeChipSelectionnee = null;
-    document.querySelectorAll(".commune-chip").forEach((c) => c.classList.remove("actif"));
+    document.getElementById("champVilleRapide").value = "";
 });
 
-afficherChips();
+document.getElementById("btnVilleRapide").addEventListener("click", () => {
+    selectionnerVille(document.getElementById("champVilleRapide").value.trim());
+});
+
+document.getElementById("champVilleRapide").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        selectionnerVille(document.getElementById("champVilleRapide").value.trim());
+    }
+});
 
 const villeDepuisUrl = new URLSearchParams(window.location.search).get("ville");
-if (villeDepuisUrl) window.villeChipSelectionnee = villeDepuisUrl;
+if (villeDepuisUrl) {
+    window.villeChipSelectionnee = villeDepuisUrl;
+    document.getElementById("champVilleRapide").value = villeDepuisUrl;
+}
 
 await chargerFiltres();
 await chargerEnseignants();

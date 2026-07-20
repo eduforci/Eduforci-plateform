@@ -183,72 +183,88 @@ Espace École <span class="arrow-icon"><i class="fas fa-arrow-right"></i></span>
 
 </section>
 
-<section class="communes-accueil" style="max-width:1100px;margin:20px auto 60px;padding:0 20px;">
+<section class="communes-accueil" style="max-width:600px;margin:20px auto 60px;padding:0 20px;">
 
 <div class="teachers-preview-title" style="width:100%;text-align:center;margin-bottom:20px;">
 <h2>📍 Trouvez un enseignant près de chez vous</h2>
-<p>Choisissez votre commune ou votre ville pour voir les enseignants disponibles.</p>
+<p>Choisissez ou écrivez votre commune ou votre ville.</p>
 </div>
 
-<div class="communes-accueil-chips">
-<a href="recherche.html?ville=Abobo">Abobo</a>
-<a href="recherche.html?ville=Adjamé">Adjamé</a>
-<a href="recherche.html?ville=Anyama">Anyama</a>
-<a href="recherche.html?ville=Attécoubé">Attécoubé</a>
-<a href="recherche.html?ville=Bingerville">Bingerville</a>
-<a href="recherche.html?ville=Cocody">Cocody</a>
-<a href="recherche.html?ville=Koumassi">Koumassi</a>
-<a href="recherche.html?ville=Marcory">Marcory</a>
-<a href="recherche.html?ville=Plateau">Plateau</a>
-<a href="recherche.html?ville=Port-Bouët">Port-Bouët</a>
-<a href="recherche.html?ville=Songon">Songon</a>
-<a href="recherche.html?ville=Treichville">Treichville</a>
-<a href="recherche.html?ville=Yopougon">Yopougon</a>
-<a href="recherche.html?ville=Bouaké" class="ville-autre">Bouaké</a>
-<a href="recherche.html?ville=Yamoussoukro" class="ville-autre">Yamoussoukro</a>
-<a href="recherche.html?ville=San-Pédro" class="ville-autre">San-Pédro</a>
-<a href="recherche.html?ville=Korhogo" class="ville-autre">Korhogo</a>
-<a href="recherche.html?ville=Daloa" class="ville-autre">Daloa</a>
-<a href="recherche.html?ville=Man" class="ville-autre">Man</a>
-</div>
+<form class="recherche-ville-form" id="formRechercheVille">
+<input type="text" id="champVilleAccueil" list="listeVillesEduforci" placeholder="Ex : Cocody, Yopougon, Bouaké..." autocomplete="off">
+<button type="submit">🔍 Voir les enseignants</button>
+</form>
+
+<datalist id="listeVillesEduforci">
+<option value="Abobo">
+<option value="Adjamé">
+<option value="Anyama">
+<option value="Attécoubé">
+<option value="Bingerville">
+<option value="Cocody">
+<option value="Koumassi">
+<option value="Marcory">
+<option value="Plateau">
+<option value="Port-Bouët">
+<option value="Songon">
+<option value="Treichville">
+<option value="Yopougon">
+<option value="Bouaké">
+<option value="Yamoussoukro">
+<option value="San-Pédro">
+<option value="Korhogo">
+<option value="Daloa">
+<option value="Man">
+</datalist>
 
 </section>
 
 <style>
-.communes-accueil-chips{
+.recherche-ville-form{
     display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
     gap:10px;
-}
-
-.communes-accueil-chips a{
+    flex-wrap:wrap;
     background:#fff;
-    color:#153A73;
-    text-decoration:none;
-    padding:10px 18px;
-    border-radius:30px;
-    font-size:13.5px;
-    font-weight:600;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-    transition:.2s;
+    padding:12px;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
 }
 
-.communes-accueil-chips a:hover{
+.recherche-ville-form input{
+    flex:1;
+    min-width:180px;
+    padding:14px 16px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-family:Poppins,sans-serif;
+    font-size:14.5px;
+}
+
+.recherche-ville-form button{
     background:#0B63F6;
     color:#fff;
+    border:none;
+    padding:14px 20px;
+    border-radius:10px;
+    font-family:Poppins,sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    white-space:nowrap;
 }
 
-.communes-accueil-chips a.ville-autre{
-    background:#FDB813;
-    color:#05204E;
-}
-
-.communes-accueil-chips a.ville-autre:hover{
-    background:#153A73;
-    color:#fff;
+.recherche-ville-form button:hover{
+    background:#084bbf;
 }
 </style>
+
+<script>
+document.getElementById("formRechercheVille").addEventListener("submit", function(e){
+    e.preventDefault();
+    const ville = document.getElementById("champVilleAccueil").value.trim();
+    window.location.href = "recherche.html" + (ville ? "?ville=" + encodeURIComponent(ville) : "");
+});
+</script>
 
 <section class="teachers-preview">
 
