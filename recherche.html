@@ -89,6 +89,35 @@ font-size:16px;
 
 }
 
+.communes-chips{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.commune-chip{
+background:#fff;
+color:#153A73;
+border:2px solid transparent;
+padding:9px 16px;
+border-radius:30px;
+font-size:13.5px;
+font-weight:600;
+cursor:pointer;
+transition:.2s;
+}
+
+.commune-chip:hover{
+background:#FDB813;
+color:#05204E;
+}
+
+.commune-chip.actif{
+background:#0B63F6;
+color:#fff;
+border-color:#fff;
+}
+
 select{
 
 border:1px solid #ddd;
@@ -153,6 +182,16 @@ background:#084ec7;
 </button>
 </div>
 
+<div style="margin:20px 0;">
+
+<p style="color:#fff;font-weight:600;margin-bottom:10px;">📍 Communes d'Abidjan :</p>
+<div class="communes-chips" id="chipsAbidjan"></div>
+
+<p style="color:#fff;font-weight:600;margin:16px 0 10px;">🏙️ Autres grandes villes :</p>
+<div class="communes-chips" id="chipsAutres"></div>
+
+</div>
+
 <br><br>
 
 <h2 style="color:#153A73;">
@@ -190,6 +229,48 @@ import {
 import { echapperHTML } from "./js/securite.js";
 
 const liste = document.getElementById("listeEnseignants");
+
+const COMMUNES_ABIDJAN = ["Abobo","Adjamé","Anyama","Attécoubé","Bingerville","Cocody","Koumassi","Marcory","Plateau","Port-Bouët","Songon","Treichville","Yopougon"];
+const AUTRES_VILLES = ["Bouaké","Yamoussoukro","San-Pédro","Korhogo","Daloa","Man"];
+
+function normaliser(texte) {
+    return (texte || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+function afficherChips() {
+
+    const zoneAbidjan = document.getElementById("chipsAbidjan");
+    const zoneAutres = document.getElementById("chipsAutres");
+    const villeActuelle = new URLSearchParams(window.location.search).get("ville") || "";
+
+    COMMUNES_ABIDJAN.forEach((commune) => {
+        const chip = document.createElement("button");
+        chip.className = "commune-chip" + (normaliser(commune) === normaliser(villeActuelle) ? " actif" : "");
+        chip.textContent = commune;
+        chip.addEventListener("click", () => selectionnerVille(commune));
+        zoneAbidjan.appendChild(chip);
+    });
+
+    AUTRES_VILLES.forEach((ville) => {
+        const chip = document.createElement("button");
+        chip.className = "commune-chip" + (normaliser(ville) === normaliser(villeActuelle) ? " actif" : "");
+        chip.textContent = ville;
+        chip.addEventListener("click", () => selectionnerVille(ville));
+        zoneAutres.appendChild(chip);
+    });
+
+}
+
+function selectionnerVille(ville) {
+    document.querySelectorAll(".commune-chip").forEach((c) => {
+        c.classList.toggle("actif", normaliser(c.textContent) === normaliser(ville));
+    });
+    document.getElementById("ville").value = "";
+    window.villeChipSelectionnee = ville;
+    chargerEnseignants();
+    document.getElementById("listeEnseignants").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 async function chargerFiltres() {
 
     const matiereSelect = document.getElementById("matiere");
@@ -236,7 +317,9 @@ async function chargerEnseignants() {
 
     const matiere = document.getElementById("matiere").value;
     const niveau = document.getElementById("niveau").value;
-    const ville = document.getElementById("ville").value;
+    const villeDropdown = document.getElementById("ville").value;
+    const ville = villeDropdown || window.villeChipSelectionnee || "";
+    const villeNormalisee = normaliser(ville);
 
     const q = query(
         collection(db, "enseignants"),
@@ -252,7 +335,7 @@ async function chargerEnseignants() {
         // Filtrage
         if (matiere && prof.matiere !== matiere) return;
         if (niveau && prof.niveau !== niveau) return;
-        if (ville && prof.ville !== ville) return;
+        if (ville && !normaliser(prof.ville).includes(villeNormalisee)) return;
 
         liste.innerHTML += `
 
@@ -291,6 +374,16 @@ async function chargerEnseignants() {
     document.getElementById("btnRecherche").addEventListener("click", () => {
     chargerEnseignants();
 });
+
+document.getElementById("ville").addEventListener("change", () => {
+    window.villeChipSelectionnee = null;
+    document.querySelectorAll(".commune-chip").forEach((c) => c.classList.remove("actif"));
+});
+
+afficherChips();
+
+const villeDepuisUrl = new URLSearchParams(window.location.search).get("ville");
+if (villeDepuisUrl) window.villeChipSelectionnee = villeDepuisUrl;
 
 await chargerFiltres();
 await chargerEnseignants();
