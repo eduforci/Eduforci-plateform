@@ -171,15 +171,60 @@ background:#084ec7;
 
 <select id="matiere">
     <option value="">Toutes les matières</option>
-</select>
-  
-<select id="niveau">
-    <option value="">Tous les niveaux</option>
+    <option value="Anglais">Anglais</option>
+    <option value="Allemand">Allemand</option>
+    <option value="Français">Français</option>
+    <option value="Mathématiques">Mathématiques</option>
+    <option value="Espagnol">Espagnol</option>
+    <option value="Philosophie">Philosophie</option>
+    <option value="Histoire-Géographie">Histoire-Géographie</option>
+    <option value="SVT">SVT</option>
+    <option value="Physique-Chimie">Physique-Chimie</option>
+    <option value="Informatique">Informatique</option>
 </select>
 
-  <select id="ville">
+<select id="niveau">
+    <option value="">Tous les niveaux</option>
+    <option value="Primaire">Primaire</option>
+    <option value="1er cycle">1er cycle</option>
+    <option value="2nd cycle">2nd cycle</option>
+</select>
+
+<select id="ville">
     <option value="">Toutes les villes</option>
-  </select>
+    <optgroup label="Communes d'Abidjan">
+        <option value="Abobo">Abobo</option>
+        <option value="Adjamé">Adjamé</option>
+        <option value="Anyama">Anyama</option>
+        <option value="Attécoubé">Attécoubé</option>
+        <option value="Bingerville">Bingerville</option>
+        <option value="Cocody">Cocody</option>
+        <option value="Koumassi">Koumassi</option>
+        <option value="Marcory">Marcory</option>
+        <option value="Plateau">Plateau</option>
+        <option value="Port-Bouët">Port-Bouët</option>
+        <option value="Songon">Songon</option>
+        <option value="Treichville">Treichville</option>
+        <option value="Yopougon">Yopougon</option>
+    </optgroup>
+    <optgroup label="Grandes villes">
+        <option value="Bouaké">Bouaké</option>
+        <option value="Yamoussoukro">Yamoussoukro</option>
+        <option value="San-Pédro">San-Pédro</option>
+        <option value="Korhogo">Korhogo</option>
+        <option value="Daloa">Daloa</option>
+        <option value="Man">Man</option>
+        <option value="Gagnoa">Gagnoa</option>
+        <option value="Abengourou">Abengourou</option>
+        <option value="Divo">Divo</option>
+        <option value="Bondoukou">Bondoukou</option>
+        <option value="Odienné">Odienné</option>
+        <option value="Séguéla">Séguéla</option>
+        <option value="Agboville">Agboville</option>
+        <option value="Grand-Bassam">Grand-Bassam</option>
+        <option value="Dabou">Dabou</option>
+    </optgroup>
+</select>
 
 <button id="btnRecherche">
 🔍 Rechercher
@@ -215,6 +260,15 @@ background:#084ec7;
 <option value="Korhogo">
 <option value="Daloa">
 <option value="Man">
+<option value="Gagnoa">
+<option value="Abengourou">
+<option value="Divo">
+<option value="Bondoukou">
+<option value="Odienné">
+<option value="Séguéla">
+<option value="Agboville">
+<option value="Grand-Bassam">
+<option value="Dabou">
 </datalist>
 
 </div>
@@ -269,46 +323,6 @@ function selectionnerVille(ville) {
     document.getElementById("listeEnseignants").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-async function chargerFiltres() {
-
-    const matiereSelect = document.getElementById("matiere");
-    const niveauSelect = document.getElementById("niveau");
-    const villeSelect = document.getElementById("ville");
-
-    const matieres = new Set();
-    const niveaux = new Set();
-    const villes = new Set();
-
-    const q = query(
-        collection(db, "enseignants"),
-        where("verification", "==", true)
-    );
-
-    const snapshot = await getDocs(q);
-
-    snapshot.forEach((docSnap) => {
-
-        const prof = docSnap.data();
-
-        if (prof.matiere) matieres.add(prof.matiere);
-        if (prof.niveau) niveaux.add(prof.niveau);
-        if (prof.ville) villes.add(prof.ville);
-
-    });
-
-    [...matieres].sort().forEach((m) => {
-        matiereSelect.innerHTML += `<option value="${echapperHTML(m)}">${echapperHTML(m)}</option>`;
-    });
-
-    [...niveaux].sort().forEach((n) => {
-        niveauSelect.innerHTML += `<option value="${echapperHTML(n)}">${echapperHTML(n)}</option>`;
-    });
-
-    [...villes].sort().forEach((v) => {
-        villeSelect.innerHTML += `<option value="${echapperHTML(v)}">${echapperHTML(v)}</option>`;
-    });
-
-    }
 async function chargerEnseignants() {
 
     liste.innerHTML = "";
@@ -395,9 +409,9 @@ if (villeDepuisUrl) {
     document.getElementById("champVilleRapide").value = villeDepuisUrl;
 }
 
-await chargerFiltres();
 await chargerEnseignants();
 </script>
 </body>
 
-</html>
+    </html>
+    
