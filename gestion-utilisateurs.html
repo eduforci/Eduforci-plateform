@@ -417,7 +417,7 @@ async function chargerUtilisateurs() {
                 : "";
 
             const estSuspendu = u.suspendu === true;
-
+const estMisEnAvant = u.miseEnAvant === true;
             const celluleStatut = `<td>
                 <span class="badge-verif ${estSuspendu ? "attente" : "ok"}">${estSuspendu ? "⛔ Suspendu" : "🟢 Actif"}</span>
                 <br>
@@ -441,7 +441,20 @@ async function chargerUtilisateurs() {
                 ${celluleVerification}
                 ${celluleStatut}
                 <td>${date}</td>
-                <td><button class="btn-supprimer" data-id="${docSnap.id}">Supprimer</button></td>
+                <td>
+<label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;">
+<input
+type="checkbox"
+class="check-mise-en-avant"
+data-id="${docSnap.id}"
+${estMisEnAvant ? "checked" : ""}>
+À la une
+</label>
+
+<button class="btn-supprimer" data-id="${docSnap.id}">
+Supprimer
+</button>
+</td>
             `;
             table.appendChild(tr);
 
