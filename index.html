@@ -451,7 +451,11 @@ async function chargerEnseignantsAccueil() {
 
     try {
 
-        const q = query(collection(db, "enseignants"), where("verification", "==", true));
+        const q = query(
+  collection(db, "enseignants"),
+  where("verification", "==", true),
+  where("miseEnAvant", "==", true)
+);
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
