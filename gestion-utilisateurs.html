@@ -494,7 +494,23 @@ Supprimer
 
             });
         });
+document.querySelectorAll(".check-mise-en-avant").forEach((check) => {
+    check.addEventListener("change", async () => {
 
+        try {
+
+            await updateDoc(doc(db, "enseignants", check.dataset.id), {
+                miseEnAvant: check.checked
+            });
+
+        } catch (error) {
+
+            alert(error.message);
+
+        }
+
+    });
+});
         document.querySelectorAll(".btn-supprimer").forEach((btn) => {
             btn.addEventListener("click", async () => {
 
