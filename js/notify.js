@@ -377,7 +377,17 @@
     window.notify = notifier;
     window.showLoading = showLoading;
     window.hideLoading = hideLoading;
-
+// Google Analytics
+(function () {
+    if (typeof window.gtag === "function") return;
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=G-T0028XDKBS";
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", "G-T0028XDKBS");
 })();
 
  
