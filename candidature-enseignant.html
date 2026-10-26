@@ -74,6 +74,7 @@ input:checked + .slider:before{transform:translateX(22px);}
 button.submit{width:100%;margin-top:10px;padding:16px;background:#0B63F6;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:600;cursor:pointer;}
 button.submit:hover{background:#084ec7;}
 
+.invalide{border-color:#dc3545!important;background:#fff5f5;}
 .banniere{margin-bottom:25px;padding:16px 20px;border-radius:14px;font-weight:600;background:#fff4e0;color:#e08b00;}
 
 
@@ -119,7 +120,7 @@ button.submit:hover{background:#084ec7;}
 
 <div id="banniereReprise" class="banniere" style="display:none;"></div>
 
-<form id="formCandidature">
+<form id="formCandidature" novalidate>
 
 <div class="card">
 <h2><span class="etape-num">1</span> Informations personnelles</h2>
@@ -406,6 +407,39 @@ const DOCUMENTS = [
 ];
 let envoiEnCours = false;
 
+const CHAMPS_OBLIGATOIRES = [
+    { id: "nom", libelle: "Nom" },
+    { id: "prenom", libelle: "Prénom(s)" },
+    { id: "telephone", libelle: "Téléphone" },
+    { id: "email", libelle: "Adresse e-mail" },
+    { id: "ville", libelle: "Ville" },
+    { id: "diplome", libelle: "Diplôme le plus élevé" },
+    { id: "experience", libelle: "Années d'expérience" },
+    { id: "presentation", libelle: "Présentation / motivation" }
+];
+
+CHAMPS_OBLIGATOIRES.forEach((c) => {
+    document.getElementById(c.id).addEventListener("input", (ev) => ev.target.classList.remove("invalide"));
+});
+
+// Renvoie la liste des champs vides ou incorrects et les entoure en rouge
+function verifierChamps() {
+    const manquants = [];
+    CHAMPS_OBLIGATOIRES.forEach((c) => {
+        const el = document.getElementById(c.id);
+        el.classList.remove("invalide");
+        const valeur = el.value.trim();
+        const vide = !valeur;
+        const emailFaux = !vide && c.id === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valeur);
+        const nombreFaux = !vide && c.id === "experience" && !(Number(valeur) >= 0);
+        if (vide || emailFaux || nombreFaux) {
+            el.classList.add("invalide");
+            manquants.push(vide ? c.libelle : c.libelle + " (valeur incorrecte)");
+        }
+    });
+    return manquants;
+}
+
 // Erreur dont le message est destiné directement à l'enseignant
 function erreurUtilisateur(message) {
     const e = new Error(message);
@@ -444,7 +478,7 @@ async function reduireImage(fichier) {
     ctx.drawImage(img, 0, 0, w, h);
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
     if (!blob) throw new Error("réduction impossible");
-    return blob;
+  return blob;
 }
 
 // Vérifie le format et la taille, réduit les photos trop lourdes
@@ -477,7 +511,7 @@ async function preparerFichier(fichier, libelle, imageSeulement) {
         }
     }
     if (blob.size > TAILLE_MAX) {
-       throw erreurUtilisateur(libelle + " : le fichier fait " + (blob.size / 1048576).toFixed(1) + " Mo (maximum 5 Mo). Choisissez une image plus légère.");
+        throw erreurUtilisateur(libelle + " : le fichier fait " + (blob.size / 1048576).toFixed(1) + " Mo (maximum 5 Mo). Choisissez une image plus légère.");
     }
     return { blob, nom, type };
 }
@@ -530,6 +564,17 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
 
     if (!uid) {
         window.notify("Votre session a expiré. Reconnectez-vous puis réessayez.", "erreur");
+        return;
+    }
+
+    // Champs obligatoires : message visible + défilement jusqu'au premier champ à corriger
+    const manquants = verifierChamps();
+    if (manquants.length > 0) {
+        const premier = document.querySelector(".invalide");
+        const retour = window.notify("Veuillez remplir ou corriger : " + manquants.join(", ") + ".", "avertissement");
+        Promise.resolve(retour).then(() => {
+            if (premier) { premier.scrollIntoView({ behavior: "smooth", block: "center" }); premier.focus({ preventScroll: true }); }
+        });
         return;
     }
 
@@ -622,6 +667,8 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
 
 });
 
+window.__candidatureOk = true;
+
 document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
     e.preventDefault();
     await signOut(auth);
@@ -630,6 +677,20 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 
 </script>
 
+
+<script>
+(function(){
+  var form = document.getElementById("formCandidature");
+  if (!form) return;
+  form.addEventListener("submit", function(e){
+    if (!window.__candidatureOk) {
+      e.preventDefault();
+      var msg = "La page n'a pas fini de se charger. Rechargez la page puis réessayez.";
+      if (window.notify) window.notify(msg, "erreur"); else alert(msg);
+    }
+  });
+})();
+</script>
 
 <script>
 (function(){
