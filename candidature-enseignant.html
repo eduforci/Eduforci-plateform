@@ -336,8 +336,9 @@ onAuthStateChanged(auth, async (user) => {
     uid = user.uid;
 
     // Pré-remplissage à partir du profil enseignant
-    const profilSnap = await getDoc(doc(db, "enseignants", uid));
-    if (profilSnap.exists()) {
+    let profilSnap = null;
+    try { profilSnap = await getDoc(doc(db, "enseignants", uid)); } catch (err) { console.warn("Profil non lu :", err); }
+    if (profilSnap && profilSnap.exists()) {
         const p = profilSnap.data();
         if (p.nom) document.getElementById("nom").value = p.nom;
         if (p.email) document.getElementById("email").value = p.email;
@@ -348,12 +349,13 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     // Reprise d'un dossier existant (brouillon ou modification)
-    const candSnap = await getDoc(doc(db, "candidaturesRecrutement", uid));
+    let candSnap = null;
+    try { candSnap = await getDoc(doc(db, "candidaturesRecrutement", uid)); } catch (err) { console.warn("Dossier non lu :", err); }
     construireJours({});
 
-    candSnapAvantEnvoi = candSnap.exists();
+    candSnapAvantEnvoi = !!(candSnap && candSnap.exists());
 
-    if (candSnap.exists()) {
+    if (candSnap && candSnap.exists()) {
         const c = candSnap.data();
 
         if (["en_verification", "documents_valides", "test_autorise"].includes(c.statut)) {
@@ -391,30 +393,173 @@ onAuthStateChanged(auth, async (user) => {
 
 });
 
-async function televerserSiPresent(inputId, cle) {
-    const input = document.getElementById(inputId);
-    const fichier = input.files[0];
-    if (!fichier) return documentsExistants[cle] || null;
+// ---------- Documents : contrôle, réduction des photos, envoi ----------
 
-    const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${fichier.name}`;
+const TAILLE_MAX = 5 * 1024 * 1024;       // 5 Mo par fichier
+const SEUIL_REDUCTION = 1024 * 1024;      // les images de plus de 1 Mo sont réduites
+const TYPES_ACCEPTES = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png" };
+const DOCUMENTS = [
+    { cle: "cv", input: "fichierCv", libelle: "CV", imageSeulement: false },
+    { cle: "diplome", input: "fichierDiplome", libelle: "Diplôme", imageSeulement: false },
+    { cle: "pieceIdentite", input: "fichierPieceIdentite", libelle: "Pièce d'identité", imageSeulement: false },
+    { cle: "photo", input: "fichierPhoto", libelle: "Photo professionnelle", imageSeulement: true }
+];
+let envoiEnCours = false;
+
+// Erreur dont le message est destiné directement à l'enseignant
+function erreurUtilisateur(message) {
+    const e = new Error(message);
+    e.utilisateur = true;
+    return e;
+}
+
+function extensionDe(nom) {
+    const m = /\.([a-z0-9]+)$/i.exec(nom || "");
+    return m ? m[1].toLowerCase() : "";
+}
+
+function chargerImage(fichier) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(fichier);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("image illisible")); };
+        img.src = url;
+    });
+}
+
+// Réduit une photo de téléphone (dimension max 1800 px, JPEG qualité 82 %)
+async function reduireImage(fichier) {
+    const img = await chargerImage(fichier);
+    const max = 1800;
+    const echelle = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * echelle));
+    const h = Math.max(1, Math.round(img.naturalHeight * echelle));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob) throw new Error("réduction impossible");
+    return blob;
+}
+
+// Vérifie le format et la taille, réduit les photos trop lourdes
+async function preparerFichier(fichier, libelle, imageSeulement) {
+    const ext = extensionDe(fichier.name);
+    if (!TYPES_ACCEPTES[ext]) {
+        throw erreurUtilisateur(libelle + " : format non accepté (" + (ext || "inconnu") + "). Utilisez un fichier PDF, JPG ou PNG.");
+    }
+    if (ext === "pdf") {
+        if (imageSeulement) throw erreurUtilisateur(libelle + " : choisissez une image JPG ou PNG, pas un PDF.");
+        if (fichier.size > TAILLE_MAX) {
+            throw erreurUtilisateur(libelle + " : le fichier fait " + (fichier.size / 1048576).toFixed(1) + " Mo (maximum 5 Mo). Choisissez un PDF plus léger.");
+        }
+        return { blob: fichier, nom: fichier.name, type: "application/pdf" };
+    }
+
+    let blob = fichier;
+    let nom = fichier.name;
+    let type = TYPES_ACCEPTES[ext];
+    if (fichier.size > SEUIL_REDUCTION) {
+        try {
+            const reduit = await reduireImage(fichier);
+            if (reduit.size < fichier.size) {
+                blob = reduit;
+                type = "image/jpeg";
+                nom = nom.replace(/\.[^.]+$/, "") + ".jpg";
+            }
+        } catch (err) {
+            // on garde le fichier d'origine si la réduction échoue
+        }
+    }
+    if (blob.size > TAILLE_MAX) {
+       throw erreurUtilisateur(libelle + " : le fichier fait " + (blob.size / 1048576).toFixed(1) + " Mo (maximum 5 Mo). Choisissez une image plus légère.");
+    }
+    return { blob, nom, type };
+}
+
+function avecDelai(promesse, ms, message) {
+    let minuteur;
+    const delai = new Promise((_, rejeter) => {
+        minuteur = setTimeout(() => rejeter(erreurUtilisateur(message)), ms);
+    });
+    return Promise.race([promesse, delai]).finally(() => clearTimeout(minuteur));
+}
+
+async function televerser(prepare, cle, libelle) {
+    const nomSur = prepare.nom.replace(/[^\w.\-]+/g, "_");
+    const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${nomSur}`;
     const storageRef = ref(storage, chemin);
-    await uploadBytes(storageRef, fichier);
+    await avecDelai(
+        uploadBytes(storageRef, prepare.blob, { contentType: prepare.type }),
+        120000,
+        libelle + " : l'envoi est trop long, votre connexion Internet est trop lente. Réessayez avec une meilleure connexion."
+    );
     const url = await getDownloadURL(storageRef);
-    return { url, nom: fichier.name };
+    return { url, nom: prepare.nom };
+}
+
+// Message compréhensible pour l'enseignant, avec le détail technique à la fin
+function messageErreur(error) {
+    if (error && error.utilisateur) return error.message;
+    const code = (error && error.code) || "";
+    const detail = code || (error && error.message) || "erreur inconnue";
+    let texte;
+    if (code === "storage/unauthorized") {
+        texte = "Un de vos fichiers a été refusé par le serveur (taille ou format). Choisissez des fichiers PDF, JPG ou PNG de moins de 5 Mo.";
+    } else if (code === "permission-denied") {
+        texte = "Votre compte n'est pas autorisé à envoyer ce dossier. Déconnectez-vous, reconnectez-vous puis réessayez.";
+    } else if (code === "storage/quota-exceeded") {
+        texte = "Le stockage est saturé. Contactez EDUFORCI.";
+    } else if (!navigator.onLine || code === "unavailable" || code === "storage/retry-limit-exceeded") {
+        texte = "Connexion Internet instable. Vérifiez votre réseau puis réessayez.";
+    } else {
+        texte = "L'envoi a échoué. Réessayez dans un instant.";
+    }
+    return texte + " (détail : " + detail + ")";
 }
 
 document.getElementById("formCandidature").addEventListener("submit", async (e) => {
 
     e.preventDefault();
+    if (envoiEnCours) return;
+
+    if (!uid) {
+        window.notify("Votre session a expiré. Reconnectez-vous puis réessayez.", "erreur");
+        return;
+    }
+
+    // Matière tapée mais pas encore ajoutée avec le bouton « Ajouter »
+    const champMatiere = document.getElementById("nouvelleMatiere");
+    const matiereEnAttente = champMatiere.value.trim();
+    if (matiereEnAttente && !matieres.includes(matiereEnAttente)) {
+        matieres.push(matiereEnAttente);
+        afficherMatieres();
+    }
+    champMatiere.value = "";
 
     const niveauxCoches = Array.from(document.querySelectorAll('#listeNiveaux input:checked')).map(cb => cb.value);
 
     if (matieres.length === 0) { window.notify("Veuillez ajouter au moins une matière.", "avertissement"); return; }
     if (niveauxCoches.length === 0) { window.notify("Veuillez sélectionner au moins un niveau.", "avertissement"); return; }
 
-    window.showLoading("Envoi de votre dossier...");
+    const bouton = document.getElementById("btnSoumettre");
+    envoiEnCours = true;
+    bouton.disabled = true;
+    window.showLoading("Envoi de votre dossier... (peut durer une minute avec de gros fichiers)");
 
     try {
+
+        // 1. Contrôle et réduction de tous les fichiers AVANT tout envoi
+        const prepares = {};
+        for (const d of DOCUMENTS) {
+            const fichier = document.getElementById(d.input).files[0];
+            if (fichier) prepares[d.cle] = await preparerFichier(fichier, d.libelle, d.imageSeulement);
+        }
 
         const disponibilites = {};
         jours.forEach((jour) => {
@@ -424,13 +569,15 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
             disponibilites[cle] = { actif: cb.checked, horaire: horaire.value.trim() };
         });
 
-        const documents = {
-            cv: await televerserSiPresent("fichierCv", "cv"),
-            diplome: await televerserSiPresent("fichierDiplome", "diplome"),
-            pieceIdentite: await televerserSiPresent("fichierPieceIdentite", "pieceIdentite"),
-            photo: await televerserSiPresent("fichierPhoto", "photo")
-        };
+        // 2. Envoi des fichiers
+        const documents = {};
+        for (const d of DOCUMENTS) {
+            documents[d.cle] = prepares[d.cle]
+                ? await televerser(prepares[d.cle], d.cle, d.libelle)
+                : (documentsExistants[d.cle] || null);
+        }
 
+        // 3. Une seule écriture du dossier (la date de création n'est ajoutée qu'à la première soumission)
         await setDoc(doc(db, "candidaturesRecrutement", uid), {
             uid,
             statut: "soumise",
@@ -454,24 +601,23 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
             disponibilites,
             documents,
             dateMiseAJour: new Date().toISOString(),
+            ...(candSnapAvantEnvoi ? {} : { dateCreation: new Date().toISOString() }),
             historique: arrayUnion({
                 date: new Date().toISOString(),
                 action: candSnapAvantEnvoi ? "Candidature modifiée et resoumise" : "Candidature reçue"
             })
         }, { merge: true });
 
-        // Ne définit la date de création que la première fois
-        if (!candSnapAvantEnvoi) {
-            await setDoc(doc(db, "candidaturesRecrutement", uid), { dateCreation: new Date().toISOString() }, { merge: true });
-        }
-
         window.hideLoading();
         await window.notify("Candidature envoyée avec succès ! Vous serez notifié dès qu'elle sera vérifiée.", "succes");
         window.location.href = "mes-candidatures-enseignant.html";
 
     } catch (error) {
+        console.error("Erreur candidature :", error);
         window.hideLoading();
-        window.notify("Erreur lors de l'envoi : " + error.message, "erreur");
+        envoiEnCours = false;
+        bouton.disabled = false;
+        window.notify(messageErreur(error), "erreur");
     }
 
 });
