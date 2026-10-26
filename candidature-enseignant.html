@@ -6,6 +6,32 @@
 
 <script src="js/notify.js?v=4"></script>
 
+<script>
+/* Zone de message sous le bouton : fonctionne même si notify.js ou SweetAlert ne se chargent pas */
+window.afficherEtat = function (texte, couleur) {
+  var el = document.getElementById("etatEnvoi");
+  if (!el) { alert(texte); return; }
+  var styles = {
+    vert:   ["#e6f6ea", "#1e7e34"],
+    orange: ["#fff4e0", "#b36b00"],
+    rouge:  ["#fdeaea", "#b02a37"]
+  };
+  var c = styles[couleur] || styles.rouge;
+  el.style.display = "block";
+  el.style.background = c[0];
+  el.style.color = c[1];
+  el.textContent = texte;
+  try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
+};
+window.addEventListener("error", function (ev) {
+  window.afficherEtat("Erreur technique : " + (ev.message || "inconnue") + (ev.filename ? " (" + ev.filename.split("/").pop() + ":" + ev.lineno + ")" : ""), "rouge");
+});
+window.addEventListener("unhandledrejection", function (ev) {
+  var r = ev.reason;
+  window.afficherEtat("Erreur technique : " + ((r && (r.message || r.code)) || String(r)), "rouge");
+});
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ma candidature | EDUFORCI</title>
@@ -249,6 +275,8 @@ button.submit:hover{background:#084ec7;}
 <h2><span class="etape-num">7</span> Validation de la candidature</h2>
 <p class="sub">En soumettant ce dossier, vous confirmez l'exactitude des informations fournies. Votre candidature sera transmise à l'équipe EDUFORCI pour vérification.</p>
 <button type="submit" class="submit" id="btnSoumettre">✅ Soumettre ma candidature</button>
+<div id="etatEnvoi" style="display:none;margin-top:14px;padding:14px 16px;border-radius:10px;font-weight:600;font-size:14px;line-height:1.5;word-break:break-word;"></div>
+<p style="margin-top:10px;font-size:11px;color:#999;text-align:center;">Formulaire v3 — 26/10/2026</p>
 </div>
 
 </form>
@@ -407,6 +435,22 @@ const DOCUMENTS = [
 ];
 let envoiEnCours = false;
 
+// Message visible sous le bouton + fenêtre notify si elle fonctionne
+function avertir(message, type) {
+    window.afficherEtat(message, type === "succes" ? "vert" : type === "avertissement" ? "orange" : "rouge");
+    try {
+        if (typeof window.notify === "function") return window.notify(message, type);
+    } catch (err) { console.warn("notify indisponible :", err); }
+    return Promise.resolve();
+}
+function chargementOn(message) {
+    window.afficherEtat("⏳ " + message, "orange");
+    try { if (typeof window.showLoading === "function") window.showLoading(message); } catch (err) {}
+}
+function chargementOff() {
+    try { if (typeof window.hideLoading === "function") window.hideLoading(); } catch (err) {}
+}
+
 const CHAMPS_OBLIGATOIRES = [
     { id: "nom", libelle: "Nom" },
     { id: "prenom", libelle: "Prénom(s)" },
@@ -478,7 +522,7 @@ async function reduireImage(fichier) {
     ctx.drawImage(img, 0, 0, w, h);
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
     if (!blob) throw new Error("réduction impossible");
-  return blob;
+    return blob;
 }
 
 // Vérifie le format et la taille, réduit les photos trop lourdes
@@ -563,7 +607,7 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
     if (envoiEnCours) return;
 
     if (!uid) {
-        window.notify("Votre session a expiré. Reconnectez-vous puis réessayez.", "erreur");
+        avertir("Votre session a expiré. Reconnectez-vous puis réessayez.", "erreur");
         return;
     }
 
@@ -571,7 +615,7 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
     const manquants = verifierChamps();
     if (manquants.length > 0) {
         const premier = document.querySelector(".invalide");
-        const retour = window.notify("Veuillez remplir ou corriger : " + manquants.join(", ") + ".", "avertissement");
+        const retour = avertir("Veuillez remplir ou corriger : " + manquants.join(", ") + ".", "avertissement");
         Promise.resolve(retour).then(() => {
             if (premier) { premier.scrollIntoView({ behavior: "smooth", block: "center" }); premier.focus({ preventScroll: true }); }
         });
@@ -589,13 +633,13 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
 
     const niveauxCoches = Array.from(document.querySelectorAll('#listeNiveaux input:checked')).map(cb => cb.value);
 
-    if (matieres.length === 0) { window.notify("Veuillez ajouter au moins une matière.", "avertissement"); return; }
-    if (niveauxCoches.length === 0) { window.notify("Veuillez sélectionner au moins un niveau.", "avertissement"); return; }
+    if (matieres.length === 0) { avertir("Veuillez ajouter au moins une matière.", "avertissement"); return; }
+    if (niveauxCoches.length === 0) { avertir("Veuillez sélectionner au moins un niveau.", "avertissement"); return; }
 
     const bouton = document.getElementById("btnSoumettre");
     envoiEnCours = true;
     bouton.disabled = true;
-    window.showLoading("Envoi de votre dossier... (peut durer une minute avec de gros fichiers)");
+    chargementOn("Envoi de votre dossier... (peut durer une minute avec de gros fichiers)");
 
     try {
 
@@ -653,16 +697,19 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
             })
         }, { merge: true });
 
-        window.hideLoading();
-        await window.notify("Candidature envoyée avec succès ! Vous serez notifié dès qu'elle sera vérifiée.", "succes");
+        chargementOff();
+        await Promise.race([
+            Promise.resolve(avertir("Candidature envoyée avec succès ! Vous serez notifié dès qu'elle sera vérifiée.", "succes")),
+            new Promise((resolve) => setTimeout(resolve, 4000))
+        ]);
         window.location.href = "mes-candidatures-enseignant.html";
 
     } catch (error) {
         console.error("Erreur candidature :", error);
-        window.hideLoading();
+        chargementOff();
         envoiEnCours = false;
         bouton.disabled = false;
-        window.notify(messageErreur(error), "erreur");
+        avertir(messageErreur(error), "erreur");
     }
 
 });
@@ -682,11 +729,16 @@ document.getElementById("btnDeconnexion").addEventListener("click", async (e) =>
 (function(){
   var form = document.getElementById("formCandidature");
   if (!form) return;
+  var bouton = document.getElementById("btnSoumettre");
+  if (bouton) {
+    bouton.addEventListener("click", function () {
+      window.afficherEtat("⏳ Bouton pris en compte, vérification de votre dossier...", "orange");
+    });
+  }
   form.addEventListener("submit", function(e){
     if (!window.__candidatureOk) {
       e.preventDefault();
-      var msg = "La page n'a pas fini de se charger. Rechargez la page puis réessayez.";
-      if (window.notify) window.notify(msg, "erreur"); else alert(msg);
+      window.afficherEtat("La page n'a pas fini de se charger (ou une erreur est survenue). Rechargez la page puis réessayez.", "rouge");
     }
   });
 })();
