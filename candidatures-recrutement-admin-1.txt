@@ -286,6 +286,8 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <button class="btn-action btn-rejeter" id="btnRejeter">🔴 Rejeter la candidature</button>
 </div>
 <button class="btn-admis" id="btnMarquerAdmis">✅ Marquer comme admis (après test réussi)</button>
+<div id="etatAction" style="display:none;margin-top:14px;padding:14px 16px;border-radius:10px;font-weight:600;font-size:14px;line-height:1.5;word-break:break-word;"></div>
+<p style="margin-top:10px;font-size:11px;color:#999;text-align:center;">Page admin v2 — 27/10/2026</p>
 </div>
 
 </div>
@@ -424,7 +426,7 @@ function appliquerFiltres() {
         const statutAffiche = c.statut === "soumise" ? "en_verification" : c.statut;
 
         const tr = document.createElement("tr");
-        tr.innerHTML = `
+tr.innerHTML = `
             <td><div class="avatar-mini">${photoUrl ? `<img src="${photoUrl}" alt="${nom}">` : initiales}</div></td>
             <td>${nom}</td>
             <td>${(c.matieres || []).join(", ") || "-"}</td>
@@ -483,6 +485,7 @@ async function ouvrirModal(id) {
     if (!c) return;
 
     candidatureOuverteId = id;
+    masquerEtat();
 
     document.getElementById("modalTitre").textContent = "Dossier — " + ([c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || identifiantCourt(id));
 
@@ -635,19 +638,92 @@ async function envoyerNotification(candidature, contenu) {
     }
 }
 
+// ----------------------------------------------------------
+// Messages affichés DANS la fenêtre du dossier : les fenêtres notify() peuvent
+// passer derrière cette fenêtre, et le message n'était alors pas visible.
+// ----------------------------------------------------------
+
+function afficherEtat(texte, type) {
+    const el = document.getElementById("etatAction");
+    if (!el) return;
+    const styles = {
+        succes: ["#e6f7ec", "#1e7e34"],
+        attente: ["#eaf1ff", "#0B63F6"],
+        avertissement: ["#fff4e0", "#b36b00"],
+        erreur: ["#fdeaea", "#b02a37"]
+    };
+    const st = styles[type] || styles.erreur;
+    el.style.display = "block";
+    el.style.background = st[0];
+    el.style.color = st[1];
+    el.textContent = texte;
+    try { el.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) {}
+}
+
+function masquerEtat() {
+    const el = document.getElementById("etatAction");
+    if (el) el.style.display = "none";
+}
+
+function ouvrirOnglet(nom) {
+    document.querySelectorAll(".onglet").forEach(o => o.classList.toggle("actif", o.dataset.onglet === nom));
+    document.querySelectorAll(".onglet-contenu").forEach(o => o.classList.toggle("actif", o.dataset.contenu === nom));
+}
+
+function boutonsActions(desactives) {
+    document.querySelectorAll(".btn-action, .btn-admis").forEach((b) => {
+        b.disabled = desactives;
+        b.style.opacity = desactives ? ".6" : "";
+    });
+}
+
+function avecDelai(promesse, ms, message) {
+    let minuteur;
+    const delai = new Promise((_, rejeter) => { minuteur = setTimeout(() => rejeter(new Error(message)), ms); });
+    return Promise.race([promesse, delai]).finally(() => clearTimeout(minuteur));
+}
+
+function messageErreurAdmin(error) {
+    const code = (error && error.code) || "";
+    if (code === "permission-denied") {
+        return "Modification refusée par Firestore (permission-denied) : les règles de la collection « candidaturesRecrutement » doivent autoriser les comptes de la collection « admins » à modifier un dossier.";
+    }
+    if (code === "unavailable" || !navigator.onLine) {
+        return "Connexion Internet instable. Vérifiez votre réseau puis réessayez.";
+    }
+    return "Erreur : " + ((error && error.message) || code || "inconnue");
+}
+
+window.addEventListener("unhandledrejection", (ev) => {
+    const r = ev.reason;
+    afficherEtat("Erreur technique : " + ((r && (r.message || r.code)) || String(r)), "erreur");
+});
+
+let actionEnCours = false;
+
 async function appliquerAction({ nouveauStatut, nouveauDocumentsStatut, actionHistorique, messageParDefaut, exigerCommentaire }) {
 
+    if (actionEnCours) return;
+
     const c = candidatures.find(x => x.id === candidatureOuverteId);
-    if (!c) return;
+    if (!c) {
+        afficherEtat("Dossier introuvable. Fermez cette fenêtre, rouvrez le dossier avec « Voir » puis réessayez.", "erreur");
+        return;
+    }
 
     const commentaire = document.getElementById("commentaireAdmin").value.trim();
 
     if (exigerCommentaire && !commentaire) {
-        window.notify("Merci d'ajouter un commentaire avant cette action.", "avertissement");
+        // Le commentaire se trouve dans l'onglet « Vérification » : on l'ouvre pour qu'il soit visible
+        ouvrirOnglet("verification");
+        try { document.getElementById("commentaireAdmin").focus({ preventScroll: true }); } catch (e) {}
+        afficherEtat("Écrivez d'abord un commentaire pour le candidat (case « Commentaire administrateur », onglet Vérification), puis appuyez de nouveau sur le bouton.", "avertissement");
         return;
     }
 
-    window.showLoading("Mise à jour du dossier...");
+    actionEnCours = true;
+    boutonsActions(true);
+    afficherEtat("⏳ Mise à jour du dossier...", "attente");
 
     try {
 
@@ -661,19 +737,29 @@ async function appliquerAction({ nouveauStatut, nouveauDocumentsStatut, actionHi
         if (nouveauStatut) maj.statut = nouveauStatut;
         if (nouveauDocumentsStatut) maj.documentsStatut = nouveauDocumentsStatut;
 
-        await updateDoc(doc(db, "candidaturesRecrutement", candidatureOuverteId), maj);
+        await avecDelai(
+            updateDoc(doc(db, "candidaturesRecrutement", candidatureOuverteId), maj),
+            25000,
+            "L'enregistrement est trop long : connexion Internet trop lente. Réessayez."
+        );
 
-        await envoyerNotification(c, commentaire || messageParDefaut);
+        // La notification au candidat ne doit jamais bloquer l'action
+        await Promise.race([
+            envoyerNotification(c, commentaire || messageParDefaut),
+            new Promise((resolve) => setTimeout(resolve, 8000))
+        ]);
 
-        window.hideLoading();
-        window.notify("Dossier mis à jour avec succès.", "succes");
-
+        masquerEtat();
         document.getElementById("modalOverlay").classList.remove("ouvert");
+        try { if (typeof window.notify === "function") window.notify("Dossier mis à jour avec succès.", "succes"); } catch (e) {}
         await chargerCandidatures();
 
     } catch (error) {
-        window.hideLoading();
-        window.notify("Erreur : " + error.message, "erreur");
+        console.error("Action admin :", error);
+        afficherEtat(messageErreurAdmin(error), "erreur");
+    } finally {
+        actionEnCours = false;
+        boutonsActions(false);
     }
 
 }
