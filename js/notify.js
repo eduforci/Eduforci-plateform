@@ -41,10 +41,13 @@
     }
 
     function personnaliserSweetAlert() {
-        if (!window.Swal || document.getElementById(STYLE_ID)) return;
+        if (!window.Swal || document.getElementById(STYLE_ID + "-swal")) return;
         const style = document.createElement("style");
         style.id = STYLE_ID + "-swal";
         style.textContent = `
+.swal2-container{
+    z-index:10000000 !important;
+}
 .swal2-popup{
     font-family:'Poppins',sans-serif !important;
     border-radius:20px !important;
@@ -390,4 +393,4 @@
     window.gtag("config", "G-T0028XDKBS");
 })();
 
- 
+})();
