@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importer des questions — EDUFORCI</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f5fa;margin:0;padding:16px;color:#153A73}
+.carte{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+h1{font-size:20px;margin-top:0}label{display:block;font-weight:bold;margin-top:14px}
+input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px;margin-top:4px}
+button{width:100%;margin-top:18px;padding:14px;font-size:16px;font-weight:bold;color:#fff;background:#153A73;border:0;border-radius:10px}
+button:disabled{opacity:.5}#etat{margin-top:16px;padding:12px;border-radius:8px;background:#eef2fb;white-space:pre-wrap;font-size:14px}
+</style></head><body><div class="carte">
+<h1>Importer les questions SVT et PC</h1>
+<p>20 questions par matière (QCM : connaissances, pédagogie, études de cas). Les questions déjà présentes ne sont pas dupliquées.</p>
+<label>Nom de la matière SVT (comme les enseignants la saisissent)</label><input id="nomSvt" value="SVT">
+<label>Nom de la matière PC (comme les enseignants la saisissent)</label><input id="nomPc" value="PC">
+<button id="btn" disabled>Importer</button>
+<div id="etat">Vérification de votre accès administrateur...</div>
+</div>
+<script type="module">
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+const QUESTIONS = [
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quel organite de la cellule végétale permet de réaliser la photosynthèse ?",
+  "choix": [
+   "La mitochondrie",
+   "Le chloroplaste",
+   "Le noyau",
+   "La vacuole"
+  ],
+  "bonne": 2,
+  "explication": "Les chloroplastes contiennent la chlorophylle qui capte l'énergie lumineuse."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quel organe filtre le sang et produit l'urine ?",
+  "choix": [
+   "Le foie",
+   "Le rein",
+   "Le poumon",
+   "Le pancréas"
+  ],
+  "bonne": 2,
+  "explication": "Les reins filtrent le sang et éliminent les déchets sous forme d'urine."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quel est le rôle principal des globules rouges ?",
+  "choix": [
+   "Défendre l'organisme contre les microbes",
+   "Transporter le dioxygène",
+   "Faire coaguler le sang",
+   "Produire des hormones"
+  ],
+  "bonne": 2,
+  "explication": "L'hémoglobine des globules rouges fixe et transporte le dioxygène."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quel gaz les plantes vertes absorbent-elles pour la photosynthèse ?",
+  "choix": [
+   "Le dioxygène",
+   "Le diazote",
+   "Le dioxyde de carbone",
+   "L'hydrogène"
+  ],
+  "bonne": 3,
+  "explication": "La plante absorbe du dioxyde de carbone et rejette du dioxygène à la lumière."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Dans le noyau d'une cellule, l'information génétique est portée par :",
+  "choix": [
+   "Les lipides",
+   "L'ADN des chromosomes",
+   "Les ribosomes",
+   "L'amidon"
+  ],
+  "bonne": 2,
+  "explication": "L'ADN, organisé en chromosomes, contient les gènes."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Combien de chromosomes possède une cellule humaine non sexuelle ?",
+  "choix": [
+   "23",
+   "44",
+   "46",
+   "48"
+  ],
+  "bonne": 3,
+  "explication": "L'espèce humaine a 46 chromosomes, soit 23 paires."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Le paludisme est transmis à l'être humain par :",
+  "choix": [
+   "La mouche tsé-tsé",
+   "La piqûre d'un moustique Anopheles femelle",
+   "L'eau de boisson souillée",
+   "Le contact avec une personne malade"
+  ],
+  "bonne": 2,
+  "explication": "L'agent est le Plasmodium, transmis par l'anophèle femelle."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Le principe d'un vaccin est de :",
+  "choix": [
+   "Détruire directement les microbes",
+   "Apporter des antibiotiques",
+   "Stimuler les défenses immunitaires sans provoquer la maladie",
+   "Remplacer les globules blancs"
+  ],
+  "bonne": 3,
+  "explication": "Le vaccin contient un antigène inoffensif qui entraîne la production d'anticorps et une mémoire immunitaire."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "L'absorption des nutriments se fait principalement dans :",
+  "choix": [
+   "L'estomac",
+   "L'intestin grêle",
+   "Le gros intestin",
+   "L'œsophage"
+  ],
+  "bonne": 2,
+  "explication": "Les villosités de l'intestin grêle laissent passer les nutriments dans le sang."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Quel est le rôle de l'insuline ?",
+  "choix": [
+   "Elle augmente la glycémie",
+   "Elle diminue la glycémie en favorisant le stockage du glucose",
+   "Elle digère les lipides",
+   "Elle transporte le dioxygène"
+  ],
+  "bonne": 2,
+  "explication": "L'insuline, produite par le pancréas, fait baisser le taux de glucose dans le sang."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "difficile",
+  "question": "À partir d'une cellule mère diploïde, la méiose produit :",
+  "choix": [
+   "2 cellules diploïdes",
+   "4 cellules haploïdes",
+   "2 cellules haploïdes",
+   "4 cellules diploïdes"
+  ],
+  "bonne": 2,
+  "explication": "La méiose comporte deux divisions et donne 4 cellules haploïdes (gamètes)."
+ },
+ {
+  "m": "SVT",
+  "categorie": "disciplinaire",
+  "difficulte": "difficile",
+  "question": "On croise deux individus hétérozygotes Aa × Aa (dominance complète de A). Quelle proportion de phénotypes attend-on ?",
+  "choix": [
+   "1/2 dominant et 1/2 récessif",
+   "3/4 dominant et 1/4 récessif",
+   "100 % dominant",
+   "1/4 dominant et 3/4 récessif"
+  ],
+  "bonne": 2,
+  "explication": "Génotypes : 1 AA, 2 Aa, 1 aa, soit 3/4 dominants et 1/4 récessifs."
+ },
+ {
+  "m": "SVT",
+  "categorie": "pedagogie",
+  "difficulte": "moyen",
+  "question": "Dans une démarche d'investigation en SVT, la séance commence idéalement par :",
+  "choix": [
+   "La dictée du résumé",
+   "Une situation-problème qui suscite la curiosité",
+   "Une interrogation écrite",
+   "Le corrigé de l'exercice"
+  ],
+  "bonne": 2,
+  "explication": "La situation-problème donne du sens et amène les élèves à formuler des hypothèses."
+ },
+ {
+  "m": "SVT",
+  "categorie": "pedagogie",
+  "difficulte": "moyen",
+  "question": "Une évaluation formative sert surtout à :",
+  "choix": [
+   "Classer les élèves",
+   "Repérer les difficultés pour ajuster l'enseignement",
+   "Sanctionner les erreurs",
+   "Décider du passage en classe supérieure"
+  ],
+  "bonne": 2,
+  "explication": "Elle a lieu pendant l'apprentissage pour remédier aux difficultés."
+ },
+ {
+  "m": "SVT",
+  "categorie": "pedagogie",
+  "difficulte": "moyen",
+  "question": "Le matériel est insuffisant pour qu'une expérience soit faite par chaque élève. Que faire ?",
+  "choix": [
+   "Supprimer l'expérience",
+   "La réaliser en groupes ou en démonstration, avec du matériel de substitution",
+   "Dicter directement les résultats",
+   "La reporter à l'année suivante"
+  ],
+  "bonne": 2,
+  "explication": "L'expérience reste possible avec des groupes ou du matériel de récupération."
+ },
+ {
+  "m": "SVT",
+  "categorie": "pedagogie",
+  "difficulte": "facile",
+  "question": "Pour rendre un cours sur la digestion plus concret, il est préférable de :",
+  "choix": [
+   "Faire recopier le schéma sans explication",
+   "Partir d'exemples vécus par les élèves (repas, aliments locaux)",
+   "Éviter les questions des élèves",
+   "Lire le manuel sans pause"
+  ],
+  "bonne": 2,
+  "explication": "Partir du vécu favorise la compréhension et la mémorisation."
+ },
+ {
+  "m": "SVT",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "Pendant un TP, trois élèves se disputent et perturbent la séance. Quelle est la meilleure réaction ?",
+  "choix": [
+   "Exclure toute la classe",
+   "Rappeler calmement les règles, séparer les élèves et leur confier des rôles précis",
+   "Ignorer pour ne pas perdre de temps",
+   "Baisser leurs notes de TP"
+  ],
+  "bonne": 2,
+  "explication": "Rester calme, rappeler le cadre et réengager les élèves dans l'activité."
+ },
+ {
+  "m": "SVT",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "Lors d'un devoir, vous surprenez un élève en train de copier. Que faites-vous ?",
+  "choix": [
+   "Déchirer sa copie devant la classe",
+   "Attendre la fin et en parler à ses parents",
+   "Intervenir discrètement, appliquer le règlement de l'établissement et échanger avec lui ensuite",
+   "Lui mettre zéro sans explication"
+  ],
+  "bonne": 3,
+  "explication": "Intervenir sans humilier, appliquer le règlement et expliquer la sanction."
+ },
+ {
+  "m": "SVT",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "Un parent vient contester la note de son enfant en SVT. Quelle attitude adopter ?",
+  "choix": [
+   "L'écouter, lui montrer la copie, le barème et expliquer la correction",
+   "Refuser de le recevoir",
+   "Modifier la note pour éviter le conflit",
+   "Lui dire que vous n'avez pas à vous justifier"
+  ],
+  "bonne": 1,
+  "explication": "Le dialogue et la transparence sur les critères de correction apaisent la situation."
+ },
+ {
+  "m": "SVT",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "Un élève très timide ne parle jamais en classe mais réussit bien à l'écrit. Que faire ?",
+  "choix": [
+   "Lui mettre zéro à l'oral",
+   "L'interroger devant toute la classe pour le forcer",
+   "Proposer des participations progressives (petit groupe, questions simples) et le valoriser",
+   "Ne plus s'occuper de lui"
+  ],
+  "bonne": 3,
+  "explication": "On construit la confiance par étapes, sans l'exposer brutalement."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quelle est l'unité de la force dans le Système international ?",
+  "choix": [
+   "Le joule",
+   "Le newton",
+   "Le watt",
+   "Le pascal"
+  ],
+  "bonne": 2,
+  "explication": "La force se mesure en newton (N)."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quel est le symbole chimique du sodium ?",
+  "choix": [
+   "Na",
+   "S",
+   "So",
+   "N"
+  ],
+  "bonne": 1,
+  "explication": "Na vient du latin natrium. S est le soufre, N l'azote."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quel état de la matière a un volume propre mais pas de forme propre ?",
+  "choix": [
+   "Solide",
+   "Liquide",
+   "Gaz",
+   "Aucun"
+  ],
+  "bonne": 2,
+  "explication": "Un liquide garde son volume et prend la forme de son récipient."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "facile",
+  "question": "Quelle est l'unité de l'intensité du courant électrique ?",
+  "choix": [
+   "Le volt",
+   "L'ampère",
+   "L'ohm",
+   "Le watt"
+  ],
+  "bonne": 2,
+  "explication": "L'intensité se mesure en ampère (A) avec un ampèremètre."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Quelle est l'expression de la loi d'Ohm pour un conducteur ohmique ?",
+  "choix": [
+   "U = R / I",
+   "U = R × I",
+   "I = U × R",
+   "R = U × I"
+  ],
+  "bonne": 2,
+  "explication": "U (volt) = R (ohm) × I (ampère)."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Le pH d'une solution acide est :",
+  "choix": [
+   "Inférieur à 7",
+   "Égal à 7",
+   "Supérieur à 7",
+   "Égal à 14"
+  ],
+  "bonne": 1,
+  "explication": "pH < 7 : acide ; pH = 7 : neutre ; pH > 7 : basique."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Une vitesse de 72 km/h correspond à :",
+  "choix": [
+   "7,2 m/s",
+   "20 m/s",
+   "72 m/s",
+   "259,2 m/s"
+  ],
+  "bonne": 2,
+  "explication": "72 ÷ 3,6 = 20 m/s."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Quelle est la masse molaire de l'eau H2O (H = 1 g/mol ; O = 16 g/mol) ?",
+  "choix": [
+   "17 g/mol",
+   "18 g/mol",
+   "16 g/mol",
+   "34 g/mol"
+  ],
+  "bonne": 2,
+  "explication": "2 × 1 + 16 = 18 g/mol."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "moyen",
+  "question": "Une lampe fonctionne sous 230 V avec une intensité de 0,5 A. Sa puissance est :",
+  "choix": [
+   "460 W",
+   "115 W",
+   "0,002 W",
+   "230 W"
+  ],
+  "bonne": 2,
+  "explication": "P = U × I = 230 × 0,5 = 115 W."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "difficile",
+  "question": "Équilibrer : C3H8 + x O2 → 3 CO2 + 4 H2O. Quelle est la valeur de x ?",
+  "choix": [
+   "3",
+   "4",
+   "5",
+   "7"
+  ],
+  "bonne": 3,
+  "explication": "Oxygène à droite : 3×2 + 4 = 10 atomes, donc x = 5."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "difficile",
+  "question": "On dissout 0,2 mol de soluté dans 0,5 L de solution. Quelle est la concentration molaire ?",
+  "choix": [
+   "0,1 mol/L",
+   "0,4 mol/L",
+   "2,5 mol/L",
+   "0,2 mol/L"
+  ],
+  "bonne": 2,
+  "explication": "C = n / V = 0,2 ÷ 0,5 = 0,4 mol/L."
+ },
+ {
+  "m": "PC",
+  "categorie": "disciplinaire",
+  "difficulte": "difficile",
+  "question": "Un objet est placé au-delà de 2f devant une lentille convergente. L'image est :",
+  "choix": [
+   "Virtuelle, droite et agrandie",
+   "Réelle, renversée et plus petite",
+   "Réelle, droite et plus grande",
+   "Virtuelle, renversée et plus petite"
+  ],
+  "bonne": 2,
+  "explication": "Au-delà de 2f, l'image est réelle, renversée et réduite."
+ },
+ {
+  "m": "PC",
+  "categorie": "pedagogie",
+  "difficulte": "moyen",
+  "question": "Pourquoi l'expérience est-elle essentielle en physique-chimie ?",
+  "choix": [
+   "Pour occuper les élèves",
+   "Pour permettre d'observer, d'émettre des hypothèses et de construire le concept",
+   "Pour remplacer le cours",
+   "Pour gagner du temps"
+  ],
+  "bonne": 2,
+  "explication": "L'expérience donne du sens et fait participer les élèves à la construction du savoir."
+ },
+ {
+  "m": "PC",
+  "categorie": "pedagogie",
+  "difficulte": "moyen",
+  "question": "Beaucoup d'élèves confondent masse et poids. Que faire ?",
+  "choix": [
+   "Leur faire apprendre la définition par cœur",
+   "Faire mesurer la masse (balance) et le poids (dynamomètre) et comparer les unités",
+   "Supprimer cette notion",
+   "Passer directement au chapitre suivant"
+  ],
+  "bonne": 2,
+  "explication": "La manipulation fait apparaître deux grandeurs différentes : kg et N."
+ },
+ {
+  "m": "PC",
+  "categorie": "pedagogie",
+  "difficulte": "facile",
+  "question": "Quel verbe convient pour formuler un objectif pédagogique observable ?",
+  "choix": [
+   "Comprendre",
+   "Calculer",
+   "Savoir",
+   "Apprécier"
+  ],
+  "bonne": 2,
+  "explication": "« Calculer » est observable et évaluable, contrairement à « comprendre » ou « savoir »."
+ },
+ {
+  "m": "PC",
+  "categorie": "pedagogie",
+  "difficulte": "moyen",
+  "question": "Vous avez 60 élèves et seulement 3 postes de manipulation. Que faire ?",
+  "choix": [
+   "Interdire les manipulations",
+   "Organiser des groupes en rotation avec des rôles définis",
+   "Tout faire vous-même sans les élèves",
+   "Dicter le compte rendu du TP"
+  ],
+  "bonne": 2,
+  "explication": "Rotation et rôles permettent à chacun de participer malgré le matériel limité."
+ },
+ {
+  "m": "PC",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "Un élève renverse un acide au laboratoire. Quel est le bon réflexe ?",
+  "choix": [
+   "Ne rien dire pour éviter la panique",
+   "Faire éloigner la classe, protéger l'élève, rincer abondamment à l'eau et prévenir l'administration",
+   "Essuyer avec un chiffon sec",
+   "Continuer le TP sans s'en occuper"
+  ],
+  "bonne": 2,
+  "explication": "Sécurité d'abord : écarter, rincer à grande eau, alerter."
+ },
+ {
+  "m": "PC",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "À la préparation du TP, vous constatez que le matériel est insuffisant ou cassé. Que faites-vous ?",
+  "choix": [
+   "Annuler le cours sans prévenir",
+   "Adapter la séance (démonstration, matériel du quotidien) et signaler le besoin à la direction",
+   "Faire noter le TP sans le réaliser",
+   "Demander aux élèves d'apporter des produits dangereux"
+  ],
+  "bonne": 2,
+  "explication": "On garde l'objectif d'apprentissage avec une solution adaptée et on informe."
+ },
+ {
+  "m": "PC",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "Un élève refuse de porter blouse et lunettes pour manipuler un produit corrosif. Que faites-vous ?",
+  "choix": [
+   "Ne pas le laisser manipuler tant qu'il n'est pas protégé et lui expliquer les risques",
+   "Le laisser faire pour gagner du temps",
+   "Le punir sans explication",
+   "Supprimer la manipulation pour toute la classe"
+  ],
+  "bonne": 1,
+  "explication": "La sécurité est non négociable ; on explique pour obtenir son adhésion."
+ },
+ {
+  "m": "PC",
+  "categorie": "etude_de_cas",
+  "difficulte": "moyen",
+  "question": "La moyenne de la classe à un devoir de physique est de 6/20. Que faites-vous ?",
+  "choix": [
+   "Baisser les notes pour équilibrer",
+   "Analyser les erreurs, reprendre les notions mal acquises et proposer une remédiation",
+   "Reprocher aux élèves leur manque de travail",
+   "Garder les notes sans rien changer"
+  ],
+  "bonne": 2,
+  "explication": "Les erreurs servent à identifier les difficultés pour mieux enseigner ensuite."
+ }
+];
+const etat = (t) => { document.getElementById("etat").textContent = t; };
+const btn = document.getElementById("btn");
+onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = "connexion-admin.html"; return; }
+    try {
+        const s = await getDoc(doc(db, "admins", user.uid));
+        if (!s.exists()) { etat("Accès refusé : ce compte n'est pas administrateur."); return; }
+        etat("Prêt. " + QUESTIONS.length + " questions à importer.");
+        btn.disabled = false;
+    } catch (e) { etat("Erreur : " + (e.code || e.message)); }
+});
+btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    const noms = { SVT: document.getElementById("nomSvt").value.trim(), PC: document.getElementById("nomPc").value.trim() };
+    if (!noms.SVT || !noms.PC) { etat("Remplissez les deux noms de matière."); btn.disabled = false; return; }
+    try {
+        etat("Lecture de la banque existante...");
+        const snap = await getDocs(collection(db, "questionsRecrutement"));
+        const existantes = new Set(snap.docs.map(d => (d.data().matiere || "") + "||" + (d.data().question || "")));
+        let ajoutees = 0, ignorees = 0, echecs = 0;
+        for (const q of QUESTIONS) {
+            const matiere = noms[q.m];
+            if (existantes.has(matiere + "||" + q.question)) { ignorees++; continue; }
+            try {
+                await addDoc(collection(db, "questionsRecrutement"), {
+                    type: "qcm", matiere, difficulte: q.difficulte, categorie: q.categorie,
+                    question: q.question, choix: q.choix, reponseCorrecte: q.bonne - 1,
+                    explication: q.explication, bareme: null, corrigeIndicatif: null
+                });
+                ajoutees++;
+            } catch (e) { echecs++; console.error(e); etat("Erreur sur une question : " + (e.code || e.message)); }
+            etat("Import en cours... " + (ajoutees + ignorees + echecs) + " / " + QUESTIONS.length);
+        }
+        etat("Terminé ✅\nAjoutées : " + ajoutees + "\nDéjà présentes : " + ignorees + "\nÉchecs : " + echecs + "\n\nVous pouvez maintenant supprimer ce fichier de GitHub.");
+    } catch (e) { etat("Erreur : " + (e.code || e.message)); btn.disabled = false; }
+});
+</script></body></html>
