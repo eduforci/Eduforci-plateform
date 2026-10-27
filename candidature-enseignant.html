@@ -276,7 +276,7 @@ button.submit:hover{background:#084ec7;}
 <p class="sub">En soumettant ce dossier, vous confirmez l'exactitude des informations fournies. Votre candidature sera transmise à l'équipe EDUFORCI pour vérification.</p>
 <button type="submit" class="submit" id="btnSoumettre">✅ Soumettre ma candidature</button>
 <div id="etatEnvoi" style="display:none;margin-top:14px;padding:14px 16px;border-radius:10px;font-weight:600;font-size:14px;line-height:1.5;word-break:break-word;"></div>
-<p style="margin-top:10px;font-size:11px;color:#999;text-align:center;">Formulaire v3 — 26/10/2026</p>
+<p style="margin-top:10px;font-size:11px;color:#999;text-align:center;">Formulaire v4 — 27/10/2026</p>
 </div>
 
 </form>
@@ -288,7 +288,7 @@ button.submit:hover{background:#084ec7;}
 import { auth, db, storage } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
+import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 
 const jours = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 let uid = null;
@@ -425,7 +425,7 @@ onAuthStateChanged(auth, async (user) => {
 // ---------- Documents : contrôle, réduction des photos, envoi ----------
 
 const TAILLE_MAX = 5 * 1024 * 1024;       // 5 Mo par fichier
-const SEUIL_REDUCTION = 1024 * 1024;      // les images de plus de 1 Mo sont réduites
+const SEUIL_REDUCTION = 400 * 1024;       // les images de plus de 400 Ko sont réduites
 const TYPES_ACCEPTES = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png" };
 const DOCUMENTS = [
     { cle: "cv", input: "fichierCv", libelle: "CV", imageSeulement: false },
@@ -444,8 +444,8 @@ function avertir(message, type) {
     return Promise.resolve();
 }
 function chargementOn(message) {
+    // Pas d'écran de chargement plein écran : il cacherait la progression affichée sous le bouton
     window.afficherEtat("⏳ " + message, "orange");
-    try { if (typeof window.showLoading === "function") window.showLoading(message); } catch (err) {}
 }
 function chargementOff() {
     try { if (typeof window.hideLoading === "function") window.hideLoading(); } catch (err) {}
@@ -509,7 +509,7 @@ function chargerImage(fichier) {
 // Réduit une photo de téléphone (dimension max 1800 px, JPEG qualité 82 %)
 async function reduireImage(fichier) {
     const img = await chargerImage(fichier);
-    const max = 1800;
+    const max = 1600;
     const echelle = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
     const w = Math.max(1, Math.round(img.naturalWidth * echelle));
     const h = Math.max(1, Math.round(img.naturalHeight * echelle));
@@ -520,7 +520,7 @@ async function reduireImage(fichier) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
     ctx.drawImage(img, 0, 0, w, h);
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.8));
     if (!blob) throw new Error("réduction impossible");
     return blob;
 }
@@ -568,18 +568,99 @@ function avecDelai(promesse, ms, message) {
     return Promise.race([promesse, delai]).finally(() => clearTimeout(minuteur));
 }
 
-async function televerser(prepare, cle, libelle) {
-    const nomSur = prepare.nom.replace(/[^\w.\-]+/g, "_");
-    const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${nomSur}`;
-    const storageRef = ref(storage, chemin);
-    await avecDelai(
-        uploadBytes(storageRef, prepare.blob, { contentType: prepare.type }),
-        120000,
-        libelle + " : l'envoi est trop long, votre connexion Internet est trop lente. Réessayez avec une meilleure connexion."
-    );
-    const url = await getDownloadURL(storageRef);
-    return { url, nom: prepare.nom };
+const DELAI_SANS_PROGRES = 60000;     // abandon si plus rien n'avance pendant 60 s
+const DELAI_TOTAL_FICHIER = 600000;   // 10 minutes maximum par fichier
+const dejaEnvoyes = {};               // fichiers déjà envoyés pendant cette visite : jamais renvoyés après un échec
+
+function enMo(octets) {
+    return (octets / 1048576).toFixed(1).replace(".", ",");
 }
+
+function televerser(prepare, cle, libelle, numero, total) {
+    return new Promise((resolve, reject) => {
+
+        const nomSur = prepare.nom.replace(/[^\w.\-]+/g, "_");
+        const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${nomSur}`;
+        const storageRef = ref(storage, chemin);
+        const tache = uploadBytesResumable(storageRef, prepare.blob, { contentType: prepare.type });
+        const taille = prepare.blob.size;
+        const etiquette = "Fichier " + numero + "/" + total + " — " + libelle + " (" + enMo(taille) + " Mo)";
+
+        let fini = false;
+        let dernierOctets = 0;
+        let dernierProgres = Date.now();
+        let surveillance = null;
+        let limiteTotale = null;
+
+        function terminer() {
+            fini = true;
+            if (surveillance) clearInterval(surveillance);
+            if (limiteTotale) clearTimeout(limiteTotale);
+        }
+        function abandonner(message) {
+            if (fini) return;
+            terminer();
+            try { tache.cancel(); } catch (err) {}
+            reject(erreurUtilisateur(message));
+        }
+
+        window.afficherEtat("⏳ " + etiquette + " : 0 %", "orange");
+
+        // Plus aucun octet envoyé depuis 60 s : la connexion ne suit pas
+        surveillance = setInterval(() => {
+            if (fini || Date.now() - dernierProgres <= DELAI_SANS_PROGRES) return;
+            const pct = Math.round(dernierOctets / taille * 100);
+            if (dernierOctets === 0) {
+                abandonner(libelle + " : aucun octet n'a pu être envoyé en 60 secondes. Votre connexion ne parvient pas à joindre le serveur. Changez de réseau (Wi-Fi ou données mobiles) puis réessayez.");
+            } else {
+                abandonner(libelle + " : l'envoi est bloqué à " + pct + " %. Connexion trop lente ou coupée : rapprochez-vous du réseau puis réessayez. Les fichiers déjà envoyés ne seront pas renvoyés.");
+            }
+        }, 5000);
+
+        limiteTotale = setTimeout(() => {
+            abandonner(libelle + " : l'envoi dépasse 10 minutes. Choisissez un fichier plus léger (moins de 1 Mo) ou une meilleure connexion, puis réessayez.");
+        }, DELAI_TOTAL_FICHIER);
+
+        tache.on("state_changed",
+            (snap) => {
+                if (snap.bytesTransferred > dernierOctets) {
+                    dernierOctets = snap.bytesTransferred;
+                    dernierProgres = Date.now();
+                }
+                const pct = taille ? Math.round(snap.bytesTransferred / taille * 100) : 0;
+                if (!fini) window.afficherEtat("⏳ " + etiquette + " : " + pct + " %", "orange");
+            },
+            (err) => {
+                if (fini) return;
+                terminer();
+                reject(err);
+            },
+            async () => {
+                if (fini) return;
+                terminer();
+                try {
+                    const url = await getDownloadURL(tache.snapshot.ref);
+                    resolve({ url, nom: prepare.nom });
+                } catch (err) {
+                    reject(err);
+                }
+            }
+        );
+    });
+}
+
+// Affiche le nom et le poids du fichier dès qu'il est choisi
+DOCUMENTS.forEach((d) => {
+    const input = document.getElementById(d.input);
+    input.addEventListener("change", () => {
+        const f = input.files[0];
+        const el = document.getElementById("statut" + d.cle.charAt(0).toUpperCase() + d.cle.slice(1));
+        if (!el) return;
+        el.classList.remove("ok");
+        el.style.color = "#555";
+        el.textContent = f ? "📎 " + f.name + " (" + enMo(f.size) + " Mo)" + (f.size > TAILLE_MAX ? " — trop lourd (5 Mo maximum)" : "") : "";
+    });
+});
 
 // Message compréhensible pour l'enseignant, avec le détail technique à la fin
 function messageErreur(error) {
@@ -639,7 +720,7 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
     const bouton = document.getElementById("btnSoumettre");
     envoiEnCours = true;
     bouton.disabled = true;
-    chargementOn("Envoi de votre dossier... (peut durer une minute avec de gros fichiers)");
+    chargementOn("Envoi de votre dossier... gardez cette page ouverte.");
 
     try {
 
@@ -647,7 +728,10 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
         const prepares = {};
         for (const d of DOCUMENTS) {
             const fichier = document.getElementById(d.input).files[0];
-            if (fichier) prepares[d.cle] = await preparerFichier(fichier, d.libelle, d.imageSeulement);
+            if (fichier) {
+                prepares[d.cle] = await preparerFichier(fichier, d.libelle, d.imageSeulement);
+                prepares[d.cle].signature = [fichier.name, fichier.size, fichier.lastModified].join("|");
+            }
         }
 
         const disponibilites = {};
@@ -660,11 +744,22 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
 
         // 2. Envoi des fichiers
         const documents = {};
+        const aEnvoyer = DOCUMENTS.filter((d) => prepares[d.cle] && !(dejaEnvoyes[d.cle] && dejaEnvoyes[d.cle].signature === prepares[d.cle].signature)).length;
+        let numero = 0;
         for (const d of DOCUMENTS) {
-            documents[d.cle] = prepares[d.cle]
-                ? await televerser(prepares[d.cle], d.cle, d.libelle)
-                : (documentsExistants[d.cle] || null);
+            const p = prepares[d.cle];
+            if (!p) {
+                documents[d.cle] = documentsExistants[d.cle] || null;
+            } else if (dejaEnvoyes[d.cle] && dejaEnvoyes[d.cle].signature === p.signature) {
+                documents[d.cle] = dejaEnvoyes[d.cle].resultat;   // déjà envoyé lors d'un essai précédent
+            } else {
+                numero++;
+                const resultat = await televerser(p, d.cle, d.libelle, numero, aEnvoyer);
+                dejaEnvoyes[d.cle] = { signature: p.signature, resultat };
+                documents[d.cle] = resultat;
+            }
         }
+        window.afficherEtat("⏳ Enregistrement du dossier...", "orange");
 
         // 3. Une seule écriture du dossier (la date de création n'est ajoutée qu'à la première soumission)
         await setDoc(doc(db, "candidaturesRecrutement", uid), {
