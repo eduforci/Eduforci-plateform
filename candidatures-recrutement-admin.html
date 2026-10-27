@@ -428,6 +428,7 @@ import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, collection, getDocs, updateDoc, addDoc, arrayUnion, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { echapperHTML } from "./js/securite.js";
+import { ouvrirFichier } from "./js/fichiers-candidature.js";
 
 let candidatures = [];   // liste brute { id, ...data }
 let idsTestsTermines = new Set();
@@ -566,7 +567,7 @@ function appliquerFiltres() {
 
         const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || "-";
         const initiales = (c.personnel?.nom || "??").substring(0, 2).toUpperCase();
-        const photoUrl = c.documents?.photo?.url;
+        const photoUrl = c.documents?.photo?.miniature || c.documents?.photo?.url;
         const statutAffiche = c.statut === "soumise" ? "en_verification" : c.statut;
 
         const tr = document.createElement("tr");
@@ -614,7 +615,23 @@ function docCellule(cle, cData) {
     const lien = document.getElementById("lien" + cle.charAt(0).toUpperCase() + cle.slice(1));
     const nomEl = document.getElementById("nomFichier" + cle.charAt(0).toUpperCase() + cle.slice(1));
     const info = cData?.documents?.[cle];
-    if (info && info.url) {
+    if (info && info.stockage === "firestore") {
+        nomEl.textContent = info.nom || "Fichier envoyé";
+        lien.innerHTML = `<a href="#" class="ouvrir-fichier">${cle === "photo" ? "Voir" : "Ouvrir / Télécharger"}</a>`;
+        const a = lien.querySelector("a");
+        a.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            const ancienTexte = a.textContent;
+            a.textContent = "Chargement...";
+            try {
+                await ouvrirFichier(db, cData.uid || cData.id, cle, info);
+            } catch (err) {
+                console.error("Ouverture fichier :", err);
+                alert("Impossible d'ouvrir ce fichier : " + (err.code || err.message || "erreur"));
+            }
+            a.textContent = ancienTexte;
+        });
+    } else if (info && info.url) {
         nomEl.textContent = info.nom || "Fichier envoyé";
         lien.innerHTML = `<a href="${info.url}" target="_blank" rel="noopener">${cle === "photo" ? "Voir" : "Ouvrir / Télécharger"}</a>`;
     } else {
