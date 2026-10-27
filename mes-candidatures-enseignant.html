@@ -198,7 +198,7 @@ function rendreDossier(c) {
 
     let docsHtml = "";
     Object.keys(LIBELLES_DOC).forEach((cle) => {
-        const present = c.documents && c.documents[cle] && c.documents[cle].url;
+        const present = c.documents && c.documents[cle] && (c.documents[cle].url || c.documents[cle].stockage === "firestore");
         docsHtml += `<div class="doc-item">${present ? "✅" : "❌"} ${LIBELLES_DOC[cle]}</div>`;
     });
 
