@@ -243,7 +243,7 @@ button.submit:hover{background:#084ec7;}
 
 <div class="card">
 <h2><span class="etape-num">6</span> Téléversement des documents</h2>
-<p class="sub">Formats acceptés : PDF, JPG, PNG (5 Mo maximum par fichier).</p>
+<p class="sub">Formats acceptés : PDF, JPG, PNG (3 Mo maximum par fichier).</p>
 
 <div class="doc-row">
 <label>CV</label>
@@ -276,7 +276,7 @@ button.submit:hover{background:#084ec7;}
 <p class="sub">En soumettant ce dossier, vous confirmez l'exactitude des informations fournies. Votre candidature sera transmise à l'équipe EDUFORCI pour vérification.</p>
 <button type="submit" class="submit" id="btnSoumettre">✅ Soumettre ma candidature</button>
 <div id="etatEnvoi" style="display:none;margin-top:14px;padding:14px 16px;border-radius:10px;font-weight:600;font-size:14px;line-height:1.5;word-break:break-word;"></div>
-<p style="margin-top:10px;font-size:11px;color:#999;text-align:center;">Formulaire v4 — 27/10/2026</p>
+<p style="margin-top:10px;font-size:11px;color:#999;text-align:center;">Formulaire v5 — 27/10/2026</p>
 </div>
 
 </form>
@@ -285,10 +285,10 @@ button.submit:hover{background:#084ec7;}
 
 <script type="module">
 
-import { auth, db, storage } from "./js/firebase.js";
+import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
+import { ecrireFichier, supprimerFichier, creerMiniature } from "./js/fichiers-candidature.js";
 
 const jours = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 let uid = null;
@@ -424,7 +424,7 @@ onAuthStateChanged(auth, async (user) => {
 
 // ---------- Documents : contrôle, réduction des photos, envoi ----------
 
-const TAILLE_MAX = 5 * 1024 * 1024;       // 5 Mo par fichier
+const TAILLE_MAX = 3 * 1024 * 1024;       // 3 Mo par fichier
 const SEUIL_REDUCTION = 400 * 1024;       // les images de plus de 400 Ko sont réduites
 const TYPES_ACCEPTES = { pdf: "application/pdf", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png" };
 const DOCUMENTS = [
@@ -534,7 +534,7 @@ async function preparerFichier(fichier, libelle, imageSeulement) {
     if (ext === "pdf") {
         if (imageSeulement) throw erreurUtilisateur(libelle + " : choisissez une image JPG ou PNG, pas un PDF.");
         if (fichier.size > TAILLE_MAX) {
-            throw erreurUtilisateur(libelle + " : le fichier fait " + (fichier.size / 1048576).toFixed(1) + " Mo (maximum 5 Mo). Choisissez un PDF plus léger.");
+            throw erreurUtilisateur(libelle + " : le fichier fait " + (fichier.size / 1048576).toFixed(1) + " Mo (maximum 3 Mo). Choisissez un PDF plus léger.");
         }
         return { blob: fichier, nom: fichier.name, type: "application/pdf" };
     }
@@ -555,7 +555,7 @@ async function preparerFichier(fichier, libelle, imageSeulement) {
         }
     }
     if (blob.size > TAILLE_MAX) {
-        throw erreurUtilisateur(libelle + " : le fichier fait " + (blob.size / 1048576).toFixed(1) + " Mo (maximum 5 Mo). Choisissez une image plus légère.");
+        throw erreurUtilisateur(libelle + " : le fichier fait " + (blob.size / 1048576).toFixed(1) + " Mo (maximum 3 Mo). Choisissez une image plus légère.");
     }
     return { blob, nom, type };
 }
@@ -577,75 +577,14 @@ function enMo(octets) {
 }
 
 function televerser(prepare, cle, libelle, numero, total) {
-    return new Promise((resolve, reject) => {
-
-        const nomSur = prepare.nom.replace(/[^\w.\-]+/g, "_");
-        const chemin = `candidatures/${uid}/${cle}_${Date.now()}_${nomSur}`;
-        const storageRef = ref(storage, chemin);
-        const tache = uploadBytesResumable(storageRef, prepare.blob, { contentType: prepare.type });
-        const taille = prepare.blob.size;
-        const etiquette = "Fichier " + numero + "/" + total + " — " + libelle + " (" + enMo(taille) + " Mo)";
-
-        let fini = false;
-        let dernierOctets = 0;
-        let dernierProgres = Date.now();
-        let surveillance = null;
-        let limiteTotale = null;
-
-        function terminer() {
-            fini = true;
-            if (surveillance) clearInterval(surveillance);
-            if (limiteTotale) clearTimeout(limiteTotale);
-        }
-        function abandonner(message) {
-            if (fini) return;
-            terminer();
-            try { tache.cancel(); } catch (err) {}
-            reject(erreurUtilisateur(message));
-        }
-
-        window.afficherEtat("⏳ " + etiquette + " : 0 %", "orange");
-
-        // Plus aucun octet envoyé depuis 60 s : la connexion ne suit pas
-        surveillance = setInterval(() => {
-            if (fini || Date.now() - dernierProgres <= DELAI_SANS_PROGRES) return;
-            const pct = Math.round(dernierOctets / taille * 100);
-            if (dernierOctets === 0) {
-                abandonner(libelle + " : aucun octet n'a pu être envoyé en 60 secondes. Votre connexion ne parvient pas à joindre le serveur. Changez de réseau (Wi-Fi ou données mobiles) puis réessayez.");
-            } else {
-                abandonner(libelle + " : l'envoi est bloqué à " + pct + " %. Connexion trop lente ou coupée : rapprochez-vous du réseau puis réessayez. Les fichiers déjà envoyés ne seront pas renvoyés.");
-            }
-        }, 5000);
-
-        limiteTotale = setTimeout(() => {
-            abandonner(libelle + " : l'envoi dépasse 10 minutes. Choisissez un fichier plus léger (moins de 1 Mo) ou une meilleure connexion, puis réessayez.");
-        }, DELAI_TOTAL_FICHIER);
-
-        tache.on("state_changed",
-            (snap) => {
-                if (snap.bytesTransferred > dernierOctets) {
-                    dernierOctets = snap.bytesTransferred;
-                    dernierProgres = Date.now();
-                }
-                const pct = taille ? Math.round(snap.bytesTransferred / taille * 100) : 0;
-                if (!fini) window.afficherEtat("⏳ " + etiquette + " : " + pct + " %", "orange");
-            },
-            (err) => {
-                if (fini) return;
-                terminer();
-                reject(err);
-            },
-            async () => {
-                if (fini) return;
-                terminer();
-                try {
-                    const url = await getDownloadURL(tache.snapshot.ref);
-                    resolve({ url, nom: prepare.nom });
-                } catch (err) {
-                    reject(err);
-                }
-            }
-        );
+    const taille = prepare.blob.size;
+    const etiquette = "Fichier " + numero + "/" + total + " — " + libelle + " (" + enMo(taille) + " Mo)";
+    window.afficherEtat("⏳ " + etiquette + " : 0 %", "orange");
+    return ecrireFichier(db, uid, cle, prepare.blob, prepare.nom, prepare.type, (pct) => {
+        window.afficherEtat("⏳ " + etiquette + " : " + pct + " %", "orange");
+    }).then(async (info) => {
+        if (cle === "photo") info.miniature = await creerMiniature(prepare.blob);
+        return info;
     });
 }
 
@@ -658,7 +597,7 @@ DOCUMENTS.forEach((d) => {
         if (!el) return;
         el.classList.remove("ok");
         el.style.color = "#555";
-        el.textContent = f ? "📎 " + f.name + " (" + enMo(f.size) + " Mo)" + (f.size > TAILLE_MAX ? " — trop lourd (5 Mo maximum)" : "") : "";
+        el.textContent = f ? "📎 " + f.name + " (" + enMo(f.size) + " Mo)" + (f.size > TAILLE_MAX ? " — trop lourd (3 Mo maximum)" : "") : "";
     });
 });
 
@@ -669,7 +608,7 @@ function messageErreur(error) {
     const detail = code || (error && error.message) || "erreur inconnue";
     let texte;
     if (code === "storage/unauthorized") {
-        texte = "Un de vos fichiers a été refusé par le serveur (taille ou format). Choisissez des fichiers PDF, JPG ou PNG de moins de 5 Mo.";
+        texte = "Un de vos fichiers a été refusé par le serveur (taille ou format). Choisissez des fichiers PDF, JPG ou PNG de moins de 3 Mo.";
     } else if (code === "permission-denied") {
         texte = "Votre compte n'est pas autorisé à envoyer ce dossier. Déconnectez-vous, reconnectez-vous puis réessayez.";
     } else if (code === "storage/quota-exceeded") {
@@ -791,6 +730,15 @@ document.getElementById("formCandidature").addEventListener("submit", async (e) 
                 action: candSnapAvantEnvoi ? "Candidature modifiée et resoumise" : "Candidature reçue"
             })
         }, { merge: true });
+
+        // Suppression (sans bloquer) des anciens fichiers remplacés
+        for (const d of DOCUMENTS) {
+            const ancien = documentsExistants[d.cle];
+            const nouveauDoc = documents[d.cle];
+            if (ancien && ancien.stockage === "firestore" && nouveauDoc && nouveauDoc.version !== ancien.version) {
+                supprimerFichier(db, uid, d.cle, ancien);
+            }
+        }
 
         chargementOff();
         await Promise.race([
