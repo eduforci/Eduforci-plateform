@@ -1,0 +1,10 @@
+{
+  "id": 1,
+  "matiere": "Mathématiques",
+  "difficulte": "Facile",
+  "niveau": "6e–5e",
+  "question": "Calcule : 91 + 19.",
+  "options": ["112", "120", "107", "110"],
+  "bonne_reponse": "110",
+  "explication": "91 + 19 = 110."
+}
