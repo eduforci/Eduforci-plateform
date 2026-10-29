@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importer des questions d'Anglais — EDUFORCI</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f5fa;margin:0;padding:16px;color:#153A73}
+.carte{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+h1{font-size:20px;margin-top:0}label{display:block;font-weight:bold;margin-top:14px}
+input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px;margin-top:4px}
+button{width:100%;margin-top:18px;padding:14px;font-size:16px;font-weight:bold;color:#fff;background:#153A73;border:0;border-radius:10px}
+button:disabled{opacity:.5}#etat{margin-top:16px;padding:12px;border-radius:8px;background:#eef2fb;white-space:pre-wrap;font-size:14px}
+</style></head><body><div class="carte">
+<h1>Importer 90 questions d'Anglais (facile, 3e–Tle)</h1>
+<p>Niveau facile, 3e–Tle. QCM : connaissances disciplinaires (60), pédagogie (15), études de cas (15). Les questions déjà présentes ne sont pas dupliquées.</p>
+<label>Nom de la matière Anglais (comme les enseignants la saisissent)</label><input id="nomAnglais" value="Anglais">
+<button id="btn" disabled>Importer</button>
+<div id="etat">Vérification de votre accès administrateur...</div>
+</div>
+<script type="module">
+const etat = (t) => { document.getElementById("etat").textContent = t; };
+let auth, db, onAuthStateChanged, doc, getDoc, collection, addDoc, getDocs;
+try {
+etat("Chargement de la configuration du site...");
+({ auth, db } = await import("./js/firebase.js"));
+etat("Chargement de l'authentification...");
+({ onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js"));
+etat("Chargement de la base de données...");
+({ doc, getDoc, collection, addDoc, getDocs } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"));
+} catch (e) { etat("Erreur de chargement : " + (e.message || e) + "\n\nVérifiez la connexion internet et que le fichier est bien à la racine du site, à côté du dossier js."); throw e; }
+etat("Vérification de votre accès administrateur...");
+setTimeout(() => { if (document.getElementById("btn").disabled && document.getElementById("etat").textContent.startsWith("Vérification")) etat("Toujours en attente de la connexion à votre compte.\n\nConnectez-vous d'abord sur connexion-admin.html, puis rouvrez cette page. Vérifiez aussi la qualité de votre connexion internet."); }, 15000);
+const QUESTIONS = [
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "She ___ a student.", "choix": ["are", "am", "is", "be"], "bonne": 3, "explication": "With 'she', the verb 'to be' is 'is'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I ___ breakfast every morning.", "choix": ["have", "has", "having", "haves"], "bonne": 1, "explication": "With 'I', the present simple of 'have' is 'have'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "They ___ football yesterday.", "choix": ["play", "plays", "playing", "played"], "bonne": 4, "explication": "'Yesterday' requires the past simple: 'played'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "There ___ three books on the table.", "choix": ["is", "are", "be", "am"], "bonne": 2, "explication": "'Books' is plural, so we use 'There are'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The opposite of 'hot' is:", "choix": ["warm", "cold", "big", "dry"], "bonne": 2, "explication": "'Cold' is the antonym of 'hot'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "What is the plural of 'child'?", "choix": ["childs", "childes", "childrens", "children"], "bonne": 4, "explication": "'Child' has an irregular plural: 'children'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "This is my brother. ___ name is Paul.", "choix": ["His", "Her", "Its", "Their"], "bonne": 1, "explication": "The possessive adjective for a male person is 'his'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "How many days are there in a week?", "choix": ["five", "six", "seven", "eight"], "bonne": 3, "explication": "A week has seven days."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Choose the correct sentence.", "choix": ["He doesn't like fish.", "He don't like fish.", "He not likes fish.", "He doesn't likes fish."], "bonne": 1, "explication": "The negative of the present simple with 'he' is 'doesn't' + base verb."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which word is a verb?", "choix": ["table", "run", "happy", "quickly"], "bonne": 2, "explication": "'Run' expresses an action: it is a verb."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I'm going ___ school by bus.", "choix": ["in", "at", "to", "on"], "bonne": 3, "explication": "We use 'to' after verbs of movement such as 'go'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "'Good morning' is used:", "choix": ["at night before sleeping", "in the afternoon", "in the evening", "in the morning"], "bonne": 4, "explication": "'Good morning' is a greeting used in the morning."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "___ you speak English? — Yes, I do.", "choix": ["Are", "Is", "Does", "Do"], "bonne": 4, "explication": "Present simple questions with 'you' start with 'Do'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "My mother is ___ teacher.", "choix": ["an", "the", "a", "some"], "bonne": 3, "explication": "Before a consonant sound ('teacher'), we use 'a'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The past tense of 'go' is:", "choix": ["goed", "went", "gone", "going"], "bonne": 2, "explication": "'Go' is irregular: go – went – gone."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which word means 'big'?", "choix": ["large", "tiny", "short", "thin"], "bonne": 1, "explication": "'Large' is a synonym of 'big'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "She is ___ than her sister.", "choix": ["tall", "most tall", "taller", "more tall"], "bonne": 3, "explication": "Short adjectives form the comparative with '-er'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "What does 3:30 mean?", "choix": ["half past three", "half to three", "three past half", "a quarter to three"], "bonne": 1, "explication": "3:30 is 'half past three'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I ___ TV now.", "choix": ["watch", "watches", "watched", "am watching"], "bonne": 4, "explication": "'Now' indicates an action in progress: present continuous."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which month comes after March?", "choix": ["May", "April", "June", "February"], "bonne": 2, "explication": "The order is March, April, May."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "He ___ to school every day.", "choix": ["go", "goes", "going", "gone"], "bonne": 2, "explication": "In the present simple, the third person singular takes '-es': goes."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which of these is a fruit?", "choix": ["carrot", "potato", "onion", "banana"], "bonne": 4, "explication": "A banana is a fruit; the others are vegetables."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "After someone says 'Thank you', you can answer:", "choix": ["You're welcome.", "Good night.", "See you.", "I'm sorry."], "bonne": 1, "explication": "'You're welcome' is the usual reply to thanks."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "___ is your name? — My name is Awa.", "choix": ["Who", "Where", "What", "When"], "bonne": 3, "explication": "We ask 'What is your name?' to know someone's name."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Choose the correct plural: one box, two ___.", "choix": ["boxes", "boxs", "boxen", "box"], "bonne": 1, "explication": "Nouns ending in '-x' add '-es' in the plural."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "My birthday is ___ June.", "choix": ["on", "in", "at", "to"], "bonne": 2, "explication": "We use 'in' with months."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which word is spelled correctly?", "choix": ["freind", "frend", "friend", "freand"], "bonne": 3, "explication": "The correct spelling is 'friend' (i before e)."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The word 'quickly' is an:", "choix": ["noun", "adjective", "pronoun", "adverb"], "bonne": 4, "explication": "It describes how an action is done: an adverb."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "We ___ happy today.", "choix": ["is", "am", "be", "are"], "bonne": 4, "explication": "With 'we', the verb 'to be' is 'are'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which sentence is a question?", "choix": ["He is a doctor.", "Close the door.", "Where do you live?", "What a nice day!"], "bonne": 3, "explication": "A question asks for information and ends with a question mark."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The opposite of 'happy' is:", "choix": ["glad", "sad", "fast", "new"], "bonne": 2, "explication": "'Sad' is the antonym of 'happy'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which day comes after Monday?", "choix": ["Tuesday", "Sunday", "Friday", "Wednesday"], "bonne": 1, "explication": "The order is Monday, Tuesday, Wednesday."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I have two ___.", "choix": ["sister", "sistres", "sisters", "sisteres"], "bonne": 3, "explication": "The regular plural adds '-s'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "She can ___ very well.", "choix": ["swim", "swims", "swimming", "to swim"], "bonne": 1, "explication": "After a modal verb such as 'can', we use the base form."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which pronoun replaces 'Mary and I'?", "choix": ["they", "he", "you", "we"], "bonne": 4, "explication": "'Mary and I' includes the speaker: 'we'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "How do you say 'bonjour' in English?", "choix": ["Goodbye", "Hello", "Sorry", "Please"], "bonne": 2, "explication": "'Hello' is a greeting."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "On a clear day, the sky is usually:", "choix": ["green", "blue", "black", "red"], "bonne": 2, "explication": "The sky looks blue on a clear day."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I ___ my homework last night.", "choix": ["do", "does", "doing", "did"], "bonne": 4, "explication": "'Last night' requires the past simple: 'did'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which one is a day of the weekend?", "choix": ["Saturday", "Thursday", "Friday", "Monday"], "bonne": 1, "explication": "The weekend is Saturday and Sunday."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The word 'she' is a:", "choix": ["verb", "noun", "pronoun", "adverb"], "bonne": 3, "explication": "'She' replaces a noun: it is a pronoun."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "What is the opposite of 'open'?", "choix": ["close", "push", "start", "enter"], "bonne": 1, "explication": "'Close' is the antonym of 'open'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I like apples, ___ I don't like bananas.", "choix": ["because", "but", "so", "or"], "bonne": 2, "explication": "'But' shows contrast."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "He is ___ the kitchen.", "choix": ["on", "at", "in", "to"], "bonne": 3, "explication": "We use 'in' for being inside a room."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which animal can fly?", "choix": ["dog", "cow", "fish", "bird"], "bonne": 4, "explication": "Birds can fly."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Complete: '___ is raining today.'", "choix": ["He", "She", "They", "It"], "bonne": 4, "explication": "We use 'it' as the subject for weather."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "We ___ to the market on Saturdays.", "choix": ["goes", "going", "go", "gone"], "bonne": 3, "explication": "With 'we', the present simple uses the base form."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "What is 'dix' in English?", "choix": ["nine", "ten", "eleven", "twelve"], "bonne": 2, "explication": "'Dix' = ten."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which sentence is polite?", "choix": ["Could you help me, please?", "Help me now!", "Give me that!", "You must help me."], "bonne": 1, "explication": "'Could you ..., please?' is a polite request."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The word 'doctor' is a:", "choix": ["verb", "adjective", "noun", "adverb"], "bonne": 3, "explication": "'Doctor' names a person: it is a noun."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "He ___ breakfast at 7 o'clock.", "choix": ["eats", "eat", "eating", "eaten"], "bonne": 1, "explication": "Third person singular, present simple: 'eats'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Where do you buy bread?", "choix": ["at the bank", "at the hospital", "at the library", "at the bakery"], "bonne": 4, "explication": "Bread is sold at a bakery."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which letter is a vowel?", "choix": ["B", "E", "K", "T"], "bonne": 2, "explication": "The vowels are A, E, I, O, U."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "'Good night' is said:", "choix": ["when you wake up", "before going to bed", "at lunch", "when you meet someone in the morning"], "bonne": 2, "explication": "'Good night' is used when leaving or going to sleep."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "I'm hungry. I want ___ eat.", "choix": ["for", "at", "by", "to"], "bonne": 4, "explication": "'Want' is followed by a to-infinitive."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which word is the past tense of 'see'?", "choix": ["saw", "seen", "sees", "seeing"], "bonne": 1, "explication": "See – saw – seen."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which sentence about a cat is correct?", "choix": ["She have a cat.", "She haves a cat.", "She has a cat.", "She having a cat."], "bonne": 3, "explication": "The third person singular of 'have' is 'has'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "What is the capital of England?", "choix": ["London", "Paris", "Madrid", "Rome"], "bonne": 1, "explication": "London is the capital of England and of the United Kingdom."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "Which language is spoken in the USA?", "choix": ["French", "English", "Arabic", "Chinese"], "bonne": 2, "explication": "English is the main language of the United States."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "The word 'please' is used to:", "choix": ["say goodbye", "say sorry", "make a polite request", "say thank you"], "bonne": 3, "explication": "'Please' makes a request polite."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "facile", "question": "A year has ___ months.", "choix": ["ten", "eleven", "thirteen", "twelve"], "bonne": 4, "explication": "There are twelve months in a year."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "A good way to introduce new vocabulary to beginners is to:", "choix": ["write long lists on the board and leave", "use pictures, objects and gestures", "only give the French translation", "ask them to guess without any help"], "bonne": 2, "explication": "Visual and concrete supports make meaning clear."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Which is the best way to start a lesson?", "choix": ["immediately give a test", "correct all homework without comment", "leave learners to talk freely", "greet learners, review the previous lesson and state the objective"], "bonne": 4, "explication": "A clear start sets the context and the goal."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Praising learners' efforts helps to:", "choix": ["build confidence and motivation", "make learners lazy", "avoid teaching grammar", "reduce the number of exercises"], "bonne": 1, "explication": "Positive feedback encourages learners to keep trying."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Pair work is useful because:", "choix": ["it lets the teacher rest", "it reduces the number of learners", "learners get more chances to speak", "it avoids any preparation"], "bonne": 3, "explication": "In pairs, many learners speak at the same time."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Instructions given to beginners should be:", "choix": ["long and complex", "given only in writing", "short, simple and demonstrated", "given in a low voice"], "bonne": 3, "explication": "Simple, short instructions with a demonstration avoid confusion."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Which skills are practised in a dictation?", "choix": ["listening and writing", "reading and speaking only", "speaking only", "none of them"], "bonne": 1, "explication": "Learners listen and write down what they hear."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "To check understanding after explaining a rule, the teacher can:", "choix": ["go on to the next lesson", "only ask 'Is that clear?'", "give a mark", "ask learners to give examples or do a short exercise"], "bonne": 4, "explication": "Practice shows whether learners really understood."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "The teacher should consider learners' mistakes as:", "choix": ["a sign of laziness", "a normal part of learning", "a reason for punishment", "a proof that the lesson is useless"], "bonne": 2, "explication": "Mistakes show what learners still need to work on."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Which material helps a listening lesson?", "choix": ["a blank wall", "a dictionary", "a map of Africa", "an audio recording or the teacher reading aloud"], "bonne": 4, "explication": "Listening needs spoken English as input."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Homework should be:", "choix": ["very long every day", "never corrected", "related to the lesson and corrected", "completely different from the lesson"], "bonne": 3, "explication": "Homework reinforces the lesson and needs feedback."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "A lesson plan helps the teacher to:", "choix": ["avoid teaching", "organise the lesson and manage time", "replace the curriculum", "skip the objectives"], "bonne": 2, "explication": "Planning structures activities and timing."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "To make a lesson lively, a teacher can use:", "choix": ["games, songs and role-plays", "only dictation", "only copying", "only silent reading"], "bonne": 1, "explication": "Varied, active tasks keep learners engaged."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "At the end of a lesson, it is useful to:", "choix": ["summarise the main points and check what was learnt", "leave without saying anything", "give a surprise test", "change the topic"], "bonne": 1, "explication": "A conclusion consolidates the learning."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "Using the board effectively means:", "choix": ["writing very small", "writing clearly and in an organised way", "erasing it immediately", "writing only in French"], "bonne": 2, "explication": "A clear board helps all learners follow."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "facile", "question": "A shy learner should be:", "choix": ["ignored", "forced to speak alone for a long time", "encouraged gently with easy tasks", "laughed at"], "bonne": 3, "explication": "Gentle encouragement builds confidence step by step."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A learner arrives late every day. What do you do?", "choix": ["lock him out for good", "ignore it", "shout at him in front of everyone", "talk to him privately to find the reason and agree on a solution"], "bonne": 4, "explication": "Understanding the cause helps solve the problem."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A learner forgot his book today. What do you do?", "choix": ["let him share with a classmate and remind him gently", "send him home", "give him zero", "stop the lesson"], "bonne": 1, "explication": "A practical solution keeps him in the lesson."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "Two learners are talking while you teach. What do you do?", "choix": ["hit them", "calmly ask them to stop, or move them to different seats", "ignore them for the whole lesson", "send them out for a week"], "bonne": 2, "explication": "A calm, proportionate response keeps order and respect."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A learner does not understand the lesson. What do you do?", "choix": ["tell him to stop coming", "repeat the same sentence louder", "explain again in a simpler way with examples", "laugh at him"], "bonne": 3, "explication": "Rephrasing with examples helps understanding."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A parent asks about his child's progress. What do you do?", "choix": ["refuse to talk", "say the child is hopeless", "send him to the headmaster", "meet him, explain the results kindly and suggest ways to help"], "bonne": 4, "explication": "Cooperation with parents supports the learner."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "You notice a learner cheating during a test. What do you do?", "choix": ["tear up the papers of the whole class", "say nothing", "calmly follow the school's rules and talk to the learner afterwards", "announce his name and humiliate him publicly"], "bonne": 3, "explication": "Follow the rules fairly and respectfully."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A learner feels sick during your class. What do you do?", "choix": ["let him rest or take him to the infirmary and inform the school", "tell him to continue", "ignore him", "make him leave alone without informing anyone"], "bonne": 1, "explication": "The learner's health and safety come first."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "Half of the class did not do the homework. What do you do?", "choix": ["punish everyone harshly", "find out why, then adapt the homework or give time to finish", "never give homework again", "give the same homework again, twice as long"], "bonne": 2, "explication": "Finding the cause allows a fair solution."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "You will be absent tomorrow. What do you do?", "choix": ["say nothing", "tell learners to stay at home", "cancel without telling anyone", "inform the administration and, if possible, prepare work for the class"], "bonne": 4, "explication": "Informing the school and preparing work ensures continuity."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "Learners find the lesson boring. What do you do?", "choix": ["tell them to be quiet", "add games, pictures or songs related to the topic", "teach faster", "give a test"], "bonne": 2, "explication": "Varied activities restore interest."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A new learner arrives in the middle of the year. What do you do?", "choix": ["ignore him", "put him in the corner", "welcome him, introduce him to the class and assess his level", "send him to another class"], "bonne": 3, "explication": "A warm welcome and a level check help integration."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A learner is proud to speak English but makes many mistakes. What do you do?", "choix": ["encourage him and correct gently", "laugh at him", "stop him from speaking", "correct every word loudly"], "bonne": 1, "explication": "Encouragement keeps him speaking while gentle correction improves accuracy."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "The class is too noisy at the start of the lesson. What do you do?", "choix": ["scream louder", "start the lesson anyway while they talk", "leave the room", "wait calmly, use a signal for silence and start when they are ready"], "bonne": 4, "explication": "A calm routine builds good classroom management."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "A learner uses his phone in class. What do you do?", "choix": ["ask him to put it away and apply the school's rules", "use it yourself", "throw it away", "ignore it"], "bonne": 1, "explication": "Apply the school rules calmly and consistently."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "facile", "question": "You made a spelling mistake on the board. What do you do?", "choix": ["pretend nothing happened", "correct it and thank the learner who noticed", "blame the learners", "erase the board and leave"], "bonne": 2, "explication": "Admitting and correcting a mistake sets a good example."}
+];
+const btn = document.getElementById("btn");
+onAuthStateChanged(auth, async (user) => {
+if (!user) { window.location.href = "connexion-admin.html"; return; }
+try {
+const s = await getDoc(doc(db, "admins", user.uid));
+if (!s.exists()) { etat("Accès refusé : ce compte n'est pas administrateur."); return; }
+etat("Prêt. " + QUESTIONS.length + " questions à importer.");
+btn.disabled = false;
+} catch (e) { etat("Erreur : " + (e.code || e.message)); }
+}, (e) => { etat("Erreur d'authentification : " + (e.code || e.message)); });
+btn.addEventListener("click", async () => {
+btn.disabled = true;
+const noms = { ANGLAIS: document.getElementById("nomAnglais").value.trim() };
+if (!noms.ANGLAIS) { etat("Remplissez le nom de la matière."); btn.disabled = false; return; }
+try {
+etat("Lecture de la banque existante...");
+const snap = await getDocs(collection(db, "questionsRecrutement"));
+const existantes = new Set(snap.docs.map(d => (d.data().matiere || "") + "||" + (d.data().question || "")));
+let ajoutees = 0, ignorees = 0, echecs = 0;
+for (const q of QUESTIONS) {
+const matiere = noms[q.m];
+if (existantes.has(matiere + "||" + q.question)) { ignorees++; continue; }
+try {
+await addDoc(collection(db, "questionsRecrutement"), {
+type: "qcm", matiere, difficulte: q.difficulte, categorie: q.categorie,
+question: q.question, choix: q.choix, reponseCorrecte: q.bonne - 1,
+explication: q.explication, bareme: null, corrigeIndicatif: null
+});
+ajoutees++;
+} catch (e) { echecs++; console.error(e); etat("Erreur sur une question : " + (e.code || e.message)); }
+etat("Import en cours... " + (ajoutees + ignorees + echecs) + " / " + QUESTIONS.length);
+}
+etat("Terminé ✅\nAjoutées : " + ajoutees + "\nDéjà présentes : " + ignorees + "\nÉchecs : " + echecs + "\n\nVous pouvez maintenant supprimer ce fichier de GitHub.");
+} catch (e) { etat("Erreur : " + (e.code || e.message)); btn.disabled = false; }
+});
+</script></body></html>
