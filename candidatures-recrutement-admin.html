@@ -374,7 +374,14 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 <p id="popupAutoriserQuestion" style="color:#333;font-size:15px;margin-bottom:20px;">Voulez-vous autoriser ce candidat à passer le test ?</p>
 
 <label>Matière</label><input type="text" id="paramMatiere" style="width:100%;">
-<label>Niveau</label><input type="text" id="paramNiveau" style="width:100%;">
+<label>Niveau d'enseignement</label><input type="text" id="paramNiveau" style="width:100%;">
+<label>Niveau du test (difficulté des questions)</label>
+<select id="paramDifficulte" style="width:100%;padding:10px;font-size:15px;border:1px solid #ccc;border-radius:8px;margin-bottom:6px;">
+<option value="">Tous niveaux (mélange)</option>
+<option value="facile">Facile</option>
+<option value="moyen">Moyen</option>
+<option value="difficile">Difficile</option>
+</select>
 
 <div class="score-grille" style="grid-template-columns:1fr 100px;margin-top:10px;">
 <label>Durée (minutes)</label><input type="number" id="paramDuree" min="10" max="180" value="60">
@@ -734,8 +741,7 @@ async function afficherTest(id) {
             `).join("");
             return;
         }
-
-        // Écoute en temps réel tant que la fenêtre est ouverte sur ce candidat
+ // Écoute en temps réel tant que la fenêtre est ouverte sur ce candidat
         arreterEcouteTest = onSnapshot(doc(db, "testsRecrutement", id), (snap) => {
             if (snap.exists()) rendreTest(snap.data(), c);
         }, (error) => {
@@ -1089,6 +1095,7 @@ function ouvrirPopupAutoriser() {
     document.getElementById("popupAutoriserQuestion").textContent = `Voulez-vous autoriser ${nom} à passer le test ?`;
     document.getElementById("paramMatiere").value = (c.matieres && c.matieres[0]) || "";
     document.getElementById("paramNiveau").value = (c.niveaux && c.niveaux.join(", ")) || "";
+    document.getElementById("paramDifficulte").value = (c.parametresTest && c.parametresTest.difficulte) || "";
     document.getElementById("paramDuree").value = 60;
     document.getElementById("paramQuestions").value = 30;
     document.getElementById("paramTentatives").value = 1;
@@ -1128,9 +1135,10 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
 
     const matiereChoisie = document.getElementById("paramMatiere").value.trim();
     const niveauChoisi = document.getElementById("paramNiveau").value.trim();
+    const difficulteChoisie = document.getElementById("paramDifficulte").value;
     const dureeMinutes = Number(document.getElementById("paramDuree").value) || 60;
     const nombreQuestions = Number(document.getElementById("paramQuestions").value) || 30;
-    const tentativesAutorisees = Number(document.getElementById("paramTentatives").value) || 1;
+ const tentativesAutorisees = Number(document.getElementById("paramTentatives").value) || 1;
     const expirationHeures = Number(document.getElementById("paramExpiration").value) || 72;
 
     window.showLoading("Autorisation en cours...");
@@ -1145,7 +1153,7 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
             statut: "test_autorise",
             documentsStatut: "valides",
             autorisationTestId: idAutorisation,
-            parametresTest: { matiere: matiereChoisie, niveau: niveauChoisi, dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
+            parametresTest: { matiere: matiereChoisie, niveau: niveauChoisi, difficulte: difficulteChoisie, dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
             messageAdmin: document.getElementById("commentaireAdmin").value.trim() || "Félicitations, vous êtes autorisé(e) à passer le test EDUFORCI.",
             historique: arrayUnion({ date: maintenant.toISOString(), action: `Test autorisé — session ${idAutorisation}` })
         });
@@ -1159,6 +1167,7 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
             <div class="info-ligne"><span class="cle">Statut</span><span class="val">🟣 Autorisé</span></div>
             <div class="info-ligne"><span class="cle">Matière</span><span class="val">${matiereChoisie || "-"}</span></div>
             <div class="info-ligne"><span class="cle">Niveau</span><span class="val">${niveauChoisi || "-"}</span></div>
+            <div class="info-ligne"><span class="cle">Niveau du test</span><span class="val">${difficulteChoisie || "Tous niveaux"}</span></div>
             <div class="info-ligne"><span class="cle">Durée</span><span class="val">${dureeMinutes} min</span></div>
             <div class="info-ligne"><span class="cle">Questions</span><span class="val">${nombreQuestions}</span></div>
             <div class="info-ligne"><span class="cle">Début possible</span><span class="val">${maintenant.toLocaleDateString("fr-FR")}</span></div>
