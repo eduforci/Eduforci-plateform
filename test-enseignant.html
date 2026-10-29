@@ -155,6 +155,7 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, arra
 
 let DUREE_SECONDES = 60 * 60;   // 60 minutes par défaut, ajustable via candidature.parametresTest
 let NB_QUESTIONS = 30;
+let DIFFICULTE_TEST = "";   // "", "facile", "moyen" ou "difficile" (défini par l'admin dans parametresTest.difficulte)
 const NB_QUESTIONS_OUVERTES = 4;   // questions ouvertes (rédaction), notées manuellement, en plus du QCM
 let TENTATIVES_AUTORISEES = 1;
 let EXPIRATION_HEURES = 72;
@@ -251,6 +252,7 @@ onAuthStateChanged(auth, async (user) => {
     const parametres = candidature.parametresTest || {};
     DUREE_SECONDES = (parametres.dureeMinutes || 60) * 60;
     NB_QUESTIONS = parametres.nombreQuestions || 30;
+    DIFFICULTE_TEST = parametres.difficulte || "";
     TENTATIVES_AUTORISEES = parametres.tentativesAutorisees || 1;
     EXPIRATION_HEURES = parametres.expirationHeures || 72;
 
@@ -388,7 +390,7 @@ function afficherEcranAccueil(expiration) {
             </div>
             <div class="certif">
                 <input type="checkbox" class="case-certif" id="certif2">
-                <label for="certif2">Je réaliserai cette évaluation avec honnêteté et intégrité.</label>
+                                <label for="certif2">Je réaliserai cette évaluation avec honnêteté et intégrité.</label>
             </div>
             <div class="certif">
                 <input type="checkbox" class="case-certif" id="certif3">
@@ -447,8 +449,18 @@ async function demarrerTest() {
             return;
         }
 
-        const toutesLesQuestions = [];
+        let toutesLesQuestions = [];
         snap.forEach((d) => toutesLesQuestions.push({ id: d.id, ...d.data() }));
+
+        // Niveau du test choisi par l'admin : on ne garde que les questions de cette difficulté
+        if (DIFFICULTE_TEST) {
+            toutesLesQuestions = toutesLesQuestions.filter(q => q.difficulte === DIFFICULTE_TEST);
+            if (toutesLesQuestions.length === 0) {
+                window.hideLoading();
+                afficherEtat("⚠️", "Banque de questions indisponible", `Aucune question de niveau « ${DIFFICULTE_TEST} » n'est encore disponible pour la matière « ${matiere} ». Merci de contacter l'équipe EDUFORCI.`);
+                return;
+            }
+        }
 
         const banqueQcm = toutesLesQuestions.filter(q => q.type !== "ouverte");
         const banqueOuvertes = toutesLesQuestions.filter(q => q.type === "ouverte");
@@ -852,7 +864,7 @@ async function finaliserTest(motif, type = "normal") {
     if (finalisationEnCours || (test && test.terminé)) return;
     finalisationEnCours = true;
 
-    if (intervalChrono) clearInterval(intervalChrono);
+   if (intervalChrono) clearInterval(intervalChrono);
     window.removeEventListener("beforeunload", () => {});
     document.getElementById("overlayAvertissement").classList.remove("visible");
     sortirPleinEcran();
