@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importer des questions de Français — EDUFORCI</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f5fa;margin:0;padding:16px;color:#153A73}
+.carte{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+h1{font-size:20px;margin-top:0}label{display:block;font-weight:bold;margin-top:14px}
+input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px;margin-top:4px}
+button{width:100%;margin-top:18px;padding:14px;font-size:16px;font-weight:bold;color:#fff;background:#153A73;border:0;border-radius:10px}
+button:disabled{opacity:.5}#etat{margin-top:16px;padding:12px;border-radius:8px;background:#eef2fb;white-space:pre-wrap;font-size:14px}
+</style></head><body><div class="carte">
+<h1>Importer 90 questions de Français (facile)</h1>
+<p>Niveau facile. QCM : connaissances disciplinaires (60), pédagogie (15), études de cas (15). Les questions déjà présentes ne sont pas dupliquées.</p>
+<label>Nom de la matière Français (comme les enseignants la saisissent)</label><input id="nomFrancais" value="Français">
+<button id="btn" disabled>Importer</button>
+<div id="etat">Vérification de votre accès administrateur...</div>
+</div>
+<script type="module">
+const etat = (t) => { document.getElementById("etat").textContent = t; };
+let auth, db, onAuthStateChanged, doc, getDoc, collection, addDoc, getDocs;
+try {
+etat("Chargement de la configuration du site...");
+({ auth, db } = await import("./js/firebase.js"));
+etat("Chargement de l'authentification...");
+({ onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js"));
+etat("Chargement de la base de données...");
+({ doc, getDoc, collection, addDoc, getDocs } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"));
+} catch (e) { etat("Erreur de chargement : " + (e.message || e) + "\n\nVérifiez la connexion internet et que le fichier est bien à la racine du site, à côté du dossier js."); throw e; }
+etat("Vérification de votre accès administrateur...");
+setTimeout(() => { if (document.getElementById("btn").disabled && document.getElementById("etat").textContent.startsWith("Vérification")) etat("Toujours en attente de la connexion à votre compte.\n\nConnectez-vous d'abord sur connexion-admin.html, puis rouvrez cette page. Vérifiez aussi la qualité de votre connexion internet."); }, 15000);
+const QUESTIONS = [
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le pluriel de « cheval » ?","choix":["chevalx","chevaus","chevaux","chevals"],"bonne":3,"explication":"Les noms en -al font généralement leur pluriel en -aux."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est l'article défini féminin singulier ?","choix":["un","la","le","les"],"bonne":2,"explication":"« La » est l'article défini féminin singulier."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Dans « Le chat dort », quel est le sujet du verbe ?","choix":["dort","Le chat","Le chat dort","Le"],"bonne":2,"explication":"Le sujet répond à la question « qui est-ce qui dort ? »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot est un verbe ?","choix":["courir","table","lentement","joli"],"bonne":1,"explication":"« Courir » exprime une action : c'est un verbe à l'infinitif."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le contraire de « grand » ?","choix":["large","long","haut","petit"],"bonne":4,"explication":"« Petit » est l'antonyme de « grand »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Elles ___ parties hier. »","choix":["a","est","sont","ont"],"bonne":3,"explication":"Le verbe « partir » se conjugue avec l'auxiliaire être : elles sont parties."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle est la conjugaison de « aimer » à la 1re personne du pluriel au présent ?","choix":["nous aiment","nous aimes","nous aimons","nous aimez"],"bonne":3,"explication":"Avec « nous », la terminaison est -ons."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle phrase est correctement écrite ?","choix":["Les enfant jouent dans la cour.","Les enfants joue dans la cour.","Les enfants jouons dans la cour.","Les enfants jouent dans la cour."],"bonne":4,"explication":"Le verbe s'accorde avec le sujet pluriel « les enfants »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot est un synonyme de « content » ?","choix":["fatigué","heureux","fâché","triste"],"bonne":2,"explication":"« Heureux » a un sens proche de « content »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel signe de ponctuation termine une phrase interrogative ?","choix":["la virgule","le point d'interrogation","le point d'exclamation","le point"],"bonne":2,"explication":"Une question se termine par « ? »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le féminin de « acteur » ?","choix":["acteuse","actrice","actoresse","actrisse"],"bonne":2,"explication":"Le féminin de « acteur » est « actrice »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle est la nature du mot « rapidement » ?","choix":["adjectif","verbe","nom","adverbe"],"bonne":4,"explication":"« Rapidement » modifie un verbe et est invariable : c'est un adverbe."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Il ___ beau aujourd'hui. »","choix":["fait","faites","faire","font"],"bonne":1,"explication":"Avec « il », le verbe « faire » se conjugue « fait »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Il ___ faim. »","choix":["a","à","as","ah"],"bonne":1,"explication":"Ici, c'est le verbe « avoir » : on peut dire « il avait faim »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Mon frère et moi ___ au marché. »","choix":["allez","allons","va","vont"],"bonne":2,"explication":"Le sujet « mon frère et moi » équivaut à « nous » : nous allons."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le participe passé du verbe « finir » ?","choix":["finissez","fini","finir","finissant"],"bonne":2,"explication":"Le participe passé de « finir » est « fini »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « ___ élèves sont attentifs. »","choix":["La","Un","Le","Les"],"bonne":4,"explication":"« Élèves » est au pluriel : il faut l'article « les »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot est correctement orthographié ?","choix":["maisson","meson","maison","maizon"],"bonne":3,"explication":"L'orthographe correcte est « maison »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Le mot « cahier » est de genre :","choix":["neutre","féminin","variable","masculin"],"bonne":4,"explication":"On dit « un cahier » : le mot est masculin."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le contraire de « jour » ?","choix":["matin","midi","nuit","soir"],"bonne":3,"explication":"« Nuit » est l'antonyme de « jour »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"À quel temps est conjugué « nous mangeons » ?","choix":["le passé composé","l'imparfait","le futur","le présent"],"bonne":4,"explication":"« Nous mangeons » est au présent de l'indicatif."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle phrase est une phrase interrogative ?","choix":["Où habites-tu ?","Quel beau jardin !","Ferme la porte.","Il pleut."],"bonne":1,"explication":"Elle pose une question."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le féminin de « un lion » ?","choix":["une lionnée","une lionesse","une lione","une lionne"],"bonne":4,"explication":"Le féminin de « lion » est « lionne »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le féminin de « beau » ?","choix":["beauté","beaule","belle","bele"],"bonne":3,"explication":"Le féminin de « beau » est « belle »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Les oiseaux ___ dans l'arbre. »","choix":["chantes","chantons","chante","chantent"],"bonne":4,"explication":"Le verbe s'accorde avec le sujet pluriel « les oiseaux »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Combien de syllabes comporte le mot « bateau » ?","choix":["3","2","4","1"],"bonne":2,"explication":"On prononce « ba-teau » : deux syllabes."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot est invariable ?","choix":["maison","joli","chanter","toujours"],"bonne":4,"explication":"« Toujours » est un adverbe : il ne varie ni en genre ni en nombre."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle est la 3e personne du singulier du verbe « être » au présent ?","choix":["il est","il êtes","il es","il suis"],"bonne":1,"explication":"On dit « il est »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « J'___ un livre. »","choix":["ont","as","ai","a"],"bonne":3,"explication":"Avec « je », le verbe « avoir » se conjugue « j'ai »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est l'infinitif de « il mangeait » ?","choix":["manger","mangé","mangeur","mangeait"],"bonne":1,"explication":"« Mangeait » est une forme conjuguée du verbe « manger »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « ___ va bien ? »","choix":["Sa","Çà","Ça","Ca"],"bonne":3,"explication":"« Ça » est un pronom démonstratif : « Cela va bien ? »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Qui a écrit « Le Petit Prince » ?","choix":["Antoine de Saint-Exupéry","Molière","Victor Hugo","Jules Verne"],"bonne":1,"explication":"« Le Petit Prince » a été publié en 1943."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Qui a écrit « Les Soleils des indépendances » ?","choix":["Bernard Dadié","Ahmadou Kourouma","Camara Laye","Léopold Sédar Senghor"],"bonne":2,"explication":"C'est le premier roman d'Ahmadou Kourouma, écrivain ivoirien."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Léopold Sédar Senghor est un poète originaire de quel pays ?","choix":["la Côte d'Ivoire","la Guinée","le Mali","le Sénégal"],"bonne":4,"explication":"Senghor a été poète et premier président du Sénégal."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Un texte qui raconte des événements est un texte :","choix":["narratif","poétique","injonctif","descriptif"],"bonne":1,"explication":"Le texte narratif raconte une histoire."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Une fable se termine souvent par :","choix":["une morale","une recette","une lettre","un dialogue"],"bonne":1,"explication":"La morale est la leçon que l'on tire de la fable."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Qui a écrit les « Fables » célèbres comme « Le Corbeau et le Renard » ?","choix":["Voltaire","Jean de La Fontaine","Victor Hugo","Molière"],"bonne":2,"explication":"Ces fables ont été écrites par Jean de La Fontaine."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Une phrase commence par :","choix":["une majuscule","une virgule","un point","une minuscule"],"bonne":1,"explication":"Toute phrase commence par une majuscule."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot est un adjectif qualificatif ?","choix":["joyeux","sous","demain","chanter"],"bonne":1,"explication":"« Joyeux » qualifie un nom."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Ils ___ faim. »","choix":["avons","a","ont","avez"],"bonne":3,"explication":"Avec « ils », on écrit « ont »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Comment conjugue-t-on « finir » au présent avec « tu » ?","choix":["tu finis","tu finnis","tu fini","tu finit"],"bonne":1,"explication":"Avec « tu », la terminaison est -is."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Un synonyme est un mot qui a :","choix":["la même orthographe","un sens contraire","le même nombre de lettres","un sens proche"],"bonne":4,"explication":"Deux synonymes ont des sens proches."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot se prononce comme « mer » ?","choix":["mois","maire","mur","mal"],"bonne":2,"explication":"« Mer », « mère » et « maire » sont des homophones."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Tu ___ bien. » (chanter)","choix":["chante","chanter","chantent","chantes"],"bonne":4,"explication":"Avec « tu », le verbe se termine par -es."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Comment s'appelle le signe « ! » ?","choix":["le point-virgule","le point d'interrogation","le point d'exclamation","la virgule"],"bonne":3,"explication":"Il termine une phrase exclamative."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le pluriel de « journal » ?","choix":["journeaux","journaux","journals","journaus"],"bonne":2,"explication":"Les noms en -al font leur pluriel en -aux."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « La fille ___ chante est ma sœur. »","choix":["où","dont","que","qui"],"bonne":4,"explication":"« Qui » est le pronom relatif sujet."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le féminin de « gentil » ?","choix":["gentillle","gentile","gentil","gentille"],"bonne":4,"explication":"Le féminin de « gentil » est « gentille »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle est la nature du mot « Aya » dans « Aya lit un livre » ?","choix":["un pronom","un verbe","un nom propre","un adjectif"],"bonne":3,"explication":"« Aya » est un prénom : un nom propre, qui s'écrit avec une majuscule."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Nous ___ le bus. » (prendre)","choix":["prend","prenez","prenons","prennent"],"bonne":3,"explication":"Avec « nous », on écrit « prenons »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel mot appartient à la famille de « terre » ?","choix":["tire","terrain","teint","tarte"],"bonne":2,"explication":"« Terrain » vient de « terre »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le contraire de « monter » ?","choix":["descendre","sauter","avancer","grimper"],"bonne":1,"explication":"« Descendre » est l'antonyme de « monter »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Dans « La maîtresse corrige les cahiers », quel est le COD ?","choix":["La maîtresse corrige","corrige","La maîtresse","les cahiers"],"bonne":4,"explication":"On répond à la question « corrige quoi ? »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Combien de lettres compte l'alphabet français ?","choix":["28","26","24","25"],"bonne":2,"explication":"L'alphabet français compte 26 lettres."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Un poème est composé de :","choix":["chapitres","actes","vers et de strophes","paragraphes"],"bonne":3,"explication":"Les vers forment des strophes."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Une pièce de théâtre est divisée en :","choix":["chapitres","actes et en scènes","strophes","paragraphes"],"bonne":2,"explication":"Le théâtre se découpe en actes, eux-mêmes divisés en scènes."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quel est le passé composé de « parler » avec « elle » ?","choix":["elle a parler","elle est parlé","elle a parlé","elle parlé"],"bonne":3,"explication":"Le passé composé se forme avec l'auxiliaire et le participe passé."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Quelle orthographe est correcte ?","choix":["école","ecole","éscole","écolle"],"bonne":1,"explication":"« École » s'écrit avec un accent aigu sur le « é »."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"Complète : « Ma mère et ma sœur sont ___. »","choix":["gentils","gentille","gentilles","gentil"],"bonne":3,"explication":"L'adjectif s'accorde en genre et en nombre : féminin pluriel."},
+{"m":"FRANCAIS","categorie":"disciplinaire","difficulte":"facile","question":"La phrase « Range ta chambre. » exprime :","choix":["un ordre","une description","un souhait","une question"],"bonne":1,"explication":"C'est une phrase impérative."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Pour apprendre à lire à des débutants, une bonne démarche consiste à :","choix":["associer sons, lettres et mots dans des situations concrètes","faire recopier un dictionnaire","éviter tout travail sur les sons","ne travailler que la lecture silencieuse"],"bonne":1,"explication":"Le lien entre sons, lettres et mots donne du sens à la lecture."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"La dictée sert surtout à travailler :","choix":["le calcul mental","la gymnastique","l'orthographe et l'écoute","le dessin"],"bonne":3,"explication":"Elle mobilise l'écoute, la mémoire et l'orthographe."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Pour enrichir le vocabulaire des élèves, il faut :","choix":["leur faire recopier le dictionnaire","éviter la lecture","ne jamais les faire parler","les faire lire et réutiliser les mots dans des phrases"],"bonne":4,"explication":"Un mot se retient quand on le rencontre et qu'on l'emploie."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Avant une activité d'écriture, l'enseignant doit :","choix":["donner une consigne claire et précise","ne rien expliquer","imposer un texte très long","corriger avant que l'élève écrive"],"bonne":1,"explication":"Une consigne claire aide l'élève à savoir ce qu'on attend de lui."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Pour corriger une erreur d'orthographe de façon constructive, on :","choix":["punit l'élève","explique la règle et fait réécrire","ignore toujours l'erreur","se moque de l'élève"],"bonne":2,"explication":"La correction doit aider à comprendre et à progresser."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"La lecture à voix haute régulière aide à développer :","choix":["la fluidité et la prononciation","la mémoire des chiffres","le dessin","le calcul"],"bonne":1,"explication":"Lire à voix haute entraîne la fluidité et l'expression."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Le brouillon sert à :","choix":["éviter d'écrire","perdre du temps","organiser ses idées avant de rédiger","remplacer le texte final"],"bonne":3,"explication":"Il permet de planifier et de corriger avant la version finale."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Pour donner aux élèves le goût de la lecture, il est utile de :","choix":["proposer des textes adaptés à leurs centres d'intérêt","ne jamais lire en classe","n'imposer que de très longs textes difficiles","interdire les livres hors programme"],"bonne":1,"explication":"Un texte accessible et intéressant motive à lire."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"L'évaluation diagnostique se fait généralement :","choix":["à la fin de l'année seulement","jamais","en début d'apprentissage, pour connaître le niveau des élèves","le jour de l'examen"],"bonne":3,"explication":"Elle permet d'adapter l'enseignement au niveau réel de la classe."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Une bonne consigne est :","choix":["différente pour chaque élève sans raison","courte, claire et précise","longue et floue","donnée en murmurant"],"bonne":2,"explication":"Une consigne simple évite les malentendus."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Face à un élève timide à l'oral, l'enseignant peut :","choix":["le forcer à parler longtemps seul","le mettre en confiance avec de petites prises de parole","l'ignorer","se moquer de lui"],"bonne":2,"explication":"La confiance se construit progressivement."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Pour apprendre la conjugaison, il est efficace de :","choix":["ne faire qu'une seule leçon","faire tout mémoriser sans exemple","proposer des exercices progressifs et réguliers","supprimer les exercices"],"bonne":3,"explication":"La régularité favorise la mémorisation."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Au tableau, l'enseignant doit :","choix":["écrire en désordre","écrire très petit","écrire lisiblement et de manière organisée","effacer immédiatement"],"bonne":3,"explication":"Un tableau clair aide tous les élèves à suivre."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Une leçon de grammaire peut commencer par :","choix":["une règle donnée sans exemple","l'observation de phrases d'exemple","une dictée de vingt lignes","une interrogation écrite"],"bonne":2,"explication":"L'observation d'exemples permet de découvrir la règle."},
+{"m":"FRANCAIS","categorie":"pedagogie","difficulte":"facile","question":"Face à des élèves qui parlent d'autres langues à la maison, l'enseignant doit :","choix":["valoriser ces langues tout en développant le français","les ignorer","les interdire","punir ceux qui les parlent"],"bonne":1,"explication":"Les langues d'origine sont un appui pour apprendre le français."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un élève arrive en retard tous les jours. Que faites-vous ?","choix":["Vous ne faites rien","Vous lui interdisez définitivement l'entrée en classe","Vous l'humiliez devant la classe","Vous lui parlez en privé pour comprendre la raison et trouver une solution"],"bonne":4,"explication":"Comprendre la cause permet de trouver une solution adaptée."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un élève a oublié son livre de lecture. Que faites-vous ?","choix":["Vous le renvoyez chez lui","Vous lui mettez zéro","Vous arrêtez le cours","Vous le laissez partager celui d'un camarade et lui rappelez de l'apporter"],"bonne":4,"explication":"Une solution pratique le maintient dans la leçon."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Deux élèves bavardent pendant la leçon. Que faites-vous ?","choix":["Vous leur demandez calmement de se taire ou vous les séparez","Vous les excluez une semaine","Vous les ignorez tout le cours","Vous les frappez"],"bonne":1,"explication":"Une réaction calme et proportionnée maintient l'ordre et le respect."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un élève ne comprend pas la leçon de conjugaison. Que faites-vous ?","choix":["Vous vous moquez de lui","Vous réexpliquez plus simplement avec des exemples","Vous lui dites d'arrêter de venir","Vous répétez la même phrase plus fort"],"bonne":2,"explication":"Reformuler avec des exemples aide à comprendre."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un parent vous demande des nouvelles de son enfant. Que faites-vous ?","choix":["Vous dites que l'enfant est nul","Vous refusez de le recevoir","Vous l'envoyez au proviseur sans l'écouter","Vous le recevez, expliquez les résultats avec bienveillance et proposez des conseils"],"bonne":4,"explication":"La coopération avec les parents soutient l'élève."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Vous surprenez un élève en train de tricher pendant une dictée. Que faites-vous ?","choix":["Vous déchirez toutes les copies","Vous appliquez calmement le règlement et parlez ensuite à l'élève","Vous ne dites rien","Vous affichez son nom devant tous"],"bonne":2,"explication":"Il faut une réponse juste et éducative."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un élève se sent malade pendant votre cours. Que faites-vous ?","choix":["Vous le laissez se reposer ou l'accompagnez à l'infirmerie et prévenez l'école","Vous l'envoyez seul sans prévenir personne","Vous l'ignorez","Vous lui dites de continuer"],"bonne":1,"explication":"La santé et la sécurité de l'élève passent avant tout."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"La moitié de la classe n'a pas fait le devoir. Que faites-vous ?","choix":["Vous donnez un devoir deux fois plus long","Vous ne donnez plus jamais de devoirs","Vous punissez toute la classe sévèrement","Vous cherchez la cause puis adaptez le devoir ou donnez du temps"],"bonne":4,"explication":"Comprendre la cause permet une solution équitable."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Vous serez absent demain. Que faites-vous ?","choix":["Vous ne dites rien","Vous dites aux élèves de rester chez eux","Vous annulez sans informer personne","Vous prévenez l'administration et préparez du travail si possible"],"bonne":4,"explication":"Informer l'école assure la continuité des apprentissages."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Les élèves s'ennuient pendant la leçon. Que faites-vous ?","choix":["Vous accélérez le cours","Vous faites une interrogation surprise","Vous leur demandez de se taire","Vous ajoutez des jeux, des images ou des lectures liées au thème"],"bonne":4,"explication":"Des activités variées redonnent de l'intérêt."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un nouvel élève arrive en cours d'année. Que faites-vous ?","choix":["Vous l'ignorez","Vous l'accueillez, le présentez à la classe et évaluez son niveau","Vous l'envoyez dans une autre classe","Vous le mettez au fond sans rien dire"],"bonne":2,"explication":"Un bon accueil facilite l'intégration."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un élève fait beaucoup de fautes mais participe volontiers. Que faites-vous ?","choix":["Vous lui interdisez de parler","Vous corrigez chaque mot à voix haute","Vous l'encouragez et corrigez avec bienveillance","Vous vous moquez de ses fautes"],"bonne":3,"explication":"L'encouragement entretient l'envie de s'exprimer."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"La classe est très bruyante au début du cours. Que faites-vous ?","choix":["Vous criez plus fort","Vous quittez la salle","Vous attendez calmement, utilisez un signal et commencez quand ils sont prêts","Vous commencez malgré le bruit"],"bonne":3,"explication":"Une routine calme installe de bonnes habitudes."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Un élève utilise son téléphone en classe. Que faites-vous ?","choix":["Vous lui demandez de le ranger et appliquez le règlement","Vous l'utilisez vous aussi","Vous ignorez la situation","Vous le jetez"],"bonne":1,"explication":"Il faut appliquer les règles avec calme et cohérence."},
+{"m":"FRANCAIS","categorie":"etude_de_cas","difficulte":"facile","question":"Vous vous apercevez d'une faute d'orthographe au tableau. Que faites-vous ?","choix":["Vous accusez les élèves","Vous la corrigez et remerciez l'élève qui l'a vue","Vous effacez et partez","Vous faites comme si de rien n'était"],"bonne":2,"explication":"Reconnaître son erreur donne l'exemple."}
+];
+const btn = document.getElementById("btn");
+onAuthStateChanged(auth, async (user) => {
+if (!user) { window.location.href = "connexion-admin.html"; return; }
+try {
+const s = await getDoc(doc(db, "admins", user.uid));
+if (!s.exists()) { etat("Accès refusé : ce compte n'est pas administrateur."); return; }
+etat("Prêt. " + QUESTIONS.length + " questions à importer.");
+btn.disabled = false;
+} catch (e) { etat("Erreur : " + (e.code || e.message)); }
+}, (e) => { etat("Erreur d'authentification : " + (e.code || e.message)); });
+btn.addEventListener("click", async () => {
+btn.disabled = true;
+const noms = { FRANCAIS: document.getElementById("nomFrancais").value.trim() };
+if (!noms.FRANCAIS) { etat("Remplissez le nom de la matière."); btn.disabled = false; return; }
+try {
+etat("Lecture de la banque existante...");
+const snap = await getDocs(collection(db, "questionsRecrutement"));
+const existantes = new Set(snap.docs.map(d => (d.data().matiere || "") + "||" + (d.data().question || "")));
+let ajoutees = 0, ignorees = 0, echecs = 0;
+for (const q of QUESTIONS) {
+const matiere = noms[q.m];
+if (existantes.has(matiere + "||" + q.question)) { ignorees++; continue; }
+try {
+await addDoc(collection(db, "questionsRecrutement"), {
+type: "qcm", matiere, difficulte: q.difficulte, categorie: q.categorie,
+question: q.question, choix: q.choix, reponseCorrecte: q.bonne - 1,
+explication: q.explication, bareme: null, corrigeIndicatif: null
+});
+ajoutees++;
+} catch (e) { echecs++; console.error(e); etat("Erreur sur une question : " + (e.code || e.message)); }
+etat("Import en cours... " + (ajoutees + ignorees + echecs) + " / " + QUESTIONS.length);
+}
+etat("Terminé ✅\nAjoutées : " + ajoutees + "\nDéjà présentes : " + ignorees + "\nÉchecs : " + echecs + "\n\nVous pouvez maintenant supprimer ce fichier de GitHub.");
+} catch (e) { etat("Erreur : " + (e.code || e.message)); btn.disabled = false; }
+});
+</script></body></html>
