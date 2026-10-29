@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importer des questions d'Anglais — EDUFORCI</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f3f5fa;margin:0;padding:16px;color:#153A73}
+.carte{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+h1{font-size:20px;margin-top:0}label{display:block;font-weight:bold;margin-top:14px}
+input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #ccc;border-radius:8px;margin-top:4px}
+button{width:100%;margin-top:18px;padding:14px;font-size:16px;font-weight:bold;color:#fff;background:#153A73;border:0;border-radius:10px}
+button:disabled{opacity:.5}#etat{margin-top:16px;padding:12px;border-radius:8px;background:#eef2fb;white-space:pre-wrap;font-size:14px}
+</style></head><body><div class="carte">
+<h1>Importer 90 questions d'Anglais (moyen, 3e–Tle)</h1>
+<p>Niveau moyen, 3e–Tle. QCM : connaissances disciplinaires (60), pédagogie (15), études de cas (15). Les questions déjà présentes ne sont pas dupliquées.</p>
+<label>Nom de la matière Anglais (comme les enseignants la saisissent)</label><input id="nomAnglais" value="Anglais">
+<button id="btn" disabled>Importer</button>
+<div id="etat">Vérification de votre accès administrateur...</div>
+</div>
+<script type="module">
+const etat = (t) => { document.getElementById("etat").textContent = t; };
+let auth, db, onAuthStateChanged, doc, getDoc, collection, addDoc, getDocs;
+try {
+etat("Chargement de la configuration du site...");
+({ auth, db } = await import("./js/firebase.js"));
+etat("Chargement de l'authentification...");
+({ onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js"));
+etat("Chargement de la base de données...");
+({ doc, getDoc, collection, addDoc, getDocs } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"));
+} catch (e) { etat("Erreur de chargement : " + (e.message || e) + "\n\nVérifiez la connexion internet et que le fichier est bien à la racine du site, à côté du dossier js."); throw e; }
+etat("Vérification de votre accès administrateur...");
+setTimeout(() => { if (document.getElementById("btn").disabled && document.getElementById("etat").textContent.startsWith("Vérification")) etat("Toujours en attente de la connexion à votre compte.\n\nConnectez-vous d'abord sur connexion-admin.html, puis rouvrez cette page. Vérifiez aussi la qualité de votre connexion internet."); }, 15000);
+const QUESTIONS = [
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She has lived here ___ 2010.", "choix": ["for", "during", "since", "from"], "bonne": 3, "explication": "'Since' is used with a starting point in the past."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "If it rains tomorrow, we ___ at home.", "choix": ["will stay", "would stay", "stayed", "staying"], "bonne": 1, "explication": "First conditional: if + present simple, will + base verb."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "He asked me where ___.", "choix": ["do I live", "did I live", "I do live", "I lived"], "bonne": 4, "explication": "In reported questions, the word order is that of a statement and the tense shifts back."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The book ___ by millions of people.", "choix": ["has read", "has been read", "have been read", "is reading"], "bonne": 2, "explication": "Present perfect passive with a singular subject: has been read."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "I'm looking forward to ___ you.", "choix": ["see", "seeing", "saw", "seen"], "bonne": 2, "explication": "In 'look forward to', 'to' is a preposition followed by -ing."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She told me ___ late.", "choix": ["don't be", "to not being", "do not to be", "not to be"], "bonne": 4, "explication": "Reported orders use 'told + object + (not) to-infinitive'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "By next year, I ___ my studies.", "choix": ["will have finished", "finished", "finishing", "had finish"], "bonne": 1, "explication": "Future perfect expresses completion before a future time."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "This is the house ___ I was born.", "choix": ["who", "which", "where", "whose"], "bonne": 3, "explication": "'Where' introduces a relative clause of place."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Neither of the boys ___ the answer.", "choix": ["knows", "know", "are knowing", "have known"], "bonne": 1, "explication": "'Neither' takes a singular verb in standard English."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "He's not as tall ___ his brother.", "choix": ["than", "as", "that", "like"], "bonne": 2, "explication": "The structure is 'not as ... as'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "You ___ smoke here. It's forbidden.", "choix": ["needn't", "don't have to", "mustn't", "may"], "bonne": 3, "explication": "'Mustn't' expresses prohibition."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "I ___ my keys. I can't find them.", "choix": ["lose", "was losing", "have lose", "have lost"], "bonne": 4, "explication": "The present perfect links a past action to a present result."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which word is a synonym of 'begin'?", "choix": ["finish", "stop", "continue", "start"], "bonne": 4, "explication": "'Start' and 'begin' have the same meaning."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The phrasal verb 'to look after' means:", "choix": ["to search", "to admire", "to take care of", "to look at"], "bonne": 3, "explication": "'Look after' = take care of."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "He is interested ___ music.", "choix": ["on", "in", "at", "for"], "bonne": 2, "explication": "'Interested' is followed by 'in'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "I'd rather ___ at home tonight.", "choix": ["stay", "to stay", "staying", "stayed"], "bonne": 1, "explication": "'Would rather' is followed by the base form."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The man ___ lives next door is a teacher.", "choix": ["whose", "whom", "who", "which"], "bonne": 3, "explication": "'Who' is the relative pronoun for a person as subject."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which sentence uses the present perfect correctly?", "choix": ["I have been to Paris twice.", "I have went to Paris twice.", "I have be to Paris twice.", "I am been to Paris twice."], "bonne": 1, "explication": "Present perfect = have + past participle (been)."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Unless you hurry, you ___ the train.", "choix": ["missed", "would miss", "are missing", "will miss"], "bonne": 4, "explication": "First conditional: 'unless' + present simple, 'will' + base verb."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She apologised ___ being late.", "choix": ["of", "for", "about to", "with"], "bonne": 2, "explication": "'Apologise for' + -ing."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The plural of 'woman' is:", "choix": ["womans", "women", "womens", "womanes"], "bonne": 2, "explication": "'Woman' has an irregular plural: 'women'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "What does 'reliable' mean?", "choix": ["noisy", "weak", "expensive", "dependable"], "bonne": 4, "explication": "A reliable person or thing can be trusted."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which sentence is in the passive voice?", "choix": ["The letter was written yesterday.", "She wrote a letter.", "They are writing a letter.", "He writes letters."], "bonne": 1, "explication": "The subject receives the action: was written."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "I wish I ___ a car.", "choix": ["have", "will have", "had", "would have"], "bonne": 3, "explication": "A wish about the present uses the past simple."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which spelling is correct?", "choix": ["necessary", "neccessary", "necesary", "necessery"], "bonne": 1, "explication": "'Necessary' has one 'c' and two 's'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She speaks English ___ than me.", "choix": ["more fluent", "more fluently", "most fluently", "fluentlier"], "bonne": 2, "explication": "An adverb is needed; longer adverbs form the comparative with 'more'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "He suggested ___ early.", "choix": ["to leave", "leave", "leaving", "left"], "bonne": 3, "explication": "'Suggest' is followed by a gerund."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The meeting has been ___ because of the rain.", "choix": ["put on", "put in", "put up", "put off"], "bonne": 4, "explication": "'Put off' means 'postpone'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "'Although' can be replaced by:", "choix": ["because", "so", "therefore", "even though"], "bonne": 4, "explication": "Both express contrast."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "He ___ TV when the phone rang.", "choix": ["watched", "watches", "was watching", "has watched"], "bonne": 3, "explication": "The past continuous describes an action in progress interrupted by another."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "How ___ money do you have?", "choix": ["many", "much", "few", "lot"], "bonne": 2, "explication": "'Money' is uncountable: 'how much'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She is the ___ student in the class.", "choix": ["best", "most good", "better", "goodest"], "bonne": 1, "explication": "The superlative of 'good' is 'best'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "This exercise is ___ difficult for me.", "choix": ["enough", "so much", "too", "much"], "bonne": 3, "explication": "'Too' + adjective expresses an excess."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "I have never ___ sushi.", "choix": ["eaten", "ate", "eat", "eating"], "bonne": 1, "explication": "Present perfect: have + past participle (eaten)."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which of these is a conjunction?", "choix": ["slowly", "under", "table", "because"], "bonne": 4, "explication": "'Because' links two clauses."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The word 'unhappy' contains the prefix:", "choix": ["happy", "un-", "-y", "-hap"], "bonne": 2, "explication": "'Un-' is a negative prefix."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which sentence uses 'tell' or 'say' correctly?", "choix": ["He said me the truth.", "He told me the truth.", "He told to me the truth.", "He said to tell the truth me."], "bonne": 2, "explication": "'Tell' takes a direct personal object; 'say' does not."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "'Break a leg!' means:", "choix": ["Be careful!", "Stay at home!", "Run fast!", "Good luck!"], "bonne": 4, "explication": "It is an idiom used to wish someone good luck."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The past participle of 'write' is:", "choix": ["written", "wrote", "writed", "writing"], "bonne": 1, "explication": "Write – wrote – written."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which word begins with a silent 'k'?", "choix": ["kitchen", "keep", "knife", "key"], "bonne": 3, "explication": "In 'knife', the 'k' is silent."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Who wrote 'Romeo and Juliet'?", "choix": ["William Shakespeare", "Charles Dickens", "Jane Austen", "Mark Twain"], "bonne": 1, "explication": "Shakespeare wrote the tragedy in the 1590s."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "In which country is Big Ben?", "choix": ["United States", "United Kingdom", "Australia", "Canada"], "bonne": 2, "explication": "Big Ben is in London."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "What is the capital of the United States?", "choix": ["New York", "Los Angeles", "Washington, D.C.", "Chicago"], "bonne": 3, "explication": "Washington, D.C. is the capital."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "A synonym of 'huge' is:", "choix": ["tiny", "narrow", "quick", "enormous"], "bonne": 4, "explication": "'Enormous' means very large."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which word rhymes with 'light'?", "choix": ["lit", "lake", "list", "night"], "bonne": 4, "explication": "'Light' and 'night' share the sound /aɪt/."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "In 'a cup of tea', the noun 'tea' is:", "choix": ["countable", "a verb", "uncountable", "an adjective"], "bonne": 3, "explication": "'Tea' is uncountable here; we count containers (cups)."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which sound begins the word 'sheep'?", "choix": ["/s/", "/ʃ/", "/tʃ/", "/θ/"], "bonne": 2, "explication": "'Sh' is pronounced /ʃ/."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Complete the question tag: 'You're a teacher, ___?'", "choix": ["aren't you", "don't you", "isn't you", "are you"], "bonne": 1, "explication": "A positive statement takes a negative tag with the same auxiliary: aren't you?"},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She was born ___ 1998.", "choix": ["on", "at", "in", "by"], "bonne": 3, "explication": "We use 'in' with years."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "'Either ... or' is used to:", "choix": ["offer a choice between two options", "compare two things", "add information", "show a result"], "bonne": 1, "explication": "'Either A or B' presents two alternatives."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which sentence expresses a habit in the past?", "choix": ["He is smoking now.", "He will smoke tomorrow.", "He has smoked.", "He used to smoke."], "bonne": 4, "explication": "'Used to + base verb' describes past habits."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "A person who writes books is called an:", "choix": ["actor", "author", "architect", "artist"], "bonne": 2, "explication": "An author writes books."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "In 'He hardly ever calls', 'hardly ever' means:", "choix": ["very often", "almost never", "always", "sometimes"], "bonne": 2, "explication": "'Hardly ever' = almost never."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "The noun formed from 'to decide' is:", "choix": ["decided", "deciding", "decisive", "decision"], "bonne": 4, "explication": "Decide → decision."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which sentence with 'any' or 'some' is correct?", "choix": ["There isn't any milk.", "There isn't some milk.", "There aren't a milk.", "There no is milk."], "bonne": 1, "explication": "'Any' is used in negative sentences."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "She asked me ___ I wanted tea or coffee.", "choix": ["that", "what", "whether", "who"], "bonne": 3, "explication": "'Whether' introduces a reported yes/no or alternative question."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which word is an adjective?", "choix": ["careful", "carefully", "carefulness", "care"], "bonne": 1, "explication": "'Careful' describes a noun."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Complete: '___ going to the market.' (they are)", "choix": ["Their", "They're", "There", "Theirs"], "bonne": 2, "explication": "'They're' is the contraction of 'they are'."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "What does 'to turn down an offer' mean?", "choix": ["to accept it", "to improve it", "to refuse it", "to repeat it"], "bonne": 3, "explication": "'Turn down' = refuse."},
+{"m": "ANGLAIS", "categorie": "disciplinaire", "difficulte": "moyen", "question": "Which tense is used in: 'I have been studying English for three years'?", "choix": ["past simple", "past perfect", "present simple", "present perfect continuous"], "bonne": 4, "explication": "Have been + -ing is the present perfect continuous."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Which activity best practises the present perfect in a communicative way?", "choix": ["copying twenty sentences", "interviewing a partner: 'Have you ever ...?'", "memorising the rule only", "translating a text into French"], "bonne": 2, "explication": "A real information gap makes the structure meaningful."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "In a learner-centred classroom, the teacher's main role is to:", "choix": ["lecture for the whole lesson", "avoid any interaction", "decide everything alone", "facilitate learning and guide learners"], "bonne": 4, "explication": "The teacher organises and supports learners' own activity."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Scaffolding in language teaching means:", "choix": ["providing temporary support that is gradually removed", "punishing mistakes", "giving only advanced tasks", "teaching without materials"], "bonne": 1, "explication": "Support helps learners reach tasks they could not do alone yet."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Which is an example of an open question?", "choix": ["Is this a book?", "Do you like English?", "What did you do last weekend?", "Is it raining?"], "bonne": 3, "explication": "An open question needs a developed answer, not just yes or no."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "A good listening task for intermediate learners includes:", "choix": ["no tasks at all", "only reading the transcript", "a pre-listening activity, then gist and detail questions", "a translation of every word"], "bonne": 3, "explication": "Staged tasks develop listening strategies."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "To encourage reading for pleasure, a teacher can:", "choix": ["set up a class library with graded readers", "forbid any reading outside the textbook", "give only grammar exercises", "give only long academic texts"], "bonne": 1, "explication": "Accessible texts at the right level build a reading habit."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Peer correction is useful because it:", "choix": ["replaces all teacher feedback", "shames weaker learners", "makes the lesson shorter", "develops learners' awareness and autonomy"], "bonne": 4, "explication": "Learners learn by noticing and correcting each other's language."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Which is a good set of criteria to assess a short oral presentation?", "choix": ["the learner's height", "clarity, accuracy, fluency and organisation", "the learner's handwriting", "the learner's age"], "bonne": 2, "explication": "Criteria must relate to the skill being assessed."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "A warm-up activity at the beginning of a lesson is meant to:", "choix": ["finish the syllabus faster", "replace the main activity", "test learners", "activate learners' attention and prior knowledge"], "bonne": 4, "explication": "Warm-ups prepare learners mentally for the lesson."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "When a learner asks a question you cannot answer, you should:", "choix": ["invent an answer", "punish the learner", "say honestly that you will check and give the answer next time", "ignore the question"], "bonne": 3, "explication": "Honesty maintains credibility and models good learning habits."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Which feedback is the most helpful on a written paragraph?", "choix": ["'Bad.'", "specific comments on strengths and on what to improve", "only a mark", "'See me.'"], "bonne": 2, "explication": "Specific feedback shows learners how to improve."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Mixed-ability classes are best handled with:", "choix": ["tasks at different levels and flexible groups", "one single exercise for all", "only individual silent work", "exclusion of weak learners"], "bonne": 1, "explication": "Varied tasks allow every learner to progress."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "Grading criteria should be shared with learners because:", "choix": ["they know what is expected and can improve", "it saves time on correction", "it reduces the exam fee", "it makes tests easier"], "bonne": 1, "explication": "Transparent criteria support fairness and self-improvement."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "The main purpose of a role-play in class is to:", "choix": ["fill time", "practise language in realistic situations", "test grammar rules", "punish shy learners"], "bonne": 2, "explication": "Role-plays simulate real communication."},
+{"m": "ANGLAIS", "categorie": "pedagogie", "difficulte": "moyen", "question": "To teach a new tense, a good first step is to:", "choix": ["write the rule and leave", "give a long test", "present it in context with examples before explaining the rule", "translate every sentence"], "bonne": 3, "explication": "Meaning in context comes before the formal rule."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A group of learners always dominates discussions while others stay silent. What do you do?", "choix": ["silence the strong learners permanently", "allow it", "stop group discussions", "assign roles and use structured turn-taking so everyone speaks"], "bonne": 4, "explication": "Structure gives every learner a chance to speak."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A learner constantly asks for translation into French. What do you do?", "choix": ["gradually encourage English with gestures, synonyms and examples", "forbid all questions", "translate everything", "ignore him"], "bonne": 1, "explication": "Explaining in English builds independence while meaning stays clear."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "Your end-of-term results show that listening is the weakest skill. What do you do?", "choix": ["remove listening from the exam", "increase regular listening practice with varied tasks and strategies", "ignore it", "give more grammar only"], "bonne": 2, "explication": "Regular targeted practice improves the weakest skill."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A learner copies his neighbour's work in class exercises. What do you do?", "choix": ["tear up his notebook", "laugh", "discuss it privately and give individual tasks to check his understanding", "ignore it"], "bonne": 3, "explication": "A private talk and individual tasks address the cause."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A parent says homework is too difficult for the child. What do you do?", "choix": ["tell the parent to do it", "refuse to listen", "stop giving homework", "listen, look at examples together and adjust the level or provide guidance"], "bonne": 4, "explication": "Dialogue and adjustment help the learner without lowering standards blindly."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A colleague uses a very different method from yours and learners compare. What do you do?", "choix": ["criticise him in front of learners", "stop teaching", "explain that methods differ, share good practice with the colleague and focus on learning goals", "forbid any comparison"], "bonne": 3, "explication": "Professional respect and collaboration benefit learners."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A learner is being bullied because of his accent. What do you do?", "choix": ["intervene at once, support him and apply the school's rules with the administration", "tell him to ignore it", "blame the learner", "say nothing"], "bonne": 1, "explication": "Bullying must be stopped and the victim protected."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "Your projector breaks just as you start a video lesson. What do you do?", "choix": ["cancel the whole week", "switch to an activity using the transcript or the board, keeping the same objective", "blame the school", "send learners home"], "bonne": 2, "explication": "A flexible teacher keeps the learning objective."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "You have one hour but too much content for the lesson. What do you do?", "choix": ["rush through everything", "skip the practice", "go over time every day", "prioritise the main objective and move less essential content to the next lesson"], "bonne": 4, "explication": "Prioritising protects quality and practice time."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A learner always answers correctly in writing but never speaks English. What do you do?", "choix": ["give him all the marks", "encourage low-pressure speaking tasks and build his confidence", "force him to speak alone in front of everyone", "ignore it"], "bonne": 2, "explication": "Gradual speaking practice builds oral confidence."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "Several learners fail the test on the same grammar point. What do you do?", "choix": ["move on", "tell them to study alone", "re-teach it with new examples and targeted practice", "give lower marks"], "bonne": 3, "explication": "A shared weakness calls for re-teaching."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "The headmaster asks you to prepare learners for an English day event. What do you do?", "choix": ["plan simple tasks such as songs, sketches and poems with clear roles", "refuse", "do everything alone without learners", "cancel normal lessons for a month"], "bonne": 1, "explication": "Learners' participation with clear roles makes the event successful."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A learner says English is too difficult and wants to give up. What do you do?", "choix": ["agree with him", "force him with punishment", "ignore him", "set small achievable goals, show progress and give regular encouragement"], "bonne": 4, "explication": "Small successes rebuild motivation."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "Learners complain that the test was unfair. What do you do?", "choix": ["listen, explain how the test matched the lessons, and correct any real error", "refuse to talk", "change all the marks", "punish them"], "bonne": 1, "explication": "Listening and explaining maintains trust while protecting standards."},
+{"m": "ANGLAIS", "categorie": "etude_de_cas", "difficulte": "moyen", "question": "A learner's handwriting is almost unreadable. What do you do?", "choix": ["give zero", "encourage careful writing, give tips and, if necessary, assess content and presentation separately", "ignore it forever", "laugh at it"], "bonne": 2, "explication": "Support and separate criteria give a fair assessment."}
+];
+const btn = document.getElementById("btn");
+onAuthStateChanged(auth, async (user) => {
+if (!user) { window.location.href = "connexion-admin.html"; return; }
+try {
+const s = await getDoc(doc(db, "admins", user.uid));
+if (!s.exists()) { etat("Accès refusé : ce compte n'est pas administrateur."); return; }
+etat("Prêt. " + QUESTIONS.length + " questions à importer.");
+btn.disabled = false;
+} catch (e) { etat("Erreur : " + (e.code || e.message)); }
+}, (e) => { etat("Erreur d'authentification : " + (e.code || e.message)); });
+btn.addEventListener("click", async () => {
+btn.disabled = true;
+const noms = { ANGLAIS: document.getElementById("nomAnglais").value.trim() };
+if (!noms.ANGLAIS) { etat("Remplissez le nom de la matière."); btn.disabled = false; return; }
+try {
+etat("Lecture de la banque existante...");
+const snap = await getDocs(collection(db, "questionsRecrutement"));
+const existantes = new Set(snap.docs.map(d => (d.data().matiere || "") + "||" + (d.data().question || "")));
+let ajoutees = 0, ignorees = 0, echecs = 0;
+for (const q of QUESTIONS) {
+const matiere = noms[q.m];
+if (existantes.has(matiere + "||" + q.question)) { ignorees++; continue; }
+try {
+await addDoc(collection(db, "questionsRecrutement"), {
+type: "qcm", matiere, difficulte: q.difficulte, categorie: q.categorie,
+question: q.question, choix: q.choix, reponseCorrecte: q.bonne - 1,
+explication: q.explication, bareme: null, corrigeIndicatif: null
+});
+ajoutees++;
+} catch (e) { echecs++; console.error(e); etat("Erreur sur une question : " + (e.code || e.message)); }
+etat("Import en cours... " + (ajoutees + ignorees + echecs) + " / " + QUESTIONS.length);
+}
+etat("Terminé ✅\nAjoutées : " + ajoutees + "\nDéjà présentes : " + ignorees + "\nÉchecs : " + echecs + "\n\nVous pouvez maintenant supprimer ce fichier de GitHub.");
+} catch (e) { etat("Erreur : " + (e.code || e.message)); btn.disabled = false; }
+});
+</script></body></html>
