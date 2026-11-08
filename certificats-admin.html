@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<script src="js/notify.js?v=4"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificats de reconnaissance | EDUFORCI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+.sidebar{width:270px;height:100vh;background:#153A73;color:#fff;position:fixed;left:0;top:0;padding:30px 20px;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:#fff;text-decoration:none;padding:14px;margin-bottom:10px;border-radius:10px;transition:.3s;}
+.sidebar a:hover,.sidebar a.actif{background:#0B63F6;}
+.main{margin-left:270px;width:100%;padding:35px;}
+.welcome{background:#fff;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:30px;}
+.welcome h1,.welcome h2{color:#153A73;margin-bottom:16px;}
+label{display:block;font-weight:600;font-size:14px;color:#153A73;margin:14px 0 6px;}
+input,select,textarea{width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;}
+textarea{min-height:90px;resize:vertical;}
+.btn{margin-top:18px;padding:14px 22px;border:none;border-radius:10px;background:#0B63F6;color:#fff;font-weight:600;font-size:15px;cursor:pointer;}
+.btn:disabled{opacity:.6;cursor:wait;}
+.btn.rouge{margin:0;padding:8px 14px;background:#d93025;font-size:13px;}
+#msg{margin-top:14px;font-weight:600;}
+.ligne{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid #eee;}
+.ligne small{color:#777;display:block;}
+.menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
+@media (max-width:900px){
+.menu-toggle{display:flex;}
+.sidebar{transform:translateX(-100%);transition:transform .3s ease;z-index:9999;}
+.sidebar.ouvert{transform:translateX(0);}
+.sidebar-overlay.ouvert{display:block;}
+.main{margin-left:0!important;padding:20px!important;padding-top:85px!important;}
+}
+</style>
+</head>
+<body>
+<a href="index.html" style="position:fixed;top:20px;right:20px;background:#153A73;color:#fff;padding:12px 20px;border-radius:30px;text-decoration:none;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;">🏠 Accueil</a>
+<button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-admin.html">📊 Tableau de bord</a>
+<a href="gestion-utilisateurs.html?type=enseignants">👨‍🏫 Enseignants</a>
+<a href="gestion-utilisateurs.html?type=parents">👨‍👩‍👧 Parents</a>
+<a href="gestion-utilisateurs.html?type=etablissements">🏫 Établissements</a>
+<a href="gestion-affectations.html">🎯 Affectations</a>
+<a href="reservations-admin.html">📅 Réservations</a>
+<a href="offres-admin.html">📢 Offres d'emploi</a>
+<a href="candidatures-admin.html">📄 Candidatures</a>
+<a href="candidatures-recrutement-admin.html">🧑‍🏫 Recrutement enseignants</a>
+<a href="banque-questions-admin.html">❓ Banque de questions</a>
+<a href="certificats-admin.html" class="actif">🏆 Certificats</a>
+<a href="paiements-admin.html">💳 Paiements</a>
+<a href="registres-admin.html">📋 Registres</a>
+<a href="securite-admin.html">🛡️ Centre de sécurité</a>
+<a href="parametres-admin.html">⚙️ Paramètres</a>
+<a href="index.html" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+<div class="welcome">
+<h1>🏆 Délivrer un certificat de reconnaissance</h1>
+<label for="selEnseignant">Enseignant</label>
+<select id="selEnseignant"><option value="">⏳ Chargement des enseignants...</option></select>
+
+<label for="motif">Motif</label>
+<input id="motif" list="motifs" maxlength="120" placeholder="Ex : Excellence pédagogique">
+<datalist id="motifs">
+<option value="Excellence pédagogique">
+<option value="Ponctualité et professionnalisme">
+<option value="Résultats remarquables des élèves">
+<option value="Engagement exemplaire">
+</datalist>
+
+<label for="message">Message de félicitations (facultatif)</label>
+<textarea id="message" maxlength="300" placeholder="Merci pour votre travail remarquable auprès de nos élèves..."></textarea>
+
+<button class="btn" id="btnDelivrer">🎓 Délivrer le certificat</button>
+<p id="msg"></p>
+</div>
+
+<div class="welcome">
+<h2>Certificats délivrés</h2>
+<div id="liste">⏳ Chargement...</div>
+</div>
+</div>
+
+<script type="module">
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { doc, getDoc, collection, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
+import { enregistrerDeconnexion, verifierDeconnexionForcee } from "./js/securite-suivi.js";
+
+const sel = document.getElementById("selEnseignant");
+const msg = document.getElementById("msg");
+const liste = document.getElementById("liste");
+let enseignants = {};
+let adminUid = null;
+
+function dateFR(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+function afficher(texte, ok) {
+  msg.textContent = texte;
+  msg.style.color = ok ? "#28a745" : "#d93025";
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = "connexion-admin.html"; return; }
+
+  const adminSnap = await getDoc(doc(db, "admins", user.uid));
+  if (!adminSnap.exists()) {
+    await signOut(auth);
+    alert("Accès refusé : ce compte n'a pas les droits administrateur.");
+    window.location.href = "connexion-admin.html";
+    return;
+  }
+  if (await verifierDeconnexionForcee(db, user.uid)) {
+    await signOut(auth);
+    alert("Votre session a été fermée à distance.");
+    window.location.href = "connexion-admin.html";
+    return;
+  }
+  adminUid = user.uid;
+  await chargerEnseignants();
+  await chargerCertificats();
+});
+
+async function chargerEnseignants() {
+  try {
+    const snap = await getDocs(collection(db, "enseignants"));
+    enseignants = {};
+    snap.forEach(d => { enseignants[d.id] = d.data(); });
+    const ids = Object.keys(enseignants).sort((a, b) => String(enseignants[a].nom).localeCompare(String(enseignants[b].nom)));
+    sel.innerHTML = "";
+    sel.add(new Option("Choisir un enseignant...", ""));
+    ids.forEach(id => {
+      const e = enseignants[id];
+      const etat = e.verification === true ? "" : " (non vérifié)";
+      sel.add(new Option(`${e.nom || "Sans nom"} — ${e.matiere || ""} — ${e.ville || ""}${etat}`, id));
+    });
+  } catch (err) {
+    console.error(err);
+    sel.innerHTML = "<option value=''>Erreur de chargement</option>";
+  }
+}
+
+async function chargerCertificats() {
+  try {
+    const snap = await getDocs(collection(db, "certificatsReconnaissance"));
+    const items = [];
+    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+    items.sort((a, b) => String(b.dateDelivrance).localeCompare(String(a.dateDelivrance)));
+    if (!items.length) { liste.textContent = "Aucun certificat délivré pour le moment."; return; }
+    liste.innerHTML = items.map(c => `
+      <div class="ligne">
+        <div><b>${echapperHTML(c.enseignantNom)}</b> — ${echapperHTML(c.motif)}
+          <small>N° ${echapperHTML(c.numero)} · ${echapperHTML(dateFR(c.dateDelivrance))}</small></div>
+        <button class="btn rouge" data-id="${c.id}">Retirer</button>
+      </div>`).join("");
+  } catch (err) {
+    console.error(err);
+    liste.textContent = "Impossible de charger la liste.";
+  }
+}
+
+document.getElementById("btnDelivrer").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  const uid = sel.value;
+  const motif = document.getElementById("motif").value.trim();
+  const message = document.getElementById("message").value.trim();
+
+  if (!uid) return afficher("Choisissez un enseignant.", false);
+  if (!motif) return afficher("Indiquez le motif du certificat.", false);
+
+  const prof = enseignants[uid];
+  const maintenant = new Date();
+  const numero = `EDU-${maintenant.getFullYear()}-${String(Math.floor(Math.random() * 100000)).padStart(5, "0")}`;
+
+  btn.disabled = true;
+  try {
+    await addDoc(collection(db, "certificatsReconnaissance"), {
+      enseignantUid: uid,
+      enseignantNom: prof.nom || "",
+      enseignantIdentifiant: prof.identifiant || "",
+      matiere: prof.matiere || "",
+      motif,
+      message,
+      numero,
+      dateDelivrance: maintenant.toISOString(),
+      delivrePar: adminUid,
+      statut: "actif"
+    });
+    afficher(`✅ Certificat ${numero} délivré à ${prof.nom}.`, true);
+    document.getElementById("motif").value = "";
+    document.getElementById("message").value = "";
+    sel.value = "";
+    await chargerCertificats();
+  } catch (err) {
+    console.error(err);
+    afficher("Échec : impossible d'enregistrer le certificat (vérifiez les règles Firestore).", false);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+liste.addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-id]");
+  if (!b || !confirm("Retirer ce certificat ? L'enseignant ne le verra plus.")) return;
+  try {
+    await deleteDoc(doc(db, "certificatsReconnaissance", b.dataset.id));
+    await chargerCertificats();
+  } catch (err) {
+    console.error(err);
+    afficher("Impossible de retirer ce certificat.", false);
+  }
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (auth.currentUser) await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "admin" });
+  await signOut(auth);
+  window.location.href = "index.html";
+});
+</script>
+
+<script>
+(function(){
+  const btn = document.getElementById("menuToggleEduforci");
+  const overlay = document.getElementById("sidebarOverlayEduforci");
+  const sidebar = document.querySelector(".sidebar");
+  if(!btn||!sidebar) return;
+  function ouvrir(){ sidebar.classList.add("ouvert"); overlay.classList.add("ouvert"); }
+  function fermer(){ sidebar.classList.remove("ouvert"); overlay.classList.remove("ouvert"); }
+  btn.addEventListener("click", function(){ sidebar.classList.contains("ouvert") ? fermer() : ouvrir(); });
+  overlay.addEventListener("click", fermer);
+  sidebar.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", fermer); });
+})();
+</script>
+</body>
+</html>
