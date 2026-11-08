@@ -65,10 +65,10 @@ header{position:absolute;top:0;left:0;width:100%;padding:calc(var(--marquee-h) +
 .teacher-badges .badge-item.badge-matiere{white-space:normal;overflow-wrap:break-word;word-break:break-word;max-width:100%;text-align:left;}
 .teacher-card p i{color:#0B63F6;width:16px;}
 .teacher-card .rating i{color:#FDB813;}
-.btn-teacher{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:15px;padding:0 16px;background:#153A73;color:#fff;border-radius:12px;font-size:14.5px;font-weight:600;line-height:1;text-decoration:none;transition:.25s;}
+.btn-teacher{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:15px;padding:0 16px;background:#153A73;color:#fff;border-radius:12px;font-size:14.5px;font-weight:600;line-height:1;text-decoration:none;transition:.25s;animation:flotter 2.4s ease-in-out infinite;}
 .btn-teacher:hover{background:#0B63F6;}
 @keyframes flotter{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-.btn-whatsapp{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:10px;padding:0 16px;background:#25D366;color:#fff;border-radius:12px;font-size:14.5px;font-weight:600;line-height:1;text-decoration:none;transition:.25s;}
+.btn-whatsapp{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:10px;padding:0 16px;background:#25D366;color:#fff;border-radius:12px;font-size:14.5px;font-weight:600;line-height:1;text-decoration:none;transition:.25s;animation:clignoter 1.4s ease-in-out infinite;}
 .btn-whatsapp:hover{background:#1ebe57;}
 @keyframes clignoter{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(37,211,102,.5);}50%{opacity:.75;box-shadow:0 0 0 8px rgba(37,211,102,0);}}
 .btn-whatsapp i{font-size:18px;}
@@ -172,3 +172,6 @@ html{scroll-behavior:smooth;}
 .tc-line i{color:#0B63F6;margin-right:6px;}
 .tc-tags{margin:8px 0 12px;}
 .tc-tags span{display:inline-block;font-size:12px;font-weight:700;color:#475569;border:1px solid #e2e8f0;border-radius:10px;padding:4px 10px;}
+/* =========================== ICÔNE WHATSAPP FLOTTANTE (halo plus visible) =========================== */
+@keyframes waPulseFort{0%{box-shadow:0 8px 22px rgba(0,0,0,.25),0 0 0 0 rgba(37,211,102,.6);}70%{box-shadow:0 8px 22px rgba(0,0,0,.25),0 0 0 18px rgba(37,211,102,0);}100%{box-shadow:0 8px 22px rgba(0,0,0,.25),0 0 0 0 rgba(37,211,102,0);}}
+button.wa-bouton{animation:waPulseFort 2.4s infinite;}
