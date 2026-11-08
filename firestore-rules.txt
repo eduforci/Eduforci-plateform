@@ -213,3 +213,11 @@ service cloud.firestore {
 
   }
 }
+// ==========================================================
+    // CERTIFICATS DE RECONNAISSANCE (délivrés par l'équipe)
+    // ==========================================================
+    match /certificatsReconnaissance/{id} {
+      allow read: if estAdmin()
+        || (estConnecte() && resource.data.enseignantUid == request.auth.uid);
+      allow create, update, delete: if estAdmin();
+    }
