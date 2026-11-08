@@ -227,6 +227,19 @@ document.getElementById("btnDelivrer").addEventListener("click", async (e) => {
       delivrePar: adminUid,
       statut: "actif"
     });
+    // Notification dans la page « Notifications » de l'enseignant (collection "messages")
+    if (prof.identifiant) {
+      try {
+        await addDoc(collection(db, "messages"), {
+          enseignantId: prof.identifiant,
+          origine: "reconnaissance",
+          contenu: `🏆 L'équipe EDUFORCI vous a décerné un certificat de reconnaissance : « ${echapperHTML(motif)} ». <a href="reconnaissances-enseignant.html">Voir mon certificat</a>`,
+          dateEnvoi: maintenant.toISOString()
+        });
+      } catch (errNotif) {
+        console.error("[certificats] notification non envoyée :", errNotif);
+      }
+    }
     afficher(`Certificat ${numero} délivré à ${prof.nom}.`, true);
     document.getElementById("motif").value = "";
     document.getElementById("message").value = "";
