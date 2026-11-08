@@ -1,417 +1,260 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-
 <script src="js/notify.js?v=4"></script>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Recherche de professeurs | EDUFORCI</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;}
+header{background:#153A73;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;}
+header img{height:60px;}
+.container{max-width:1200px;margin:40px auto;padding:20px;}
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Poppins,sans-serif;
-}
-
-body{
-background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;
-}
-
-header{
-
-background:#153A73;
-
-padding:18px 40px;
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-}
-
-header img{
-
-height:60px;
-
-}
-
-.container{
-
-max-width:1200px;
-
-margin:40px auto;
-
-padding:20px;
-
-}
-
+/* CORRECTION : grille responsive (avant : 4 colonnes fixes, coupé sur mobile) */
 .search-box{
-
-background:white;
-
-padding:30px;
-
-border-radius:20px;
-
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:20px;
-
+  background:white;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;
 }
+select,button{padding:15px;border-radius:10px;font-size:16px;}
+select{border:1px solid #ddd;width:100%;}
+button{background:#0B63F6;color:white;border:none;cursor:pointer;font-weight:600;}
+button:hover{background:#084ec7;}
 
-select,
-button{
+.recherche-ville-inline{display:flex;gap:10px;flex-wrap:wrap;max-width:500px;}
+.recherche-ville-inline input{flex:1;min-width:180px;padding:14px 16px;border:none;border-radius:10px;font-size:14.5px;}
+.recherche-ville-inline button{background:#FDB813;color:#05204E;padding:14px 20px;font-weight:700;font-size:14px;}
+.recherche-ville-inline button:hover{background:#e0a20f;}
 
-padding:15px;
-
-border-radius:10px;
-
-font-size:16px;
-
-}
-
-.recherche-ville-inline{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-max-width:500px;
-}
-
-.recherche-ville-inline input{
-flex:1;
-min-width:180px;
-padding:14px 16px;
-border:none;
-border-radius:10px;
-font-family:Poppins,sans-serif;
-font-size:14.5px;
-}
-
-.recherche-ville-inline button{
-background:#FDB813;
-color:#05204E;
-border:none;
-padding:14px 20px;
-border-radius:10px;
-font-family:Poppins,sans-serif;
-font-weight:700;
-font-size:14px;
-cursor:pointer;
-}
-
-.recherche-ville-inline button:hover{
-background:#e0a20f;
-}
-
-select{
-
-border:1px solid #ddd;
-
-}
-
-button{
-
-background:#0B63F6;
-
-color:white;
-
-border:none;
-
-cursor:pointer;
-
-font-weight:600;
-
-}
-
-button:hover{
-
-background:#084ec7;
-
-}
-
+#listeEnseignants{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:25px;}
+.carte{background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;}
+.carte img{width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;}
+.carte h3{margin:12px 0 6px;color:#153A73;}
+.carte p{margin-bottom:4px;}
+.carte button{margin-top:12px;}
+.message{grid-column:1/-1;background:white;padding:30px;border-radius:20px;text-align:center;}
 </style>
-
 </head>
 
 <body>
-<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-family:Poppins,sans-serif;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
 
+<a href="index.html" title="Retour à l'accueil" style="position:fixed;top:20px;right:20px;background:#153A73;color:white;padding:12px 20px;border-radius:30px;text-decoration:none;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;display:flex;align-items:center;gap:6px;">🏠 Accueil</a>
 
 <header>
-
 <img decoding="async" src="logo.png" alt="EDUFORCI">
-
 </header>
 
 <div class="container">
-<h1 style="margin-bottom:25px;color:#153A73;">
-🔍 Rechercher un professeur
-</h1>
+
+<h1 style="margin-bottom:25px;color:#fff;">🔍 Rechercher un professeur</h1>
 
 <div class="search-box">
 
 <select id="matiere">
-    <option value="">Toutes les matières</option>
-    <option value="Anglais">Anglais</option>
-    <option value="Allemand">Allemand</option>
-    <option value="Français">Français</option>
-    <option value="Mathématiques">Mathématiques</option>
-    <option value="Espagnol">Espagnol</option>
-    <option value="Philosophie">Philosophie</option>
-    <option value="Histoire-Géographie">Histoire-Géographie</option>
-    <option value="SVT">SVT</option>
-    <option value="Physique-Chimie">Physique-Chimie</option>
-    <option value="Informatique">Informatique</option>
+<option value="">Toutes les matières</option>
+<option value="Anglais">Anglais</option>
+<option value="Allemand">Allemand</option>
+<option value="Français">Français</option>
+<option value="Mathématiques">Mathématiques</option>
+<option value="Espagnol">Espagnol</option>
+<option value="Philosophie">Philosophie</option>
+<option value="Histoire-Géographie">Histoire-Géographie</option>
+<option value="SVT">SVT</option>
+<option value="Physique-Chimie">Physique-Chimie</option>
+<option value="Informatique">Informatique</option>
 </select>
 
 <select id="niveau">
-    <option value="">Tous les niveaux</option>
-    <option value="Primaire">Primaire</option>
-    <option value="1er cycle">1er cycle</option>
-    <option value="2nd cycle">2nd cycle</option>
+<option value="">Tous les niveaux</option>
+<option value="Primaire">Primaire</option>
+<option value="1er cycle">1er cycle</option>
+<option value="2nd cycle">2nd cycle</option>
 </select>
 
 <select id="ville">
-    <option value="">Toutes les villes</option>
-    <optgroup label="Communes d'Abidjan">
-        <option value="Abobo">Abobo</option>
-        <option value="Adjamé">Adjamé</option>
-        <option value="Anyama">Anyama</option>
-        <option value="Attécoubé">Attécoubé</option>
-        <option value="Bingerville">Bingerville</option>
-        <option value="Cocody">Cocody</option>
-        <option value="Koumassi">Koumassi</option>
-        <option value="Marcory">Marcory</option>
-        <option value="Plateau">Plateau</option>
-        <option value="Port-Bouët">Port-Bouët</option>
-        <option value="Songon">Songon</option>
-        <option value="Treichville">Treichville</option>
-        <option value="Yopougon">Yopougon</option>
-    </optgroup>
-    <optgroup label="Grandes villes">
-        <option value="Bouaké">Bouaké</option>
-        <option value="Yamoussoukro">Yamoussoukro</option>
-        <option value="San-Pédro">San-Pédro</option>
-        <option value="Korhogo">Korhogo</option>
-        <option value="Daloa">Daloa</option>
-        <option value="Man">Man</option>
-        <option value="Gagnoa">Gagnoa</option>
-        <option value="Abengourou">Abengourou</option>
-        <option value="Divo">Divo</option>
-        <option value="Bondoukou">Bondoukou</option>
-        <option value="Odienné">Odienné</option>
-        <option value="Séguéla">Séguéla</option>
-        <option value="Agboville">Agboville</option>
-        <option value="Grand-Bassam">Grand-Bassam</option>
-        <option value="Dabou">Dabou</option>
-    </optgroup>
+<option value="">Toutes les villes</option>
+<optgroup label="Communes d'Abidjan">
+<option value="Abobo">Abobo</option>
+<option value="Adjamé">Adjamé</option>
+<option value="Anyama">Anyama</option>
+<option value="Attécoubé">Attécoubé</option>
+<option value="Bingerville">Bingerville</option>
+<option value="Cocody">Cocody</option>
+<option value="Koumassi">Koumassi</option>
+<option value="Marcory">Marcory</option>
+<option value="Plateau">Plateau</option>
+<option value="Port-Bouët">Port-Bouët</option>
+<option value="Songon">Songon</option>
+<option value="Treichville">Treichville</option>
+<option value="Yopougon">Yopougon</option>
+</optgroup>
+<optgroup label="Grandes villes">
+<option value="Bouaké">Bouaké</option>
+<option value="Yamoussoukro">Yamoussoukro</option>
+<option value="San-Pédro">San-Pédro</option>
+<option value="Korhogo">Korhogo</option>
+<option value="Daloa">Daloa</option>
+<option value="Man">Man</option>
+<option value="Gagnoa">Gagnoa</option>
+<option value="Abengourou">Abengourou</option>
+<option value="Divo">Divo</option>
+<option value="Bondoukou">Bondoukou</option>
+<option value="Odienné">Odienné</option>
+<option value="Séguéla">Séguéla</option>
+<option value="Agboville">Agboville</option>
+<option value="Grand-Bassam">Grand-Bassam</option>
+<option value="Dabou">Dabou</option>
+</optgroup>
 </select>
 
-<button id="btnRecherche">
-🔍 Rechercher
-</button>
+<button id="btnRecherche">🔍 Rechercher</button>
+
 </div>
 
 <div style="margin:20px 0;">
-
 <p style="color:#fff;font-weight:600;margin-bottom:10px;">📍 Chercher par commune ou ville :</p>
-
 <div class="recherche-ville-inline">
 <input type="text" id="champVilleRapide" list="listeVillesEduforci" placeholder="Ex : Cocody, Yopougon, Bouaké..." autocomplete="off">
 <button type="button" id="btnVilleRapide">Voir</button>
 </div>
-
 <datalist id="listeVillesEduforci">
-<option value="Abobo">
-<option value="Adjamé">
-<option value="Anyama">
-<option value="Attécoubé">
-<option value="Bingerville">
-<option value="Cocody">
-<option value="Koumassi">
-<option value="Marcory">
-<option value="Plateau">
-<option value="Port-Bouët">
-<option value="Songon">
-<option value="Treichville">
-<option value="Yopougon">
-<option value="Bouaké">
-<option value="Yamoussoukro">
-<option value="San-Pédro">
-<option value="Korhogo">
-<option value="Daloa">
-<option value="Man">
-<option value="Gagnoa">
-<option value="Abengourou">
-<option value="Divo">
-<option value="Bondoukou">
-<option value="Odienné">
-<option value="Séguéla">
-<option value="Agboville">
-<option value="Grand-Bassam">
-<option value="Dabou">
+<option value="Abobo"><option value="Adjamé"><option value="Anyama"><option value="Attécoubé">
+<option value="Bingerville"><option value="Cocody"><option value="Koumassi"><option value="Marcory">
+<option value="Plateau"><option value="Port-Bouët"><option value="Songon"><option value="Treichville">
+<option value="Yopougon"><option value="Bouaké"><option value="Yamoussoukro"><option value="San-Pédro">
+<option value="Korhogo"><option value="Daloa"><option value="Man"><option value="Gagnoa">
+<option value="Abengourou"><option value="Divo"><option value="Bondoukou"><option value="Odienné">
+<option value="Séguéla"><option value="Agboville"><option value="Grand-Bassam"><option value="Dabou">
 </datalist>
+</div>
+
+<h2 style="color:#fff;margin:30px 0 20px;">Résultats de la recherche</h2>
+
+<!-- CORRECTION : les 2 cartes factices (professeur.jpg) ont été supprimées.
+     Elles enveloppaient la liste et causaient les cercles vides + divs non fermés. -->
+<div id="listeEnseignants"></div>
 
 </div>
 
-<br><br>
-
-<h2 style="color:#153A73;">
-Résultats de la recherche
-</h2>
-
-<br>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;">
-
-<div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
-
-<img loading="lazy" decoding="async" src="images/professeur.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
-
-
-<div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
-
-<img loading="lazy" decoding="async" src="images/professeur.jpg" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
-<div id="listeEnseignants"
-style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;">
-</div>
-</div>
-
-</div>
-
-  <script type="module">
-
+<script type="module">
 import { db } from "./js/firebase.js";
-
-import {
-  collection,
-  query,
-  where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { collection, query, where, getDocs }
+  from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { echapperHTML } from "./js/securite.js";
 
 const liste = document.getElementById("listeEnseignants");
 
 function normaliser(texte) {
-    return (texte || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  return String(texte || "").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+// Accepte un texte ("Maths") ou une liste (["Maths","Anglais"]) dans Firestore
+function contient(valeurProf, recherche) {
+  const r = normaliser(recherche);
+  const valeurs = Array.isArray(valeurProf) ? valeurProf : [valeurProf];
+  return valeurs.some(v => {
+    const n = normaliser(v);
+    return n === r || n.includes(r) || r.includes(n) && n !== "";
+  });
+}
+
+function message(html) {
+  liste.innerHTML = `<div class="message">${html}</div>`;
 }
 
 function selectionnerVille(ville) {
-    document.getElementById("champVilleRapide").value = ville;
-    document.getElementById("ville").value = "";
-    window.villeChipSelectionnee = ville;
-    chargerEnseignants();
-    document.getElementById("listeEnseignants").scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("champVilleRapide").value = ville;
+  document.getElementById("ville").value = "";
+  chargerEnseignants();
+  liste.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function chargerEnseignants() {
+  message("<p>⏳ Chargement des enseignants...</p>");
 
-    liste.innerHTML = "";
+  const matiere = document.getElementById("matiere").value;
+  const niveau  = document.getElementById("niveau").value;
+  // CORRECTION : on utilise la liste déroulante OU le champ texte (avant, le bouton
+  // « Rechercher » ignorait la ville tapée dans le champ rapide)
+  const ville = document.getElementById("ville").value
+             || document.getElementById("champVilleRapide").value.trim();
 
-    const matiere = document.getElementById("matiere").value;
-    const niveau = document.getElementById("niveau").value;
-    const villeDropdown = document.getElementById("ville").value;
-    const ville = villeDropdown || window.villeChipSelectionnee || "";
-    const villeNormalisee = normaliser(ville);
-
-    const q = query(
-        collection(db, "enseignants"),
-        where("verification", "==", true)
-    );
-
+  try {
+    const q = query(collection(db, "enseignants"), where("verification", "==", true));
     const snapshot = await getDocs(q);
+    console.log("[recherche] enseignants vérifiés trouvés dans Firestore :", snapshot.size);
+
+    let html = "";
+    let nb = 0;
 
     snapshot.forEach((docSnap) => {
+      const prof = docSnap.data();
+      const villeProf = prof.ville || prof.commune || "";
 
-        const prof = docSnap.data();
+      if (matiere && !contient(prof.matiere, matiere)) return;
+      if (niveau  && !contient(prof.niveau, niveau))   return;
+      if (ville   && !contient(villeProf, ville))      return;
 
-        // Filtrage
-        if (matiere && prof.matiere !== matiere) return;
-        if (niveau && prof.niveau !== niveau) return;
-        if (ville && !normaliser(prof.ville).includes(villeNormalisee)) return;
+      nb++;
+      const matiereTxt = Array.isArray(prof.matiere) ? prof.matiere.join(", ") : prof.matiere;
+      const niveauTxt  = Array.isArray(prof.niveau)  ? prof.niveau.join(", ")  : prof.niveau;
 
-        liste.innerHTML += `
-
-        <div style="background:#fff;padding:25px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);text-align:center;">
-
-            <img loading="lazy" decoding="async" src="${echapperHTML(prof.photo || 'images/professeur.jpg')}"
-            style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #0B63F6;">
-
-            <h3>${echapperHTML(prof.nom)}</h3>
-
-            <p>📚 ${echapperHTML(prof.matiere)}</p>
-
-            <p>📍 ${echapperHTML(prof.ville)}</p>
-
-            <p>🎓 ${echapperHTML(prof.niveau)}</p>
-
-            <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">
-                Voir le profil
-            </button>
-
-        </div>
-
-        `;
-
+      html += `
+        <div class="carte">
+          <img loading="lazy" decoding="async" src="${echapperHTML(prof.photo || 'images/professeur.jpg')}" alt="">
+          <h3>${echapperHTML(prof.nom || "Enseignant")}</h3>
+          <p>📚 ${echapperHTML(matiereTxt || "")}</p>
+          <p>📍 ${echapperHTML(villeProf)}</p>
+          <p>🎓 ${echapperHTML(niveauTxt || "")}</p>
+          <button onclick="location.href='profil-enseignant.html?id=${docSnap.id}'">Voir le profil</button>
+        </div>`;
     });
 
-    if (liste.innerHTML === "") {
-        liste.innerHTML = `
-        <div style="grid-column:1/-1;background:white;padding:30px;border-radius:20px;text-align:center;">
-            <h3>Aucun enseignant trouvé</h3>
-            <p>Essayez une autre matière, un autre niveau ou une autre ville.</p>
-        </div>`;
+    if (nb === 0) {
+      message(snapshot.size === 0
+        ? "<h3>Aucun enseignant vérifié pour le moment</h3><p>Revenez bientôt.</p>"
+        : "<h3>Aucun enseignant trouvé</h3><p>Essayez une autre matière, un autre niveau ou une autre ville.</p>");
+    } else {
+      liste.innerHTML = html;
     }
+  } catch (err) {
+    // CORRECTION : plus d'échec silencieux, l'erreur s'affiche et va dans la console
+    console.error("[recherche] erreur Firestore :", err);
+    message("<h3>Impossible de charger les enseignants</h3><p>Vérifiez votre connexion et réessayez.</p>");
+  }
+}
 
-    }
-    document.getElementById("btnRecherche").addEventListener("click", () => {
-    chargerEnseignants();
-});
+document.getElementById("btnRecherche").addEventListener("click", chargerEnseignants);
 
 document.getElementById("ville").addEventListener("change", () => {
-    window.villeChipSelectionnee = null;
-    document.getElementById("champVilleRapide").value = "";
+  document.getElementById("champVilleRapide").value = "";
 });
 
 document.getElementById("btnVilleRapide").addEventListener("click", () => {
-    selectionnerVille(document.getElementById("champVilleRapide").value.trim());
+  selectionnerVille(document.getElementById("champVilleRapide").value.trim());
 });
 
 document.getElementById("champVilleRapide").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        selectionnerVille(document.getElementById("champVilleRapide").value.trim());
-    }
+  if (e.key === "Enter") {
+    e.preventDefault();
+    selectionnerVille(document.getElementById("champVilleRapide").value.trim());
+  }
 });
 
 const villeDepuisUrl = new URLSearchParams(window.location.search).get("ville");
 if (villeDepuisUrl) {
-    window.villeChipSelectionnee = villeDepuisUrl;
-    document.getElementById("champVilleRapide").value = villeDepuisUrl;
+  document.getElementById("champVilleRapide").value = villeDepuisUrl;
 }
 
 await chargerEnseignants();
 </script>
-</body>
 
-    </html>
-    
+</body>
+</html>
