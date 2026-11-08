@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<script src="js/notify.js?v=4"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mes reconnaissances | EDUFORCI</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
+body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.jpg") center center/cover fixed no-repeat;display:flex;}
+.sidebar{width:260px;height:100vh;background:#153A73;color:#fff;padding:30px 20px;position:fixed;left:0;top:0;overflow-y:auto;}
+.sidebar img{height:65px;display:block;margin:auto;margin-bottom:25px;}
+.sidebar a{display:block;color:#fff;text-decoration:none;padding:14px;margin-bottom:8px;border-radius:10px;transition:.3s;}
+.sidebar a:hover,.sidebar a.actif{background:#0B63F6;}
+.main{margin-left:260px;padding:35px;width:100%;}
+.welcome{background:#fff;padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:30px;}
+.welcome h1{color:#153A73;font-size:24px;}
+#liste{display:grid;gap:30px;}
+
+/* Certificat */
+.cert{background:#fff;border:10px double #FDB813;border-radius:6px;padding:34px 24px;text-align:center;color:#153A73;box-shadow:0 10px 25px rgba(0,0,0,.15);}
+.cert img{height:70px;margin-bottom:10px;}
+.cert h2{font-size:26px;font-weight:700;margin-bottom:18px;}
+.cert .petit{color:#555;font-size:14px;}
+.cert .nom{font-size:32px;font-weight:700;margin:8px 0 14px;color:#0B63F6;overflow-wrap:anywhere;}
+.cert .motif{font-size:18px;font-weight:600;margin-bottom:10px;}
+.cert .msg{font-style:italic;color:#444;max-width:560px;margin:0 auto 22px;line-height:1.6;}
+.cert .pied{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:#555;border-top:1px solid #ddd;padding-top:14px;}
+.cert .pied b{color:#153A73;}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.actions button{padding:12px 18px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#fff;background:#0B63F6;}
+.actions button.wa{background:#25D366;}
+.vide{background:#fff;border-radius:20px;padding:30px;text-align:center;color:#555;line-height:1.7;}
+
+.menu-toggle{display:none;position:fixed;top:20px;left:20px;z-index:100000;background:#153A73;color:#fff;border:none;width:48px;height:48px;border-radius:12px;font-size:20px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9998;}
+@media (max-width:900px){
+.menu-toggle{display:flex;}
+.sidebar{transform:translateX(-100%);transition:transform .3s ease;z-index:9999;}
+.sidebar.ouvert{transform:translateX(0);}
+.sidebar-overlay.ouvert{display:block;}
+.main{margin-left:0!important;padding:20px!important;padding-top:85px!important;}
+.cert h2{font-size:21px;} .cert .nom{font-size:26px;}
+}
+
+/* Impression / PDF : seul le certificat choisi est imprimé */
+@page{size:A4 landscape;margin:10mm;}
+@media print{
+  body{background:#fff!important;display:block;}
+  .sidebar,.menu-toggle,.sidebar-overlay,.welcome,.actions,.accueil,.cert-wrap:not(.cible){display:none!important;}
+  .main{margin:0!important;padding:0!important;}
+  .cert{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style>
+</head>
+<body>
+<a class="accueil" href="index.html" style="position:fixed;top:20px;right:20px;background:#153A73;color:#fff;padding:12px 20px;border-radius:30px;text-decoration:none;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:99999;">🏠 Accueil</a>
+<button class="menu-toggle" id="menuToggleEduforci" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlayEduforci"></div>
+<div class="sidebar">
+<img src="logo.png" alt="EDUFORCI">
+<a href="dashboard-enseignant.html">🏠 Tableau de bord</a>
+<a href="mon-profil-enseignant.html">👤 Mon profil</a>
+<a href="mes-matieres-enseignant.html">📚 Mes matières</a>
+<a href="mes-disponibilites-enseignant.html">📅 Mes disponibilités</a>
+<a href="missions-proposees-enseignant.html">🎯 Missions proposées</a>
+<a href="notifications-enseignant.html">🔔 Notifications</a>
+<a href="mes-candidatures-enseignant.html">📝 Ma candidature</a>
+<a href="certificat-enseignant.html">🎓 Mon certificat</a>
+<a href="reconnaissances-enseignant.html" class="actif">🏆 Mes reconnaissances</a>
+<a href="avis-enseignant.html">⭐ Avis</a>
+<a href="parametres-enseignant.html">⚙️ Paramètres</a>
+<a href="#" id="btnDeconnexion">🚪 Déconnexion</a>
+</div>
+
+<div class="main">
+<div class="welcome">
+<h1>🏆 Mes certificats de reconnaissance</h1>
+<p style="color:#555;margin-top:8px;">Décernés par l'équipe EDUFORCI pour la qualité de votre travail.</p>
+</div>
+<div id="liste"><div class="vide">⏳ Chargement...</div></div>
+</div>
+
+<script type="module">
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
+import { enregistrerDeconnexion, verifierDeconnexionForcee } from "./js/securite-suivi.js";
+
+const liste = document.getElementById("liste");
+let certs = [];
+
+function dateFR(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = "connexion-enseignant.html"; return; }
+
+  if (await verifierDeconnexionForcee(db, user.uid)) {
+    await signOut(auth);
+    alert("Votre session a été fermée à distance par un administrateur.");
+    window.location.href = "connexion-enseignant.html";
+    return;
+  }
+
+  try {
+    const snap = await getDocs(query(collection(db, "certificatsReconnaissance"), where("enseignantUid", "==", user.uid)));
+    certs = [];
+    snap.forEach(d => { const c = d.data(); if (c.statut !== "retire") certs.push(c); });
+    certs.sort((a, b) => String(b.dateDelivrance).localeCompare(String(a.dateDelivrance)));
+
+    if (certs.length === 0) {
+      liste.innerHTML = `<div class="vide"><h3>Aucun certificat pour le moment</h3>
+        <p>Continuez votre beau travail : l'équipe EDUFORCI récompense les enseignants qui se distinguent.</p></div>`;
+      return;
+    }
+
+    liste.innerHTML = certs.map((c, i) => `
+      <div class="cert-wrap">
+        <div class="cert">
+          <img src="logo.png" alt="EDUFORCI">
+          <h2>Certificat de reconnaissance</h2>
+          <p class="petit">L'équipe EDUFORCI décerne ce certificat à</p>
+          <p class="nom">${echapperHTML(c.enseignantNom)}</p>
+          <p class="motif">${echapperHTML(c.motif)}</p>
+          ${c.message ? `<p class="msg">« ${echapperHTML(c.message)} »</p>` : ""}
+          <div class="pied">
+            <span>Délivré le <b>${echapperHTML(dateFR(c.dateDelivrance))}</b></span>
+            <span>N° <b>${echapperHTML(c.numero)}</b></span>
+            <span><b>L'équipe EDUFORCI</b></span>
+          </div>
+        </div>
+        <div class="actions">
+          <button data-act="print" data-i="${i}">📄 Télécharger en PDF / Imprimer</button>
+          <button class="wa" data-act="wa" data-i="${i}">💬 Partager sur WhatsApp</button>
+        </div>
+      </div>`).join("");
+  } catch (err) {
+    console.error("[certificats] erreur :", err);
+    liste.innerHTML = `<div class="vide"><h3>Impossible de charger vos certificats</h3><p>Réessayez dans un instant.</p></div>`;
+  }
+});
+
+liste.addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  const c = certs[b.dataset.i];
+  if (b.dataset.act === "print") {
+    document.querySelectorAll(".cert-wrap").forEach(w => w.classList.remove("cible"));
+    b.closest(".cert-wrap").classList.add("cible");
+    window.print();
+  } else {
+    const txt = `🏆 J'ai reçu un certificat de reconnaissance de l'équipe EDUFORCI (n° ${c.numero}) : ${c.motif}. www.eduforci.com`;
+    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+  }
+});
+
+document.getElementById("btnDeconnexion").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (auth.currentUser) await enregistrerDeconnexion(db, { uid: auth.currentUser.uid, role: "enseignant" });
+  await signOut(auth);
+  window.location.href = "connexion-enseignant.html";
+});
+</script>
+
+<script>
+(function(){
+  const btn = document.getElementById("menuToggleEduforci");
+  const overlay = document.getElementById("sidebarOverlayEduforci");
+  const sidebar = document.querySelector(".sidebar");
+  if(!btn||!sidebar) return;
+  function ouvrir(){ sidebar.classList.add("ouvert"); overlay.classList.add("ouvert"); }
+  function fermer(){ sidebar.classList.remove("ouvert"); overlay.classList.remove("ouvert"); }
+  btn.addEventListener("click", function(){ sidebar.classList.contains("ouvert") ? fermer() : ouvrir(); });
+  overlay.addEventListener("click", fermer);
+  sidebar.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", fermer); });
+})();
+</script>
+</body>
+</html>
