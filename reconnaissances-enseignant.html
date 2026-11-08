@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <script src="js/notify.js?v=4"></script>
+<script src="js/cachet.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mes reconnaissances | EDUFORCI</title>
@@ -20,16 +21,35 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .welcome h1{color:#153A73;font-size:24px;}
 #liste{display:grid;gap:30px;}
 
-/* Certificat */
-.cert{background:#fff;border:10px double #FDB813;border-radius:6px;padding:34px 24px;text-align:center;color:#153A73;box-shadow:0 10px 25px rgba(0,0,0,.15);}
-.cert img{height:70px;margin-bottom:10px;}
-.cert h2{font-size:26px;font-weight:700;margin-bottom:18px;}
-.cert .petit{color:#555;font-size:14px;}
-.cert .nom{font-size:32px;font-weight:700;margin:8px 0 14px;color:#0B63F6;overflow-wrap:anywhere;}
-.cert .motif{font-size:18px;font-weight:600;margin-bottom:10px;}
-.cert .msg{font-style:italic;color:#444;max-width:560px;margin:0 auto 22px;line-height:1.6;}
-.cert .pied{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:#555;border-top:1px solid #ddd;padding-top:14px;}
-.cert .pied b{color:#153A73;}
+/* Certificat (A4 portrait, 730px, réduit automatiquement sur mobile) */
+.cert-fit{width:100%;overflow:hidden;}
+.cert{width:730px;background:#fff;border:2px solid #153A73;color:#153A73;transform-origin:top left;font-size:11px;text-align:left;}
+.c-top{display:flex;gap:14px;padding:18px 18px 8px;align-items:flex-start;}
+.c-logo{width:190px;text-align:center;}.c-logo img{height:70px;}.c-logo small{display:block;font-size:8px;margin-top:4px;}
+.c-titre{flex:1;text-align:center;}.c-titre h2{font-size:22px;line-height:1.15;font-weight:700;margin-bottom:8px;}
+.decerne{background:#FDB813;font-weight:700;font-size:13px;padding:7px;border-radius:4px;}
+.slogan{font-style:italic;font-size:9px;margin-top:6px;}
+.c-ref{width:175px;}.badge{background:#153A73;color:#fff;font-weight:700;font-size:12px;padding:6px;border-radius:6px;text-align:center;margin-bottom:8px;}
+.ref-box{border:1.5px solid #FDB813;border-radius:8px;padding:8px;font-size:8.5px;line-height:1.9;}
+.ref-box b{color:#000;}
+.intro{margin:6px 18px 14px;font-size:10px;line-height:1.7;}
+.bloc{margin:0 18px 14px;border:1.5px solid #153A73;border-radius:8px;padding:18px 14px 12px;position:relative;}
+.bloc h3{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#fff;padding:0 10px;font-size:11px;white-space:nowrap;}
+.grille{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;}
+.champ{display:flex;gap:8px;align-items:flex-start;}
+.ico{flex:none;width:30px;height:30px;border-radius:50%;background:#153A73;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.ico.j{background:#FDB813;}
+.champ div{flex:1;border-bottom:1px solid #153A73;padding-bottom:3px;min-height:32px;}
+.champ b{display:block;font-size:8.5px;}
+.champ span{display:block;font-size:11.5px;font-weight:600;color:#000;overflow-wrap:anywhere;}
+.reco{margin:0 18px 14px;background:#fff6dc;border:1.5px solid #FDB813;border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:center;font-size:9.5px;line-height:1.6;}
+.reco h4{font-size:13px;margin-bottom:2px;}.reco .bouclier{font-size:34px;}
+.valeurs{display:flex;justify-content:space-around;flex-wrap:wrap;gap:4px;font-size:9px;}.valeurs i{font-style:normal;opacity:.4;}
+.sign-box{border:1.5px solid #FDB813;border-radius:8px;padding:10px 16px;display:flex;gap:20px;align-items:center;justify-content:space-between;font-size:10px;line-height:2;}
+.sign-box b{color:#000;}.sceau{width:120px;height:120px;flex:none;object-fit:contain;}
+.c-pied{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 18px 12px;font-size:9px;line-height:1.7;}
+.c-pied .note{max-width:250px;background:#fff6dc;border-radius:8px;padding:8px 10px;font-size:7.5px;}
+.bande{height:14px;background:linear-gradient(100deg,#FDB813 0 30%,#153A73 30% 100%);}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
 .actions button{padding:12px 18px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#fff;background:#0B63F6;}
 .actions button.wa{background:#25D366;}
@@ -43,16 +63,16 @@ body{background:linear-gradient(rgba(5,32,78,.78),rgba(5,32,78,.78)),url("hero.j
 .sidebar.ouvert{transform:translateX(0);}
 .sidebar-overlay.ouvert{display:block;}
 .main{margin-left:0!important;padding:20px!important;padding-top:85px!important;}
-.cert h2{font-size:21px;} .cert .nom{font-size:26px;}
+
 }
 
 /* Impression / PDF : seul le certificat choisi est imprimé */
-@page{size:A4 landscape;margin:10mm;}
+@page{size:A4 portrait;margin:8mm;}
 @media print{
   body{background:#fff!important;display:block;}
   .sidebar,.menu-toggle,.sidebar-overlay,.welcome,.actions,.accueil,.cert-wrap:not(.cible){display:none!important;}
   .main{margin:0!important;padding:0!important;}
-  .cert{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cert{transform:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.cert-fit{height:auto!important;}
 }
 </style>
 </head>
@@ -99,6 +119,16 @@ function dateFR(iso) {
   return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
+function ajuster() {
+  document.querySelectorAll(".cert-fit").forEach(f => {
+    const c = f.firstElementChild;
+    const k = Math.min(1, f.clientWidth / 730);
+    c.style.transform = `scale(${k})`;
+    f.style.height = (c.offsetHeight * k) + "px";
+  });
+}
+window.addEventListener("resize", ajuster);
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = "connexion-enseignant.html"; return; }
 
@@ -123,24 +153,39 @@ onAuthStateChanged(auth, async (user) => {
 
     liste.innerHTML = certs.map((c, i) => `
       <div class="cert-wrap">
-        <div class="cert">
-          <img src="logo.png" alt="EDUFORCI">
-          <h2>Certificat de reconnaissance</h2>
-          <p class="petit">L'équipe EDUFORCI décerne ce certificat à</p>
-          <p class="nom">${echapperHTML(c.enseignantNom)}</p>
-          <p class="motif">${echapperHTML(c.motif)}</p>
-          ${c.message ? `<p class="msg">« ${echapperHTML(c.message)} »</p>` : ""}
-          <div class="pied">
-            <span>Délivré le <b>${echapperHTML(dateFR(c.dateDelivrance))}</b></span>
-            <span>N° <b>${echapperHTML(c.numero)}</b></span>
-            <span><b>L'équipe EDUFORCI</b></span>
+        <div class="cert-fit"><div class="cert">
+          <div class="c-top">
+            <div class="c-logo"><img src="logo.png" alt="EDUFORCI"><small>L'art d'accompagner la réussite scolaire</small></div>
+            <div class="c-titre"><h2>CERTIFICAT DE<br>RECONNAISSANCE / MÉRITE</h2><div class="decerne">DÉCERNÉ À</div><p class="slogan">Ensemble, bâtissons la réussite de nos élèves</p></div>
+            <div class="c-ref"><div class="badge">${echapperHTML(c.numero)}</div>
+              <div class="ref-box">N° du document : <b>${echapperHTML(c.numero)}</b><br>Date d'émission : <b>${echapperHTML(dateFR(c.dateDelivrance))}</b><br>Récipiendaire : <b>${echapperHTML(c.enseignantNom)}</b><br>Catégorie : <b>${echapperHTML(c.categorie || "Reconnaissance")}</b></div></div>
           </div>
-        </div>
+          <p class="intro">Dans le cadre de sa collaboration avec <b>EDUFORCI</b>, structure spécialisée dans l'accompagnement scolaire, ce certificat est décerné en reconnaissance des efforts, de l'engagement et des résultats exceptionnels obtenus. Il témoigne de la valeur, du dévouement et de l'impact positif sur la réussite des élèves.</p>
+          <div class="bloc"><h3>DÉTAILS DE LA RECONNAISSANCE</h3><div class="grille">
+            <div class="champ"><i class="ico">👤</i><div><b>Nom et Prénoms :</b><span>${echapperHTML(c.enseignantNom)}</span></div></div>
+            <div class="champ"><i class="ico j">⭐</i><div><b>Pour :</b><span>${echapperHTML(c.motif)}</span></div></div>
+            <div class="champ"><i class="ico j">🏅</i><div><b>Catégorie / Motif :</b><span>${echapperHTML(c.categorie || "Reconnaissance")}</span></div></div>
+            <div class="champ"><i class="ico">🏆</i><div><b>Réalisations / Contributions :</b><span>${echapperHTML(c.realisations || c.message || "")}</span></div></div>
+            <div class="champ"><i class="ico">📅</i><div><b>Année / Période :</b><span>${echapperHTML(c.periode || String(c.dateDelivrance).slice(0, 4))}</span></div></div>
+            <div class="champ"><i class="ico j">🗓️</i><div><b>Date :</b><span>${echapperHTML(dateFR(c.dateDelivrance))}</span></div></div>
+          </div></div>
+          <div class="reco"><span class="bouclier">🛡️</span><div><h4>RECONNAISSANCE</h4>Par ce certificat, nous exprimons notre profonde reconnaissance pour votre dévouement, votre professionnalisme et votre contribution remarquable à la mission d'EDUFORCI. Votre engagement inspire et motive l'ensemble de notre communauté éducative.</div></div>
+          <div class="bloc"><h3>IMPACT ET VALEURS INCARNÉES</h3><div class="valeurs"><span>Engagement</span><i>|</i><span>Excellence</span><i>|</i><span>Responsabilité</span><i>|</i><span>Respect</span><i>|</i><span>Collaboration</span><i>|</i><span>Innovation</span></div></div>
+          <div class="bloc"><h3>VALIDATION</h3><div class="sign-box">
+            <div>EDUFORCI<br>Représenté(e) par : <b>${echapperHTML(c.signataire || "L'équipe EDUFORCI")}</b><br>Fonction : <b>${echapperHTML(c.fonctionSignataire || "Direction")}</b><br>Cachet : validé électroniquement</div>
+            <img class="sceau" src="${window.CACHET_EDUFORCI || ''}" alt="Cachet EDUFORCI">
+          </div></div>
+          <div class="c-pied">
+            <div class="note"><b>NOTE IMPORTANTE</b><br>Ce certificat est délivré à titre de reconnaissance. Il ne constitue pas un document contractuel ou une attestation légale.</div>
+            <div>📞 07 47 32 73 09 / 05 07 93 85 47<br>🌐 www.eduforci.com<br>📍 Abobo Akeikoi, Abidjan – Côte d'Ivoire</div>
+          </div>
+          <div class="bande"></div>
+        </div></div>
         <div class="actions">
           <button data-act="print" data-i="${i}">📄 Télécharger en PDF / Imprimer</button>
           <button class="wa" data-act="wa" data-i="${i}">💬 Partager sur WhatsApp</button>
         </div>
-      </div>`).join("");
+      </div>`).join(""); ajuster();
   } catch (err) {
     console.error("[certificats] erreur :", err);
     liste.innerHTML = `<div class="vide"><h3>Impossible de charger vos certificats</h3><p>Réessayez dans un instant.</p></div>`;
