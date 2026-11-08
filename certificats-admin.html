@@ -68,7 +68,16 @@ textarea{min-height:90px;resize:vertical;}
 <label for="selEnseignant">Enseignant</label>
 <select id="selEnseignant"><option value="">⏳ Chargement des enseignants...</option></select>
 
-<label for="motif">Motif</label>
+<label for="categorie">Catégorie</label>
+<select id="categorie">
+<option>Excellence pédagogique</option>
+<option>Engagement et professionnalisme</option>
+<option>Résultats des élèves</option>
+<option>Ponctualité et rigueur</option>
+<option>Mérite exceptionnel</option>
+</select>
+
+<label for="motif">Pour (motif de la reconnaissance)</label>
 <input id="motif" list="motifs" maxlength="120" placeholder="Ex : Excellence pédagogique">
 <datalist id="motifs">
 <option value="Excellence pédagogique">
@@ -77,8 +86,17 @@ textarea{min-height:90px;resize:vertical;}
 <option value="Engagement exemplaire">
 </datalist>
 
-<label for="message">Message de félicitations (facultatif)</label>
-<textarea id="message" maxlength="300" placeholder="Merci pour votre travail remarquable auprès de nos élèves..."></textarea>
+<label for="message">Réalisations / contributions (facultatif)</label>
+<textarea id="message" maxlength="300" placeholder="Ex : Excellents résultats de ses élèves ce trimestre..."></textarea>
+
+<label for="periode">Année / période (facultatif)</label>
+<input id="periode" maxlength="40" placeholder="Ex : 2026 ou 1er trimestre 2026">
+
+<label for="signataire">Représentant EDUFORCI (nom)</label>
+<input id="signataire" maxlength="80" placeholder="Ex : Coach ...">
+
+<label for="fonctionSignataire">Fonction</label>
+<input id="fonctionSignataire" maxlength="80" placeholder="Ex : Directeur">
 
 <button class="btn" id="btnDelivrer">🎓 Délivrer le certificat</button>
 <p id="msg"></p>
@@ -107,9 +125,15 @@ function dateFR(iso) {
   const d = new Date(iso);
   return isNaN(d) ? "" : d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 }
-function afficher(texte, ok) {
-  msg.textContent = texte;
-  msg.style.color = ok ? "#28a745" : "#d93025";
+// Utilise les notifications modernes du site (js/notify.js) ; texte simple en secours
+function afficher(texte, ok, type) {
+  msg.textContent = "";
+  if (typeof window.notify === "function") {
+    window.notify(texte, type || (ok ? "succes" : "erreur"));
+  } else {
+    msg.textContent = texte;
+    msg.style.color = ok ? "#28a745" : "#d93025";
+  }
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -177,8 +201,8 @@ document.getElementById("btnDelivrer").addEventListener("click", async (e) => {
   const motif = document.getElementById("motif").value.trim();
   const message = document.getElementById("message").value.trim();
 
-  if (!uid) return afficher("Choisissez un enseignant.", false);
-  if (!motif) return afficher("Indiquez le motif du certificat.", false);
+  if (!uid) return afficher("Choisissez un enseignant.", false, "avertissement");
+  if (!motif) return afficher("Indiquez le motif du certificat.", false, "avertissement");
 
   const prof = enseignants[uid];
   const maintenant = new Date();
@@ -193,12 +217,17 @@ document.getElementById("btnDelivrer").addEventListener("click", async (e) => {
       matiere: prof.matiere || "",
       motif,
       message,
+      realisations: message,
+      categorie: document.getElementById("categorie").value,
+      periode: document.getElementById("periode").value.trim() || String(maintenant.getFullYear()),
+      signataire: document.getElementById("signataire").value.trim(),
+      fonctionSignataire: document.getElementById("fonctionSignataire").value.trim(),
       numero,
       dateDelivrance: maintenant.toISOString(),
       delivrePar: adminUid,
       statut: "actif"
     });
-    afficher(`✅ Certificat ${numero} délivré à ${prof.nom}.`, true);
+    afficher(`Certificat ${numero} délivré à ${prof.nom}.`, true);
     document.getElementById("motif").value = "";
     document.getElementById("message").value = "";
     sel.value = "";
