@@ -101,6 +101,7 @@ p.sub{color:#666;margin-top:8px;}
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { echapperHTML } from "./js/securite.js";
 
 function choisirIcone(texte) {
     const t = (texte || "").toLowerCase();
@@ -167,8 +168,14 @@ onAuthStateChanged(auth, async (user) => {
             const msgSnap = await getDocs(q);
             msgSnap.forEach((d) => {
                 const m = d.data();
-                if ((m.origine === "recrutement" || m.origine === "reconnaissance") && m.contenu) {
+                if (m.origine === "recrutement" && m.contenu) {
                     evenements.push({ texte: m.contenu, date: m.dateEnvoi, source: "message" });
+                } else if (m.origine === "reconnaissance" && m.contenu) {
+                    evenements.push({
+                        texte: echapperHTML(m.contenu) + ' <a href="reconnaissances-enseignant.html" style="color:#0B63F6;font-weight:600;">Voir mon certificat</a>',
+                        date: m.dateEnvoi,
+                        source: "message"
+                    });
                 }
             });
         }
