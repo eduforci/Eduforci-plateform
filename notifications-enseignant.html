@@ -74,6 +74,7 @@ p.sub{color:#666;margin-top:8px;}
 <a href="notifications-enseignant.html" class="active">🔔 Notifications</a>
 <a href="mes-candidatures-enseignant.html">📝 Ma candidature</a>
 <a href="certificat-enseignant.html">🎓 Mon certificat</a>
+<a href="reconnaissances-enseignant.html">🏆 Mes reconnaissances</a>
 
 <a href="avis-enseignant.html">⭐ Avis</a>
 <a href="parametres-enseignant.html">⚙️ Paramètres</a>
@@ -84,7 +85,7 @@ p.sub{color:#666;margin-top:8px;}
 
 <div class="card">
 <h1>🔔 Notifications</h1>
-<p class="sub">Tout ce qui concerne votre dossier de candidature et votre test de recrutement.</p>
+<p class="sub">Tout ce qui concerne votre dossier, votre test et vos reconnaissances.</p>
 </div>
 
 <div id="zoneBanniere"></div>
@@ -103,6 +104,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "https://www.gsta
 
 function choisirIcone(texte) {
     const t = (texte || "").toLowerCase();
+    if (t.includes("certificat de reconnaissance")) return "🏆";
     if (t.includes("annul")) return "🚫";
     if (t.includes("refus")) return "❌";
     if (t.includes("convoqu")) return "📅";
@@ -165,7 +167,7 @@ onAuthStateChanged(auth, async (user) => {
             const msgSnap = await getDocs(q);
             msgSnap.forEach((d) => {
                 const m = d.data();
-                if (m.origine === "recrutement" && m.contenu) {
+                if ((m.origine === "recrutement" || m.origine === "reconnaissance") && m.contenu) {
                     evenements.push({ texte: m.contenu, date: m.dateEnvoi, source: "message" });
                 }
             });
