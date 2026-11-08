@@ -233,7 +233,7 @@ document.getElementById("btnDelivrer").addEventListener("click", async (e) => {
         await addDoc(collection(db, "messages"), {
           enseignantId: prof.identifiant,
           origine: "reconnaissance",
-          contenu: `🏆 L'équipe EDUFORCI vous a décerné un certificat de reconnaissance : « ${echapperHTML(motif)} ». <a href="reconnaissances-enseignant.html">Voir mon certificat</a>`,
+          contenu: `🏆 L'équipe EDUFORCI vous a décerné un certificat de reconnaissance : « ${motif} ». Retrouvez-le dans « Mes reconnaissances ».`,
           dateEnvoi: maintenant.toISOString()
         });
       } catch (errNotif) {
