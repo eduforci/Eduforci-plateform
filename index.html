@@ -360,7 +360,10 @@ document.getElementById("formRechercheVille").addEventListener("submit", functio
     <details><summary>Je dirige un établissement : comment recruter ?</summary><p>Créez un compte dans l’espace Établissement, publiez vos besoins et recevez les candidatures d’enseignants qualifiés.</p></details>
   </div>
 </section>
-
+<div id="sectionsAccueil2"></div>
+<script>
+fetch("sections-accueil-2.html").then(r=>r.ok?r.text():"").then(h=>{document.getElementById("sectionsAccueil2").innerHTML=h;});
+</script>
 <section class="services" style="max-width:1200px;margin:20px auto 60px;padding:0 20px;">
 
 <div class="teachers-preview-title" style="grid-column:1/-1;width:100%;text-align:center;margin-bottom:30px;">
@@ -673,6 +676,19 @@ chargerEnseignantsAccueil();
 <p style="font-size:14px;color:#b7c6e6;"><i class="fas fa-map-marker-alt"></i> Côte d'Ivoire</p>
 </div>
 
+</div>
+<div style="border-top:1px solid rgba(255,255,255,.12);padding:20px;text-align:center;">
+<div style="display:flex;justify-content:center;gap:12px;margin-bottom:14px;">
+<a href="https://www.facebook.com/share/18JToVibCz/" target="_blank" rel="noopener" aria-label="Facebook" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fab fa-facebook-f"></i></a>
+<a href="https://www.instagram.com/eduforci?igsh=MWMwN25qYmF1a2xrag==" target="_blank" rel="noopener" aria-label="Instagram" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fab fa-instagram"></i></a>
+<a href="https://www.linkedin.com/in/eduforci-ci-26185541a" target="_blank" rel="noopener" aria-label="LinkedIn" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fab fa-linkedin-in"></i></a>
+<a href="https://wa.me/2250507938547" target="_blank" rel="noopener" aria-label="WhatsApp" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fab fa-whatsapp"></i></a>
+</div>
+<p style="font-size:13px;margin:0;">
+<a href="conditions-utilisation.html" style="color:#b7c6e6;text-decoration:none;">Conditions d'utilisation</a>
+&nbsp;•&nbsp;
+<a href="confidentialite.html" style="color:#b7c6e6;text-decoration:none;">Politique de confidentialité</a>
+</p>
 </div>
 
 <div style="border-top:1px solid rgba(255,255,255,.12);padding:18px 20px;text-align:center;font-size:13px;color:#8ea0c6;">
