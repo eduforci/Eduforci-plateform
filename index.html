@@ -295,6 +295,71 @@ document.getElementById("formRechercheVille").addEventListener("submit", functio
 </div>
 
 </section>
+<style>
+.sa{width:90%;max-width:1200px;margin:0 auto 70px;font-family:'Poppins',sans-serif}
+.sa-titre{text-align:center;margin-bottom:34px}
+.sa-titre h2{color:#153A73;font-size:32px;margin-bottom:10px}
+.sa-titre p{color:#5B6B8A}
+.sa-grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:25px}
+.sa-grille4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px}
+.sa-carte{background:#fff;border:1px solid #E6ECF7;border-radius:20px;padding:30px 24px;text-align:center;box-shadow:0 8px 24px rgba(21,58,115,.07)}
+.sa-num{width:52px;height:52px;margin:0 auto 16px;border-radius:50%;background:#FDB813;color:#153A73;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center}
+.sa-ico{width:60px;height:60px;margin:0 auto 16px;border-radius:50%;background:#EAF1FF;color:#0B63F6;font-size:24px;display:flex;align-items:center;justify-content:center}
+.sa-carte h3{color:#153A73;font-size:19px;margin-bottom:10px}
+.sa-carte p{color:#666;line-height:1.7;font-size:14.5px}
+.sa-cta{text-align:center;margin-top:30px}
+.sa-cta a{display:inline-flex;align-items:center;gap:8px;background:#FDB813;color:#153A73;font-weight:700;text-decoration:none;padding:15px 30px;border-radius:30px}
+.sa-cta a:hover{background:#e6a70f}
+.sa-faq{max-width:800px;margin:0 auto}
+.sa-faq details{background:#fff;border:1px solid #E6ECF7;border-radius:16px;margin-bottom:12px;box-shadow:0 6px 18px rgba(21,58,115,.06)}
+.sa-faq summary{cursor:pointer;list-style:none;padding:18px 22px;font-weight:600;color:#153A73;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sa-faq summary::-webkit-details-marker{display:none}
+.sa-faq summary::after{content:"+";font-size:24px;color:#0B63F6;line-height:1}
+.sa-faq details[open] summary::after{content:"–"}
+.sa-faq details p{padding:0 22px 20px;color:#555;line-height:1.7;font-size:14.5px}
+@media (max-width:768px){.sa-grille3{grid-template-columns:1fr}.sa-titre h2{font-size:26px}}
+</style>
+
+<section class="sa">
+  <div class="sa-titre">
+    <h2>Comment ça marche ?</h2>
+    <p>Trouvez votre enseignant en trois étapes simples.</p>
+  </div>
+  <div class="sa-grille3">
+    <div class="sa-carte"><div class="sa-num">1</div><h3>Choisissez</h3><p>Cherchez par ville, matière ou niveau et parcourez les profils d’enseignants vérifiés.</p></div>
+    <div class="sa-carte"><div class="sa-num">2</div><h3>Contactez</h3><p>Écrivez-nous sur WhatsApp ou ouvrez le profil de l’enseignant pour réserver.</p></div>
+    <div class="sa-carte"><div class="sa-num">3</div><h3>Les cours commencent</h3><p>L’enseignant se met d’accord avec vous sur les horaires, et le suivi de votre enfant démarre.</p></div>
+  </div>
+  <div class="sa-cta"><a href="recherche.html">Trouver un enseignant <i class="fas fa-arrow-right"></i></a></div>
+</section>
+
+<section class="sa">
+  <div class="sa-titre">
+    <h2>Pourquoi faire confiance à EDUFORCI ?</h2>
+    <p>Chaque enseignant passe par l’équipe avant d’être présenté aux familles.</p>
+  </div>
+  <div class="sa-grille4">
+    <div class="sa-carte"><div class="sa-ico"><i class="fas fa-user-check"></i></div><h3>Profils vérifiés</h3><p>Un enseignant n’apparaît sur le site qu’après approbation de son profil par l’équipe EDUFORCI.</p></div>
+    <div class="sa-carte"><div class="sa-ico"><i class="fas fa-clipboard-check"></i></div><h3>Recrutement rigoureux</h3><p>Étude du dossier, validation des documents et test avant toute admission.</p></div>
+    <div class="sa-carte"><div class="sa-ico"><i class="fas fa-award"></i></div><h3>Certificat EDUFORCI</h3><p>Les enseignants admis reçoivent un certificat de recrutement vérifiable.</p></div>
+    <div class="sa-carte"><div class="sa-ico"><i class="fab fa-whatsapp"></i></div><h3>Équipe à l’écoute</h3><p>Une question ? Notre équipe vous répond sur WhatsApp au +225 05 07 93 85 47.</p></div>
+  </div>
+</section>
+
+<section class="sa">
+  <div class="sa-titre">
+    <h2>Questions fréquentes</h2>
+    <p>Les réponses aux questions que se posent le plus souvent les parents.</p>
+  </div>
+  <div class="sa-faq">
+    <details><summary>Comment réserver un enseignant ?</summary><p>Ouvrez le profil de l’enseignant ou touchez « Réserver via WhatsApp ». Notre équipe vous aide à finaliser la réservation.</p></details>
+    <details><summary>Que veut dire « Vérifié » ?</summary><p>Le profil a été examiné et approuvé par l’équipe EDUFORCI avant d’être affiché sur le site.</p></details>
+    <details><summary>Quel est le tarif d’un cours ?</summary><p>Chaque enseignant fixe son tarif (à l’heure ou au mois), indiqué sur son profil. Certains préfèrent le discuter directement avec la famille.</p></details>
+    <details><summary>Proposez-vous des cours en ligne ?</summary><p>Oui. Nous proposons des cours à domicile et des cours en ligne, ainsi que des cours d’alphabétisation.</p></details>
+    <details><summary>Je suis enseignant : comment rejoindre EDUFORCI ?</summary><p>Créez votre compte dans l’espace Enseignant, complétez votre profil et déposez votre candidature. L’équipe étudie votre dossier.</p></details>
+    <details><summary>Je dirige un établissement : comment recruter ?</summary><p>Créez un compte dans l’espace Établissement, publiez vos besoins et recevez les candidatures d’enseignants qualifiés.</p></details>
+  </div>
+</section>
 
 <section class="services" style="max-width:1200px;margin:20px auto 60px;padding:0 20px;">
 
