@@ -1,0 +1,55 @@
+<style>
+.ef2{font-family:'Poppins',sans-serif;max-width:1200px;margin:0 auto 60px;padding:0 20px;}
+.ef2 h2{color:#0A2A57;text-align:center;font-size:26px;margin-bottom:6px;}
+.ef2 .sous{color:#667;text-align:center;font-size:14.5px;margin-bottom:24px;}
+.ef2-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+.ef2-puce{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e3e8f2;border-left:4px solid #D4A017;border-radius:12px;padding:14px;text-decoration:none;color:#0A2A57;font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(10,42,87,.07);}
+.ef2-puce:hover{background:#0A2A57;color:#fff;}
+.ef2-puce i{color:#D4A017;font-size:18px;width:22px;text-align:center;}
+.ef2-niveaux{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px;}
+.ef2-niveau{background:linear-gradient(135deg,#0A2A57,#153A73);color:#fff;border-radius:14px;padding:18px;text-decoration:none;}
+.ef2-niveau strong{display:block;font-size:16px;color:#D4A017;margin-bottom:4px;}
+.ef2-niveau span{font-size:13px;opacity:.9;}
+.ef2-cta{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:50px;}
+.ef2-cta div{border-radius:18px;padding:26px;text-align:center;}
+.ef2-cta .ens{background:#0A2A57;color:#fff;}
+.ef2-cta .etab{background:#fff;color:#0A2A57;border:2px solid #D4A017;}
+.ef2-cta h3{font-size:19px;margin-bottom:8px;}
+.ef2-cta p{font-size:14px;line-height:1.6;margin-bottom:16px;opacity:.92;}
+.ef2-cta a{display:inline-block;padding:13px 24px;border-radius:30px;font-weight:700;font-size:14px;text-decoration:none;background:#D4A017;color:#0A2A57;}
+</style>
+
+<section class="ef2" style="margin-top:20px;">
+  <h2>📚 Choisissez une matière</h2>
+  <p class="sous">Cliquez sur une matière pour voir les enseignants correspondants.</p>
+  <div class="ef2-grille">
+    <a class="ef2-puce" href="recherche.html?matiere=Math%C3%A9matiques"><i class="fas fa-square-root-alt"></i> Mathématiques</a>
+    <a class="ef2-puce" href="recherche.html?matiere=Fran%C3%A7ais"><i class="fas fa-book-open"></i> Français</a>
+    <a class="ef2-puce" href="recherche.html?matiere=Anglais"><i class="fas fa-language"></i> Anglais</a>
+    <a class="ef2-puce" href="recherche.html?matiere=Physique-Chimie"><i class="fas fa-flask"></i> Physique-Chimie</a>
+    <a class="ef2-puce" href="recherche.html?matiere=SVT"><i class="fas fa-seedling"></i> SVT</a>
+    <a class="ef2-puce" href="recherche.html?matiere=Philosophie"><i class="fas fa-lightbulb"></i> Philosophie</a>
+    <a class="ef2-puce" href="recherche.html?matiere=Histoire-G%C3%A9ographie"><i class="fas fa-globe-africa"></i> Histoire-Géo</a>
+    <a class="ef2-puce" href="recherche.html?matiere=Informatique"><i class="fas fa-laptop-code"></i> Informatique</a>
+  </div>
+
+  <div class="ef2-niveaux">
+    <a class="ef2-niveau" href="recherche.html?niveau=Primaire"><strong>Primaire</strong><span>Préparation au CEPE</span></a>
+    <a class="ef2-niveau" href="recherche.html?niveau=Coll%C3%A8ge"><strong>Collège</strong><span>Préparation au BEPC</span></a>
+    <a class="ef2-niveau" href="recherche.html?niveau=Lyc%C3%A9e"><strong>Lycée</strong><span>Préparation au BAC</span></a>
+    <a class="ef2-niveau" href="recherche.html?niveau=Concours"><strong>Concours</strong><span>Préparation aux concours</span></a>
+  </div>
+
+  <div class="ef2-cta">
+    <div class="ens">
+      <h3>👨‍🏫 Vous êtes enseignant ?</h3>
+      <p>Rejoignez EDUFORCI, présentez votre profil aux parents et trouvez de nouveaux élèves partout en Côte d'Ivoire.</p>
+      <a href="inscription-enseignant.html">Postuler comme enseignant</a>
+    </div>
+    <div class="etab">
+      <h3>🏫 Vous êtes un établissement ?</h3>
+      <p>Publiez vos besoins et recrutez des enseignants qualifiés pour votre école.</p>
+      <a href="inscription-etablissement.html">Recruter des enseignants</a>
+    </div>
+  </div>
+</section>
