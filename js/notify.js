@@ -394,3 +394,32 @@
 })();
 
 })();
+
+/* EDUFORCI - Correctif du menu latéral mobile
+   - le menu défile seul (la page derrière ne bouge plus)
+   - la page est bloquée tant que le menu est ouvert */
+(function () {
+  var css = "@media (max-width:900px){" +
+    ".sidebar{height:100vh;height:100dvh;overflow-y:auto;overflow-x:hidden;" +
+    "overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:100px!important;}" +
+    ".sidebar-overlay{touch-action:none;}" +
+    "html.menu-eduforci-ouvert,body.menu-eduforci-ouvert{overflow:hidden!important;overscroll-behavior:none;}" +
+    "}";
+  var st = document.createElement("style");
+  st.textContent = css;
+  document.head.appendChild(st);
+
+  function init() {
+    var sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
+    function maj() {
+      var ouvert = sidebar.classList.contains("ouvert");
+      document.documentElement.classList.toggle("menu-eduforci-ouvert", ouvert);
+      document.body.classList.toggle("menu-eduforci-ouvert", ouvert);
+    }
+    new MutationObserver(maj).observe(sidebar, { attributes: true, attributeFilter: ["class"] });
+    maj();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
