@@ -9,7 +9,87 @@
   var ORDRE = ["en", "de", "es", "ar", "zh"];
   var SP = "       ";
 
+  var FAM = "👨\u200d👩\u200d👧";
+  var PROF = "👨\u200d🏫";
+
   var DICO = {
+    "Navigation": ["Navigation", "Navigation", "Navegación", "التنقّل", "导航"],
+    "Accueil": ["Home", "Startseite", "Inicio", "الرئيسية", "首页"],
+    "Trouver un professeur": ["Find a teacher", "Lehrkraft finden", "Encontrar un profesor", "اعثروا على معلّم", "寻找教师"],
+    "Services": ["Services", "Leistungen", "Servicios", "الخدمات", "服务"],
+    "Galerie": ["Gallery", "Galerie", "Galería", "معرض الصور", "图库"],
+    "Contact": ["Contact", "Kontakt", "Contacto", "اتصال", "联系方式"],
+    "connexion": ["Log in", "Anmelden", "Iniciar sesión", "تسجيل الدخول", "登录"],
+    "inscription": ["Sign up", "Registrierung", "Registro", "إنشاء حساب", "注册"],
+    [FAM + " Parent"]: [FAM + " Parent", FAM + " Elternteil", FAM + " Padre o madre", FAM + " ولي أمر", FAM + " 家长"],
+    [PROF + " Enseignant"]: [PROF + " Teacher", PROF + " Lehrkraft", PROF + " Profesor", PROF + " معلّم", PROF + " 教师"],
+    "🏫 Établissement": ["🏫 School", "🏫 Schule", "🏫 Centro educativo", "🏫 مؤسسة تعليمية", "🏫 学校"],
+    "🏫 Etablissement": ["🏫 School", "🏫 Schule", "🏫 Centro educativo", "🏫 مؤسسة تعليمية", "🏫 学校"],
+    "La plateforme qui connecte élèves, parents, enseignants et établissements partout en Côte d'Ivoire.": [
+      "The platform connecting students, parents, teachers and schools across Côte d'Ivoire.",
+      "Die Plattform, die Schüler, Eltern, Lehrkräfte und Schulen in ganz Côte d'Ivoire verbindet.",
+      "La plataforma que conecta a alumnos, padres, profesores y centros educativos en toda Costa de Marfil.",
+      "المنصّة التي تربط التلاميذ وأولياء الأمور والمعلّمين والمؤسسات التعليمية في جميع أنحاء كوت ديفوار.",
+      "连接科特迪瓦各地学生、家长、教师和学校的平台。"
+    ],
+    "Espaces": ["Areas", "Bereiche", "Espacios", "الفضاءات", "专区"],
+    "Espace Établissement": ["School Area", "Schulbereich", "Espacio para centros", "فضاء المؤسسات", "学校专区"],
+    "Conditions d'utilisation": ["Terms of use", "Nutzungsbedingungen", "Condiciones de uso", "شروط الاستخدام", "使用条款"],
+    "Politique de confidentialité": ["Privacy policy", "Datenschutzerklärung", "Política de privacidad", "سياسة الخصوصية", "隐私政策"],
+    "EDUFORCI. Tous droits réservés.": ["EDUFORCI. All rights reserved.", "EDUFORCI. Alle Rechte vorbehalten.", "EDUFORCI. Todos los derechos reservados.", "EDUFORCI. جميع الحقوق محفوظة.", "EDUFORCI. 版权所有。"],
+    "En ligne": ["Online", "Online", "En línea", "متصل", "在线"],
+    "Bonjour 👋, bienvenue chez": ["Hello 👋, welcome to", "Hallo 👋, willkommen bei", "Hola 👋, bienvenido a", "مرحبًا 👋، أهلًا بكم في", "你好 👋，欢迎来到"],
+    "Comment puis-je vous aider ?": ["How can I help you?", "Wie kann ich Ihnen helfen?", "¿En qué puedo ayudarle?", "كيف يمكنني مساعدتكم؟", "请问有什么可以帮您？"],
+    "Ouvrir le chat": ["Open chat", "Chat öffnen", "Abrir el chat", "فتح المحادثة", "打开聊天"],
+    "Discuter sur WhatsApp": ["Chat on WhatsApp", "Auf WhatsApp chatten", "Chatear por WhatsApp", "الدردشة عبر واتساب", "在 WhatsApp 上聊天"],
+    "Expert": ["Expert", "Experte", "Experto", "خبير", "专家"],
+    "Vérifié": ["Verified", "Geprüft", "Verificado", "موثَّق", "已验证"],
+    "Disponible": ["Available", "Verfügbar", "Disponible", "متاح", "可预约"],
+    "Indisponible": ["Unavailable", "Nicht verfügbar", "No disponible", "غير متاح", "暂不可约"],
+    "Tarif à discuter": ["Rate to be discussed", "Tarif nach Absprache", "Tarifa a convenir", "السعر بالاتفاق", "价格面议"],
+    "Enseignant": ["Teacher", "Lehrkraft", "Profesor", "معلّم", "教师"],
+    "Réserver via WhatsApp": ["Book via WhatsApp", "Über WhatsApp buchen", "Reservar por WhatsApp", "الحجز عبر واتساب", "通过 WhatsApp 预订"],
+    "Voir le profil": ["View profile", "Profil ansehen", "Ver perfil", "عرض الملف", "查看资料"],
+    "Erreur lors du chargement des enseignants.": ["Error while loading teachers.", "Fehler beim Laden der Lehrkräfte.", "Error al cargar los profesores.", "حدث خطأ أثناء تحميل المعلّمين.", "加载教师时出错。"],
+    "📚 Choisissez une matière": ["📚 Choose a subject", "📚 Fach auswählen", "📚 Elija una materia", "📚 اختاروا مادة", "📚 选择科目"],
+    "Cliquez sur une matière pour voir les enseignants correspondants.": [
+      "Click a subject to see the matching teachers.", "Klicken Sie auf ein Fach, um die passenden Lehrkräfte zu sehen.",
+      "Pulse una materia para ver los profesores correspondientes.", "اضغطوا على مادة لعرض المعلّمين المناسبين.", "点击科目即可查看相应的教师。"
+    ],
+    "Mathématiques": ["Mathematics", "Mathematik", "Matemáticas", "الرياضيات", "数学"],
+    "Maths": ["Maths", "Mathe", "Mates", "رياضيات", "数学"],
+    "Français": ["French", "Französisch", "Francés", "الفرنسية", "法语"],
+    "Anglais": ["English", "Englisch", "Inglés", "الإنجليزية", "英语"],
+    "Physique-Chimie": ["Physics-Chemistry", "Physik-Chemie", "Física y Química", "الفيزياء والكيمياء", "物理化学"],
+    "PC": ["Physics-Chem.", "Physik-Chemie", "Física-Química", "فيزياء-كيمياء", "物理化学"],
+    "SVT": ["Life & Earth Sciences", "Biologie und Geowissenschaften", "Ciencias de la vida y de la Tierra", "علوم الحياة والأرض", "生命与地球科学"],
+    "Philosophie": ["Philosophy", "Philosophie", "Filosofía", "الفلسفة", "哲学"],
+    "Histoire-Géo": ["History-Geography", "Geschichte-Geografie", "Historia y Geografía", "التاريخ والجغرافيا", "历史地理"],
+    "Histoire-Géographie": ["History-Geography", "Geschichte-Geografie", "Historia y Geografía", "التاريخ والجغرافيا", "历史地理"],
+    "Informatique": ["Computer science", "Informatik", "Informática", "المعلوماتية", "信息技术"],
+    "Primaire": ["Primary", "Grundschule", "Primaria", "الابتدائي", "小学"],
+    "Collège": ["Lower secondary", "Sekundarstufe I", "Secundaria (collège)", "الإعدادي", "初中"],
+    "Lycée": ["Upper secondary", "Sekundarstufe II", "Bachillerato (lycée)", "الثانوي", "高中"],
+    "Concours": ["Competitive exams", "Aufnahmeprüfungen", "Oposiciones y concursos", "المسابقات", "竞争性考试"],
+    "Préparation au CEPE": ["CEPE preparation", "Vorbereitung auf das CEPE", "Preparación al CEPE", "التحضير لشهادة CEPE", "CEPE 备考"],
+    "Préparation au BEPC": ["BEPC preparation", "Vorbereitung auf das BEPC", "Preparación al BEPC", "التحضير لشهادة BEPC", "BEPC 备考"],
+    "Préparation au BAC": ["BAC preparation", "Vorbereitung auf das BAC", "Preparación al BAC", "التحضير لشهادة BAC", "BAC 备考"],
+    "Préparation aux concours": ["Competitive exam preparation", "Vorbereitung auf Aufnahmeprüfungen", "Preparación de oposiciones", "التحضير للمسابقات", "竞争性考试备考"],
+    [PROF + " Vous êtes enseignant ?"]: [PROF + " Are you a teacher?", PROF + " Sind Sie Lehrkraft?", PROF + " ¿Es usted profesor?", PROF + " هل أنتم معلّمون؟", PROF + " 您是教师吗？"],
+    "Rejoignez EDUFORCI, présentez votre profil aux parents et trouvez de nouveaux élèves partout en Côte d'Ivoire.": [
+      "Join EDUFORCI, present your profile to parents and find new students across Côte d'Ivoire.",
+      "Treten Sie EDUFORCI bei, präsentieren Sie Ihr Profil den Eltern und finden Sie neue Schüler in ganz Côte d'Ivoire.",
+      "Únase a EDUFORCI, presente su perfil a los padres y encuentre nuevos alumnos en toda Costa de Marfil.",
+      "انضمّوا إلى EDUFORCI، وقدّموا ملفكم لأولياء الأمور واعثروا على تلاميذ جدد في جميع أنحاء كوت ديفوار.",
+      "加入 EDUFORCI，向家长展示您的资料，在科特迪瓦各地找到新的学生。"
+    ],
+    "Postuler comme enseignant": ["Apply as a teacher", "Als Lehrkraft bewerben", "Postular como profesor", "التقدّم كمعلّم", "申请成为教师"],
+    "🏫 Vous êtes un établissement ?": ["🏫 Are you a school?", "🏫 Sind Sie eine Schule?", "🏫 ¿Es usted un centro educativo?", "🏫 هل أنتم مؤسسة تعليمية؟", "🏫 您是学校吗？"],
+    "Publiez vos besoins et recrutez des enseignants qualifiés pour votre école.": [
+      "Post your needs and recruit qualified teachers for your school.", "Veröffentlichen Sie Ihren Bedarf und stellen Sie qualifizierte Lehrkräfte für Ihre Schule ein.",
+      "Publique sus necesidades y contrate profesores cualificados para su centro.", "انشروا احتياجاتكم ووظّفوا معلّمين مؤهَّلين لمدرستكم.", "发布您的需求，为您的学校招聘合格的教师。"
+    ],
+    "Recruter des enseignants": ["Recruit teachers", "Lehrkräfte einstellen", "Contratar profesores", "توظيف معلّمين", "招聘教师"],
     "Bienvenue sur EDUFORCI – Trouvez rapidement un enseignant qualifié partout en Côte d'Ivoire.📞 Infoline : 0507938547 / 0747327309 Des enseignants vérifiés et certifiés, pour la réussite de vos enfants.": [
       "Welcome to EDUFORCI – Quickly find a qualified teacher anywhere in Côte d'Ivoire.📞 Infoline: 0507938547 / 0747327309" + SP + "Verified and certified teachers, for your children's success.",
       "Willkommen bei EDUFORCI – Finden Sie schnell eine qualifizierte Lehrkraft in ganz Côte d'Ivoire.📞 Infoline: 0507938547 / 0747327309" + SP + "Geprüfte und zertifizierte Lehrkräfte für den Erfolg Ihrer Kinder.",
@@ -157,7 +237,7 @@
       "被录取的教师将获得可核验的招聘证书。"
     ],
     "Équipe à l'écoute": ["A team that listens", "Ein Team, das zuhört", "Un equipo a su escucha", "فريق يصغي إليكم", "贴心的服务团队"],
-    "Une question ? Notre équipe vous répond sur WhatsApp au +225 05 07 93 85 47.": [
+   "Une question ? Notre équipe vous répond sur WhatsApp au +225 05 07 93 85 47.": [
       "A question? Our team answers you on WhatsApp at +225 05 07 93 85 47.",
       "Eine Frage? Unser Team antwortet Ihnen auf WhatsApp unter +225 05 07 93 85 47.",
       "¿Una pregunta? Nuestro equipo le responde por WhatsApp al +225 05 07 93 85 47.",
@@ -288,8 +368,40 @@
     ]
   };
 
+
+  // Textes avec des nombres (cartes d'enseignants)
+  var MOTIFS = [
+    { re: /^([01]) avis$/, t: ["$1 review", "$1 Bewertung", "$1 opinión", "$1 تقييم", "$1 条评价"] },
+    { re: /^(\d+) avis$/, t: ["$1 reviews", "$1 Bewertungen", "$1 opiniones", "$1 تقييمات", "$1 条评价"] },
+    { re: /^(\d+) an d'expérience$/, t: ["$1 year of experience", "$1 Jahr Erfahrung", "$1 año de experiencia", "خبرة $1 سنة", "$1 年经验"] },
+    { re: /^(\d+) ans d'expérience$/, t: ["$1 years of experience", "$1 Jahre Erfahrung", "$1 años de experiencia", "خبرة $1 سنوات", "$1 年经验"] },
+    { re: /^(.+) FCFA \/ mois$/, t: ["$1 FCFA / month", "$1 FCFA / Monat", "$1 FCFA / mes", "$1 فرنك / شهر", "$1 FCFA / 月"] },
+    { re: /^(.+) FCFA \/ h$/, t: ["$1 FCFA / hour", "$1 FCFA / Std.", "$1 FCFA / hora", "$1 فرنك / ساعة", "$1 FCFA / 小时"] }
+  ];
+
+  // Cherche la traduction d'un texte : dictionnaire, puis motifs, puis listes "Maths, PC, ..."
+  function entree(cle) {
+    if (Object.prototype.hasOwnProperty.call(DICO, cle)) return DICO[cle];
+    var i, m;
+    for (i = 0; i < MOTIFS.length; i++) {
+      m = cle.match(MOTIFS[i].re);
+      if (m) return MOTIFS[i].t.map(function (t) { return t.replace("$1", m[1]); });
+    }
+    if (cle.indexOf(",") > -1) {
+      var parts = cle.split(/\s*,\s*/), connus = 0;
+      var trad = ORDRE.map(function () { return []; });
+      parts.forEach(function (p) {
+        var e = Object.prototype.hasOwnProperty.call(DICO, p) ? DICO[p] : null;
+        if (e) connus++;
+        ORDRE.forEach(function (_, k) { trad[k].push(e ? e[k] : p); });
+      });
+      if (connus) return trad.map(function (a) { return a.join(", "); });
+    }
+    return null;
+  }
+
   var HTML_LANG = { fr: "fr", en: "en", de: "de", es: "es", ar: "ar", zh: "zh-CN" };
-  var ATTRS = ["placeholder", "alt", "title"];
+  var ATTRS = ["placeholder", "alt", "title", "aria-label"];
   var records = [];          // {node, attr|null, raw}
   var courante = "fr";
   var applique = false;
@@ -299,7 +411,7 @@
   }
   function traduire(cle, lang) {
     if (lang === "fr") return null;
-    var e = DICO[cle];
+    var e = entree(cle);
     if (!e) return null;
     var i = ORDRE.indexOf(lang);
     return i < 0 ? null : (e[i] || null);
@@ -327,14 +439,14 @@
   function scanner(racine) {
     if (!racine || racine.nodeType === 8) return;
     if (racine.nodeType === 3) {
-      if (!ignorer(racine.parentNode) && DICO[norm(racine.nodeValue)] && !connu(racine, null)) {
+      if (!ignorer(racine.parentNode) && entree(norm(racine.nodeValue)) && !connu(racine, null)) {
         var r = { node: racine, attr: null, raw: racine.nodeValue }; records.push(r); ecrire(r);
       }
       return;
     }
     if (racine.nodeType !== 1 || ignorer(racine)) return;
     ATTRS.forEach(function (a) {
-      if (racine.hasAttribute(a) && DICO[norm(racine.getAttribute(a))] && !connu(racine, a)) {
+      if (racine.hasAttribute(a) && entree(norm(racine.getAttribute(a))) && !connu(racine, a)) {
         var r = { node: racine, attr: a, raw: racine.getAttribute(a) }; records.push(r); ecrire(r);
       }
     });
