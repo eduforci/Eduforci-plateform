@@ -13,6 +13,89 @@
   var PROF = "👨\u200d🏫";
 
   var DICO = {
+    "Recherche de professeurs | EDUFORCI": ["Teacher search | EDUFORCI", "Lehrkräftesuche | EDUFORCI", "Búsqueda de profesores | EDUFORCI", "البحث عن معلّمين | EDUFORCI", "教师搜索 | EDUFORCI"],
+    "🔍 Rechercher un professeur": ["🔍 Search for a teacher", "🔍 Lehrkraft suchen", "🔍 Buscar un profesor", "🔍 البحث عن معلّم", "🔍 搜索教师"],
+    "Toutes les matières": ["All subjects", "Alle Fächer", "Todas las materias", "جميع المواد", "所有科目"],
+    "Allemand": ["German", "Deutsch", "Alemán", "الألمانية", "德语"],
+    "Espagnol": ["Spanish", "Spanisch", "Español", "الإسبانية", "西班牙语"],
+    "Tous les niveaux": ["All levels", "Alle Niveaus", "Todos los niveles", "جميع المستويات", "所有年级"],
+    "1er cycle": ["1st cycle (lower secondary)", "1. Zyklus (Sekundarstufe I)", "1.er ciclo (secundaria)", "الدورة الأولى (الإعدادي)", "第一阶段（初中）"],
+    "2nd cycle": ["2nd cycle (upper secondary)", "2. Zyklus (Sekundarstufe II)", "2.º ciclo (bachillerato)", "الدورة الثانية (الثانوي)", "第二阶段（高中）"],
+    "Toutes les villes": ["All cities", "Alle Städte", "Todas las ciudades", "جميع المدن", "所有城市"],
+    "Communes d'Abidjan": ["Abidjan districts", "Stadtteile von Abidjan", "Municipios de Abiyán", "بلديات أبيدجان", "阿比让各区"],
+    "Grandes villes": ["Major cities", "Großstädte", "Grandes ciudades", "المدن الكبرى", "主要城市"],
+    "🔍 Rechercher": ["🔍 Search", "🔍 Suchen", "🔍 Buscar", "🔍 بحث", "🔍 搜索"],
+    "📍 Chercher par commune ou ville :": ["📍 Search by district or city:", "📍 Nach Stadtteil oder Stadt suchen:", "📍 Buscar por municipio o ciudad:", "📍 البحث حسب البلدية أو المدينة:", "📍 按区或城市搜索："],
+    "Voir": ["View", "Ansehen", "Ver", "عرض", "查看"],
+    "Résultats de la recherche": ["Search results", "Suchergebnisse", "Resultados de la búsqueda", "نتائج البحث", "搜索结果"],
+    "⏳ Chargement des enseignants...": ["⏳ Loading teachers...", "⏳ Lehrkräfte werden geladen...", "⏳ Cargando profesores...", "⏳ جارٍ تحميل المعلّمين...", "⏳ 正在加载教师……"],
+    "Aucun enseignant vérifié pour le moment": ["No verified teachers at the moment", "Derzeit keine geprüften Lehrkräfte", "Ningún profesor verificado por el momento", "لا يوجد معلّمون موثَّقون حاليًا", "目前暂无已验证的教师"],
+    "Revenez bientôt.": ["Come back soon.", "Schauen Sie bald wieder vorbei.", "Vuelva pronto.", "عودوا قريبًا.", "请稍后再来。"],
+    "Aucun enseignant trouvé": ["No teachers found", "Keine Lehrkräfte gefunden", "No se encontró ningún profesor", "لم يتم العثور على أي معلّم", "未找到教师"],
+    "Essayez une autre matière, un autre niveau ou une autre ville.": ["Try another subject, level or city.", "Versuchen Sie ein anderes Fach, Niveau oder eine andere Stadt.", "Pruebe con otra materia, otro nivel u otra ciudad.", "جرّبوا مادة أو مستوى أو مدينة أخرى.", "请尝试其他科目、年级或城市。"],
+    "Impossible de charger les enseignants": ["Unable to load teachers", "Lehrkräfte konnten nicht geladen werden", "No se pudieron cargar los profesores", "تعذّر تحميل المعلّمين", "无法加载教师"],
+    "Vérifiez votre connexion et réessayez.": ["Check your connection and try again.", "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.", "Compruebe su conexión e inténtelo de nuevo.", "تحقّقوا من اتصالكم وأعيدوا المحاولة.", "请检查网络连接后重试。"],
+    "Inscription Parent | EDUFORCI": ["Parent Registration | EDUFORCI", "Registrierung Eltern | EDUFORCI", "Registro de padres | EDUFORCI", "تسجيل ولي الأمر | EDUFORCI", "家长注册 | EDUFORCI"],
+    "Inscription Établissement | EDUFORCI": ["School Registration | EDUFORCI", "Registrierung Schule | EDUFORCI", "Registro de centro educativo | EDUFORCI", "تسجيل المؤسسة | EDUFORCI", "学校注册 | EDUFORCI"],
+    "Nom de l'établissement": ["School name", "Name der Schule", "Nombre del centro educativo", "اسم المؤسسة", "学校名称"],
+    "Nom du responsable": ["Name of the person in charge", "Name der verantwortlichen Person", "Nombre del responsable", "اسم المسؤول", "负责人姓名"],
+    "Type d'établissement": ["Type of school", "Schulart", "Tipo de centro", "نوع المؤسسة", "学校类型"],
+    "Public": ["Public", "Öffentlich", "Público", "عمومي", "公立"],
+    "Privé": ["Private", "Privat", "Privado", "خاص", "私立"],
+    "Niveaux enseignés": ["Levels taught", "Unterrichtete Niveaus", "Niveles que se imparten", "المستويات المدرَّسة", "开设年级"],
+    "Description": ["Description", "Beschreibung", "Descripción", "الوصف", "简介"],
+    "Logo de l'établissement": ["School logo", "Schullogo", "Logotipo del centro", "شعار المؤسسة", "学校标志"],
+    "Créer le compte Établissement": ["Create the School account", "Schulkonto erstellen", "Crear la cuenta del centro educativo", "إنشاء حساب المؤسسة", "创建学校账户"],
+    "Créer un mot de passe": ["Create a password", "Passwort erstellen", "Crear una contraseña", "أنشئوا كلمة مرور", "设置密码"],
+    "Créer mon compte": ["Create my account", "Mein Konto erstellen", "Crear mi cuenta", "إنشاء حسابي", "创建我的账户"],
+    "Inscription Enseignant": ["Teacher Registration", "Registrierung Lehrkraft", "Registro de profesor", "تسجيل المعلّم", "教师注册"],
+    "Inscription Parent": ["Parent Registration", "Registrierung Eltern", "Registro de padres", "تسجيل ولي الأمر", "家长注册"],
+    "Inscription Établissement": ["School Registration", "Registrierung Schule", "Registro de centro educativo", "تسجيل المؤسسة", "学校注册"],
+    "Inscription Enseignant | EDUFORCI": ["Teacher Registration | EDUFORCI", "Registrierung Lehrkraft | EDUFORCI", "Registro de profesor | EDUFORCI", "تسجيل المعلّم | EDUFORCI", "教师注册 | EDUFORCI"],
+    "Nom et prénom": ["Full name", "Vor- und Nachname", "Nombre y apellidos", "الاسم الكامل", "姓名"],
+    "Ville": ["City", "Stadt", "Ciudad", "المدينة", "城市"],
+    "Matière enseignée": ["Subject taught", "Unterrichtetes Fach", "Materia que imparte", "المادة التي تدرّسونها", "任教科目"],
+    "Ex : Mathématiques, Anglais...": ["E.g. Mathematics, English...", "z. B. Mathematik, Englisch...", "Ej.: Matemáticas, Inglés...", "مثال: الرياضيات، الإنجليزية...", "例如：数学、英语……"],
+    "Niveau enseigné": ["Level taught", "Unterrichtetes Niveau", "Nivel que imparte", "المستوى الذي تدرّسونه", "任教年级"],
+    "Choisir...": ["Choose...", "Auswählen...", "Elegir...", "اختاروا...", "请选择……"],
+    "Université": ["University", "Universität", "Universidad", "الجامعة", "大学"],
+    "Années d'expérience": ["Years of experience", "Jahre Berufserfahrung", "Años de experiencia", "سنوات الخبرة", "工作经验（年）"],
+    "Diplôme le plus élevé": ["Highest qualification", "Höchster Abschluss", "Titulación más alta", "أعلى شهادة", "最高学历"],
+    "Présentation": ["About you", "Vorstellung", "Presentación", "نبذة تعريفية", "自我介绍"],
+    "Présentez-vous en quelques lignes...": ["Introduce yourself in a few lines...", "Stellen Sie sich in wenigen Zeilen vor...", "Preséntese en unas líneas...", "عرّفوا بأنفسكم في بضعة أسطر...", "请用几句话介绍一下自己……"],
+    "Mode d'enseignement": ["Teaching mode", "Unterrichtsform", "Modalidad de enseñanza", "طريقة التدريس", "授课方式"],
+    "À domicile": ["At home", "Zu Hause", "A domicilio", "في المنزل", "上门"],
+    "En ligne": ["Online", "Online", "En línea", "عبر الإنترنت", "在线"],
+    "Photo de profil": ["Profile photo", "Profilfoto", "Foto de perfil", "صورة الملف الشخصي", "头像"],
+    "CV (PDF)": ["CV (PDF)", "Lebenslauf (PDF)", "CV (PDF)", "السيرة الذاتية (PDF)", "简历（PDF）"],
+    "Confirmer le mot de passe": ["Confirm password", "Passwort bestätigen", "Confirmar contraseña", "تأكيد كلمة المرور", "确认密码"],
+    "Créer mon compte Enseignant": ["Create my Teacher account", "Mein Lehrkräfte-Konto erstellen", "Crear mi cuenta de profesor", "إنشاء حساب المعلّم", "创建我的教师账户"],
+    "Créer mon compte Parent": ["Create my Parent account", "Mein Eltern-Konto erstellen", "Crear mi cuenta de padre o madre", "إنشاء حساب ولي الأمر", "创建我的家长账户"],
+    "Créer mon compte Établissement": ["Create my School account", "Mein Schulkonto erstellen", "Crear mi cuenta de centro educativo", "إنشاء حساب المؤسسة", "创建我的学校账户"],
+    "J'ai déjà un compte": ["I already have an account", "Ich habe bereits ein Konto", "Ya tengo una cuenta", "لدي حساب بالفعل", "我已有账户"],
+    "Les mots de passe ne correspondent pas.": ["The passwords do not match.", "Die Passwörter stimmen nicht überein.", "Las contraseñas no coinciden.", "كلمتا المرور غير متطابقتين.", "两次输入的密码不一致。"],
+
+    "Ce compte n'est pas un compte Parent.": ["This account is not a Parent account.", "Dies ist kein Eltern-Konto.", "Esta cuenta no es una cuenta de padre o madre.", "هذا الحساب ليس حساب ولي أمر.", "该账户不是家长账户。"],
+    "Ce compte n'est pas un compte Enseignant.": ["This account is not a Teacher account.", "Dies ist kein Lehrkräfte-Konto.", "Esta cuenta no es una cuenta de profesor.", "هذا الحساب ليس حساب معلّم.", "该账户不是教师账户。"],
+    "Ce compte n'est pas un compte Établissement.": ["This account is not a School account.", "Dies ist kein Schulkonto.", "Esta cuenta no es una cuenta de centro educativo.", "هذا الحساب ليس حساب مؤسسة تعليمية.", "该账户不是学校账户。"],
+    "Accès refusé : ce compte n'a pas les droits administrateur.": ["Access denied: this account does not have administrator rights.", "Zugriff verweigert: Dieses Konto hat keine Administratorrechte.", "Acceso denegado: esta cuenta no tiene derechos de administrador.", "تم رفض الوصول: هذا الحساب لا يملك صلاحيات المسؤول.", "访问被拒绝：该账户没有管理员权限。"],
+    "Votre session a été fermée à distance par un administrateur.": ["Your session was closed remotely by an administrator.", "Ihre Sitzung wurde von einem Administrator aus der Ferne beendet.", "Un administrador cerró su sesión a distancia.", "تم إغلاق جلستكم عن بُعد من قبل أحد المسؤولين.", "您的会话已被管理员远程关闭。"],
+    "🏠 Accueil": ["🏠 Home", "🏠 Startseite", "🏠 Inicio", "🏠 الرئيسية", "🏠 首页"],
+    "Retour à l'accueil": ["Back to home", "Zurück zur Startseite", "Volver al inicio", "العودة إلى الرئيسية", "返回首页"],
+    "Connexion Enseignant": ["Teacher Login", "Anmeldung Lehrkraft", "Acceso de profesor", "تسجيل دخول المعلّم", "教师登录"],
+    "Connexion Parent": ["Parent Login", "Anmeldung Eltern", "Acceso de padres", "تسجيل دخول ولي الأمر", "家长登录"],
+    "Connexion Établissement": ["School Login", "Anmeldung Schule", "Acceso de centro educativo", "تسجيل دخول المؤسسة", "学校登录"],
+    "Adresse e-mail": ["Email address", "E-Mail-Adresse", "Correo electrónico", "البريد الإلكتروني", "电子邮箱"],
+    "Mot de passe": ["Password", "Passwort", "Contraseña", "كلمة المرور", "密码"],
+    "Afficher le mot de passe": ["Show password", "Passwort anzeigen", "Mostrar contraseña", "إظهار كلمة المرور", "显示密码"],
+    "Masquer le mot de passe": ["Hide password", "Passwort verbergen", "Ocultar contraseña", "إخفاء كلمة المرور", "隐藏密码"],
+    "Se connecter": ["Log in", "Anmelden", "Iniciar sesión", "تسجيل الدخول", "登录"],
+    "Mot de passe oublié ?": ["Forgot your password?", "Passwort vergessen?", "¿Olvidó su contraseña?", "هل نسيتم كلمة المرور؟", "忘记密码？"],
+    "Créer un compte Enseignant": ["Create a Teacher account", "Lehrkräfte-Konto erstellen", "Crear una cuenta de profesor", "إنشاء حساب معلّم", "创建教师账户"],
+    "Créer un compte Parent": ["Create a Parent account", "Eltern-Konto erstellen", "Crear una cuenta de padre o madre", "إنشاء حساب ولي أمر", "创建家长账户"],
+    "Créer un compte Établissement": ["Create a School account", "Schulkonto erstellen", "Crear una cuenta de centro educativo", "إنشاء حساب مؤسسة", "创建学校账户"],
+    "Veuillez saisir votre adresse e-mail.": ["Please enter your email address.", "Bitte geben Sie Ihre E-Mail-Adresse ein.", "Por favor, introduzca su correo electrónico.", "يرجى إدخال بريدكم الإلكتروني.", "请输入您的电子邮箱。"],
+    "Connexion Enseignant | EDUFORCI": ["Teacher Login | EDUFORCI", "Anmeldung Lehrkraft | EDUFORCI", "Acceso de profesor | EDUFORCI", "تسجيل دخول المعلّم | EDUFORCI", "教师登录 | EDUFORCI"],
     "Navigation": ["Navigation", "Navigation", "Navegación", "التنقّل", "导航"],
     "Accueil": ["Home", "Startseite", "Inicio", "الرئيسية", "首页"],
     "Trouver un professeur": ["Find a teacher", "Lehrkraft finden", "Encontrar un profesor", "اعثروا على معلّم", "寻找教师"],
@@ -37,7 +120,6 @@
     "Conditions d'utilisation": ["Terms of use", "Nutzungsbedingungen", "Condiciones de uso", "شروط الاستخدام", "使用条款"],
     "Politique de confidentialité": ["Privacy policy", "Datenschutzerklärung", "Política de privacidad", "سياسة الخصوصية", "隐私政策"],
     "EDUFORCI. Tous droits réservés.": ["EDUFORCI. All rights reserved.", "EDUFORCI. Alle Rechte vorbehalten.", "EDUFORCI. Todos los derechos reservados.", "EDUFORCI. جميع الحقوق محفوظة.", "EDUFORCI. 版权所有。"],
-    "En ligne": ["Online", "Online", "En línea", "متصل", "在线"],
     "Bonjour 👋, bienvenue chez": ["Hello 👋, welcome to", "Hallo 👋, willkommen bei", "Hola 👋, bienvenido a", "مرحبًا 👋، أهلًا بكم في", "你好 👋，欢迎来到"],
     "Comment puis-je vous aider ?": ["How can I help you?", "Wie kann ich Ihnen helfen?", "¿En qué puedo ayudarle?", "كيف يمكنني مساعدتكم؟", "请问有什么可以帮您？"],
     "Ouvrir le chat": ["Open chat", "Chat öffnen", "Abrir el chat", "فتح المحادثة", "打开聊天"],
@@ -237,7 +319,7 @@
       "被录取的教师将获得可核验的招聘证书。"
     ],
     "Équipe à l'écoute": ["A team that listens", "Ein Team, das zuhört", "Un equipo a su escucha", "فريق يصغي إليكم", "贴心的服务团队"],
-   "Une question ? Notre équipe vous répond sur WhatsApp au +225 05 07 93 85 47.": [
+    "Une question ? Notre équipe vous répond sur WhatsApp au +225 05 07 93 85 47.": [
       "A question? Our team answers you on WhatsApp at +225 05 07 93 85 47.",
       "Eine Frage? Unser Team antwortet Ihnen auf WhatsApp unter +225 05 07 93 85 47.",
       "¿Una pregunta? Nuestro equipo le responde por WhatsApp al +225 05 07 93 85 47.",
@@ -371,6 +453,36 @@
 
   // Textes avec des nombres (cartes d'enseignants)
   var MOTIFS = [
+
+    // Messages de js/auth.js (avec l'adresse e-mail de la personne)
+    { re: /^Compte créé avec succès ! Un e-mail de confirmation a été envoyé à (.+?)\. Merci de cliquer sur le lien reçu avant de vous connecter\. ⚠️ Si vous ne le voyez pas d'ici quelques minutes, regardez dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail : c'est souvent là qu'il atterrit la première fois\.$/, t: [
+      "Account created successfully! A confirmation email has been sent to $1. Please click the link you received before logging in.\n\n⚠️ If you don't see it within a few minutes, check your \"Spam\" or \"Junk\" folder: that is often where it lands the first time.",
+      "Konto erfolgreich erstellt! Eine Bestätigungs-E-Mail wurde an $1 gesendet. Bitte klicken Sie auf den erhaltenen Link, bevor Sie sich anmelden.\n\n⚠️ Falls Sie sie nach einigen Minuten nicht sehen, prüfen Sie Ihren Spam-Ordner: Dort landet sie beim ersten Mal oft.",
+      "¡Cuenta creada con éxito! Se ha enviado un correo de confirmación a $1. Haga clic en el enlace recibido antes de iniciar sesión.\n\n⚠️ Si no lo ve en unos minutos, revise la carpeta «Spam» o «Correo no deseado»: suele llegar allí la primera vez.",
+      "تم إنشاء الحساب بنجاح! تم إرسال رسالة تأكيد إلى $1. يرجى الضغط على الرابط الذي وصلكم قبل تسجيل الدخول.\n\n⚠️ إذا لم تجدوها خلال بضع دقائق، فتحقّقوا من مجلد الرسائل غير المرغوب فيها (Spam)، فغالبًا ما تصل إليه في المرة الأولى.",
+      "账户创建成功！确认邮件已发送至 $1。登录前请点击您收到的链接。\n\n⚠️ 如果几分钟内没有看到，请查看邮箱的“垃圾邮件”文件夹：第一次邮件常常会被放在那里。"
+    ] },
+    { re: /^Votre adresse e-mail n'est pas encore confirmée\. Un lien de confirmation vient de vous être envoyé à (.+?)\. Merci de cliquer dessus avant de vous connecter\. ⚠️ Pensez à regarder dans le dossier "Spam" ou "Courrier indésirable" de votre boîte mail\.$/, t: [
+      "Your email address has not been confirmed yet. A confirmation link has just been sent to $1. Please click it before logging in.\n\n⚠️ Remember to check your \"Spam\" or \"Junk\" folder as well.",
+      "Ihre E-Mail-Adresse wurde noch nicht bestätigt. Ein Bestätigungslink wurde soeben an $1 gesendet. Bitte klicken Sie darauf, bevor Sie sich anmelden.\n\n⚠️ Prüfen Sie bitte auch Ihren Spam-Ordner.",
+      "Su correo electrónico aún no está confirmado. Se acaba de enviar un enlace de confirmación a $1. Haga clic en él antes de iniciar sesión.\n\n⚠️ Recuerde revisar también la carpeta «Spam» o «Correo no deseado».",
+      "لم يتم تأكيد بريدكم الإلكتروني بعد. تم إرسال رابط التأكيد إلى $1 للتو. يرجى الضغط عليه قبل تسجيل الدخول.\n\n⚠️ تذكّروا أيضًا فحص مجلد الرسائل غير المرغوب فيها (Spam).",
+      "您的电子邮箱尚未确认。确认链接刚刚发送至 $1。登录前请先点击该链接。\n\n⚠️ 也请查看邮箱的“垃圾邮件”文件夹。"
+    ] },
+    { re: /^Votre adresse e-mail n'est pas encore confirmée\. Un lien de confirmation vient de vous être envoyé à (.+?)\. ⚠️ Pensez à vérifier également votre dossier Spam ou Courrier indésirable\. Après avoir confirmé votre adresse e-mail, revenez vous connecter\.$/, t: [
+      "Your email address has not been confirmed yet.\n\nA confirmation link has just been sent to $1.\n\n⚠️ Remember to check your Spam or Junk folder as well.\n\nAfter confirming your email address, come back and log in.",
+      "Ihre E-Mail-Adresse wurde noch nicht bestätigt.\n\nEin Bestätigungslink wurde soeben an $1 gesendet.\n\n⚠️ Prüfen Sie bitte auch Ihren Spam-Ordner.\n\nKehren Sie nach der Bestätigung zurück und melden Sie sich an.",
+      "Su correo electrónico aún no está confirmado.\n\nSe acaba de enviar un enlace de confirmación a $1.\n\n⚠️ Recuerde revisar también la carpeta de Spam o Correo no deseado.\n\nTras confirmar su correo, vuelva a iniciar sesión.",
+      "لم يتم تأكيد بريدكم الإلكتروني بعد.\n\nتم إرسال رابط التأكيد إلى $1 للتو.\n\n⚠️ تذكّروا أيضًا فحص مجلد الرسائل غير المرغوب فيها (Spam).\n\nبعد تأكيد بريدكم الإلكتروني، عودوا لتسجيل الدخول.",
+      "您的电子邮箱尚未确认。\n\n确认链接刚刚发送至 $1。\n\n⚠️ 也请查看邮箱的“垃圾邮件”文件夹。\n\n确认邮箱后，请返回登录。"
+    ] },
+    { re: /^Un e-mail de réinitialisation a été envoyé à (.+?)\. Vérifiez également le dossier Spam\.$/, t: [
+      "A password reset email has been sent to $1. Also check your Spam folder.",
+      "Eine E-Mail zum Zurücksetzen des Passworts wurde an $1 gesendet. Prüfen Sie auch Ihren Spam-Ordner.",
+      "Se ha enviado un correo para restablecer la contraseña a $1. Revise también la carpeta de Spam.",
+      "تم إرسال رسالة إعادة تعيين كلمة المرور إلى $1. تحقّقوا أيضًا من مجلد الرسائل غير المرغوب فيها (Spam).",
+      "重置密码的邮件已发送至 $1。也请查看垃圾邮件文件夹。"
+    ] },
     { re: /^([01]) avis$/, t: ["$1 review", "$1 Bewertung", "$1 opinión", "$1 تقييم", "$1 条评价"] },
     { re: /^(\d+) avis$/, t: ["$1 reviews", "$1 Bewertungen", "$1 opiniones", "$1 تقييمات", "$1 条评价"] },
     { re: /^(\d+) an d'expérience$/, t: ["$1 year of experience", "$1 Jahr Erfahrung", "$1 año de experiencia", "خبرة $1 سنة", "$1 年经验"] },
@@ -387,6 +499,11 @@
       m = cle.match(MOTIFS[i].re);
       if (m) return MOTIFS[i].t.map(function (t) { return t.replace("$1", m[1]); });
     }
+    var pre = cle.match(/^(📚|📍|🎓) (.+)$/);
+    if (pre) {
+      var sous = entree(pre[2]);
+      if (sous) return sous.map(function (x) { return pre[1] + " " + x; });
+    }
     if (cle.indexOf(",") > -1) {
       var parts = cle.split(/\s*,\s*/), connus = 0;
       var trad = ORDRE.map(function () { return []; });
@@ -400,8 +517,39 @@
     return null;
   }
 
+
+  // Erreurs Firebase (alert(error.code + "\n\n" + error.message))
+  var ERR_AUTH = [
+    { re: /network-request-failed/, t: ["Unable to connect: check your internet connection and try again.", "Verbindung nicht möglich: Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.", "No se puede conectar: compruebe su conexión a internet e inténtelo de nuevo.", "تعذّر الاتصال: تحقّقوا من اتصالكم بالإنترنت وأعيدوا المحاولة.", "无法连接：请检查网络连接后重试。"] },
+    { re: /invalid-credential|wrong-password/, t: ["Incorrect email or password.", "E-Mail oder Passwort falsch.", "Correo electrónico o contraseña incorrectos.", "البريد الإلكتروني أو كلمة المرور غير صحيحة.", "邮箱或密码不正确。"] },
+    { re: /user-not-found/, t: ["No account found with this email.", "Kein Konto mit dieser E-Mail-Adresse gefunden.", "No se encontró ninguna cuenta con este correo.", "لا يوجد حساب بهذا البريد الإلكتروني.", "未找到使用此邮箱的账户。"] },
+    { re: /email-already-in-use/, t: ["An account already exists with this email address.", "Mit dieser E-Mail-Adresse existiert bereits ein Konto.", "Ya existe una cuenta con este correo electrónico.", "يوجد حساب بهذا البريد الإلكتروني بالفعل.", "此邮箱已被注册。"] },
+    { re: /weak-password/, t: ["The password must contain at least 6 characters.", "Das Passwort muss mindestens 6 Zeichen enthalten.", "La contraseña debe tener al menos 6 caracteres.", "يجب أن تتكوّن كلمة المرور من 6 أحرف على الأقل.", "密码至少需要 6 个字符。"] },
+    { re: /invalid-email/, t: ["This email address is not valid.", "Diese E-Mail-Adresse ist ungültig.", "Este correo electrónico no es válido.", "هذا البريد الإلكتروني غير صالح.", "此邮箱地址无效。"] },
+    { re: /too-many-requests/, t: ["Too many attempts. Please try again in a few minutes.", "Zu viele Versuche. Bitte versuchen Sie es in einigen Minuten erneut.", "Demasiados intentos. Inténtelo de nuevo en unos minutos.", "محاولات كثيرة جدًا. يرجى إعادة المحاولة بعد بضع دقائق.", "尝试次数过多，请几分钟后再试。"] },
+    { re: /user-disabled/, t: ["This account has been disabled.", "Dieses Konto wurde deaktiviert.", "Esta cuenta ha sido desactivada.", "تم تعطيل هذا الحساب.", "该账户已被停用。"] },
+    { re: /.*/, t: ["An error occurred. Please try again.", "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.", "Se produjo un error. Inténtelo de nuevo.", "حدث خطأ. يرجى إعادة المحاولة.", "发生错误，请重试。"] }
+  ];
+
+  // Traduit un message de notification : renvoie {text, type} ou null
+  function traduireNotif(msg) {
+    if (courante === "fr") return null;
+    var i = ORDRE.indexOf(courante);
+    if (i < 0) return null;
+    var m = String(msg).match(/^\s*(auth\/[a-z-]+)/);
+    if (m) {
+      for (var j = 0; j < ERR_AUTH.length; j++) {
+        if (ERR_AUTH[j].re.test(m[1])) return { text: ERR_AUTH[j].t[i], type: "erreur" };
+      }
+    }
+    var k = norm(msg), e = entree(k);
+    if (!e) return null;
+    var type = /succès/i.test(k) ? "succes" : (/refusé|n'est pas un compte/i.test(k) ? "erreur" : "avertissement");
+    return { text: e[i], type: type };
+  }
+
   var HTML_LANG = { fr: "fr", en: "en", de: "de", es: "es", ar: "ar", zh: "zh-CN" };
-  var ATTRS = ["placeholder", "alt", "title", "aria-label"];
+  var ATTRS = ["placeholder", "alt", "title", "aria-label", "label"];
   var records = [];          // {node, attr|null, raw}
   var courante = "fr";
   var applique = false;
@@ -439,17 +587,20 @@
   function scanner(racine) {
     if (!racine || racine.nodeType === 8) return;
     if (racine.nodeType === 3) {
-      if (!ignorer(racine.parentNode) && entree(norm(racine.nodeValue)) && !connu(racine, null)) {
+      if (!ignorer(racine.parentNode) && !(racine.parentNode && racine.parentNode.closest && racine.parentNode.closest("#eduforci-lang")) && entree(norm(racine.nodeValue)) && !connu(racine, null)) {
+        var pn = racine.parentNode;
+        if (pn && pn.nodeName === "OPTION" && !pn.hasAttribute("value")) pn.setAttribute("value", racine.nodeValue.trim());
         var r = { node: racine, attr: null, raw: racine.nodeValue }; records.push(r); ecrire(r);
       }
       return;
     }
-    if (racine.nodeType !== 1 || ignorer(racine)) return;
+    if (racine.nodeType !== 1 || /^(SCRIPT|STYLE|NOSCRIPT)$/.test(racine.nodeName) || racine.id === "eduforci-lang") return;
     ATTRS.forEach(function (a) {
       if (racine.hasAttribute(a) && entree(norm(racine.getAttribute(a))) && !connu(racine, a)) {
         var r = { node: racine, attr: a, raw: racine.getAttribute(a) }; records.push(r); ecrire(r);
       }
     });
+    if (racine.nodeName === "TEXTAREA") return;
     for (var c = racine.firstChild; c; c = c.nextSibling) scanner(c);
   }
   function appliquerTout() {
@@ -534,14 +685,21 @@
     document.body.appendChild(box);
   }
 
-  // Les alertes (notify.js) : on traduit le message connu avant affichage.
+  // Les alertes et notifications (notify.js) : on traduit les messages connus avant affichage.
   function brancherAlertes() {
-    var ancienne = window.alert;
+    var ancienneAlert = window.alert;
+    var ancienneNotify = window.notify;
     window.alert = function (msg) {
-      var t = traduire(norm(msg), courante);
-      if (t !== null && typeof window.notify === "function") return window.notify(t, "avertissement");
-      return ancienne.call(window, msg);
+      var r = traduireNotif(msg);
+      if (r && typeof ancienneNotify === "function") return ancienneNotify(r.text, r.type);
+      return ancienneAlert.call(window, msg);
     };
+    if (typeof ancienneNotify === "function") {
+      window.notify = function (msg, type) {
+        var r = traduireNotif(msg);
+        return ancienneNotify(r ? r.text : msg, r ? (type || r.type) : type);
+      };
+    }
   }
 
   function demarrer() {
