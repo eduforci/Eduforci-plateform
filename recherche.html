@@ -3,7 +3,8 @@
 <head>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-<script src="js/notify.js?v=4"></script>
+<script src="js/notify.js?v=5"></script>
+<script src="js/i18n.js?v=7"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recherche de professeurs | EDUFORCI</title>
@@ -165,6 +166,19 @@ function contient(valeurProf, recherche) {
   });
 }
 
+// Les niveaux de la liste (1er cycle / 2nd cycle) et ceux saisis à l'inscription
+// des enseignants (Collège / Lycée) désignent les mêmes niveaux : on accepte les deux.
+const SYNONYMES_NIVEAU = {
+  "1er cycle": ["1er cycle", "college"],
+  "college":   ["1er cycle", "college"],
+  "2nd cycle": ["2nd cycle", "lycee"],
+  "lycee":     ["2nd cycle", "lycee"]
+};
+function contientNiveau(valeurProf, niveau) {
+  const termes = SYNONYMES_NIVEAU[normaliser(niveau)] || [niveau];
+  return termes.some(t => contient(valeurProf, t));
+}
+
 function message(html) {
   liste.innerHTML = `<div class="message">${html}</div>`;
 }
@@ -199,7 +213,7 @@ async function chargerEnseignants() {
       const villeProf = prof.ville || prof.commune || "";
 
       if (matiere && !contient(prof.matiere, matiere)) return;
-      if (niveau  && !contient(prof.niveau, niveau))   return;
+      if (niveau  && !contientNiveau(prof.niveau, niveau)) return;
       if (ville   && !contient(villeProf, ville))      return;
 
       nb++;
@@ -248,9 +262,36 @@ document.getElementById("champVilleRapide").addEventListener("keydown", (e) => {
   }
 });
 
-const villeDepuisUrl = new URLSearchParams(window.location.search).get("ville");
+const paramsUrl = new URLSearchParams(window.location.search);
+
+const villeDepuisUrl = paramsUrl.get("ville");
 if (villeDepuisUrl) {
   document.getElementById("champVilleRapide").value = villeDepuisUrl;
+}
+
+// Sélectionne une valeur dans une liste ; si elle n'existe pas, on l'ajoute pour
+// que le filtre fonctionne quand même (ex. « Concours »).
+function choisirDansListe(idListe, valeur) {
+  const liste = document.getElementById(idListe);
+  const cible = normaliser(valeur);
+  let option = [...liste.options].find(o => normaliser(o.value) === cible);
+  if (!option) {
+    option = document.createElement("option");
+    option.value = valeur;
+    option.textContent = valeur;
+    liste.appendChild(option);
+  }
+  liste.value = option.value;
+}
+
+const matiereDepuisUrl = (paramsUrl.get("matiere") || "").trim();
+if (matiereDepuisUrl) choisirDansListe("matiere", matiereDepuisUrl);
+
+const niveauDepuisUrl = (paramsUrl.get("niveau") || "").trim();
+if (niveauDepuisUrl) {
+  // « Collège » et « Lycée » (boutons de l'accueil) correspondent à 1er / 2nd cycle
+  const correspondance = { "college": "1er cycle", "lycee": "2nd cycle" };
+  choisirDansListe("niveau", correspondance[normaliser(niveauDepuisUrl)] || niveauDepuisUrl);
 }
 
 await chargerEnseignants();
