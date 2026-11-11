@@ -13,6 +13,46 @@
   var PROF = "👨\u200d🏫";
 
   var DICO = {
+    "Tableau de bord Enseignant | EDUFORCI": ["Teacher Dashboard | EDUFORCI", "Dashboard Lehrkraft | EDUFORCI", "Panel del profesor | EDUFORCI", "لوحة تحكم المعلّم | EDUFORCI", "教师控制面板 | EDUFORCI"],
+    "🏠 Tableau de bord": ["🏠 Dashboard", "🏠 Dashboard", "🏠 Panel de control", "🏠 لوحة التحكم", "🏠 控制面板"],
+    "👤 Mon profil": ["👤 My profile", "👤 Mein Profil", "👤 Mi perfil", "👤 ملفي الشخصي", "👤 我的资料"],
+    "📚 Mes matières": ["📚 My subjects", "📚 Meine Fächer", "📚 Mis materias", "📚 موادي", "📚 我的科目"],
+    "📅 Mes disponibilités": ["📅 My availability", "📅 Meine Verfügbarkeiten", "📅 Mi disponibilidad", "📅 أوقات توفّري", "📅 我的可用时间"],
+    "🎯 Missions proposées": ["🎯 Proposed missions", "🎯 Angebotene Aufträge", "🎯 Misiones propuestas", "🎯 المهمات المقترحة", "🎯 推荐任务"],
+    "📁 Documents": ["📁 Documents", "📁 Dokumente", "📁 Documentos", "📁 المستندات", "📁 文件"],
+    "🔔 Notifications": ["🔔 Notifications", "🔔 Benachrichtigungen", "🔔 Notificaciones", "🔔 الإشعارات", "🔔 通知"],
+    "📝 Ma candidature": ["📝 My application", "📝 Meine Bewerbung", "📝 Mi candidatura", "📝 ترشّحي", "📝 我的申请"],
+    "🎓 Mon certificat": ["🎓 My certificate", "🎓 Mein Zertifikat", "🎓 Mi certificado", "🎓 شهادتي", "🎓 我的证书"],
+    "🏆 Mes reconnaissances": ["🏆 My recognitions", "🏆 Meine Auszeichnungen", "🏆 Mis reconocimientos", "🏆 تقديراتي", "🏆 我的荣誉"],
+    "⭐ Avis": ["⭐ Reviews", "⭐ Bewertungen", "⭐ Opiniones", "⭐ التقييمات", "⭐ 评价"],
+    "⚙️ Paramètres": ["⚙️ Settings", "⚙️ Einstellungen", "⚙️ Ajustes", "⚙️ الإعدادات", "⚙️ 设置"],
+    "🚪 Déconnexion": ["🚪 Log out", "🚪 Abmelden", "🚪 Cerrar sesión", "🚪 تسجيل الخروج", "🚪 退出登录"],
+    "Bonjour,": ["Hello,", "Hallo,", "Hola,", "مرحبًا،", "你好，"],
+    "⏳ Chargement de vos informations...": ["⏳ Loading your information...", "⏳ Ihre Daten werden geladen...", "⏳ Cargando su información...", "⏳ جارٍ تحميل معلوماتكم...", "⏳ 正在加载您的信息……"],
+    "Impossible de charger votre profil.": ["Unable to load your profile.", "Ihr Profil konnte nicht geladen werden.", "No se pudo cargar su perfil.", "تعذّر تحميل ملفكم الشخصي.", "无法加载您的资料。"],
+    "✅ Votre profil est approuvé et visible par les parents sur la page d'accueil.": ["✅ Your profile is approved and visible to parents on the home page.", "✅ Ihr Profil ist freigegeben und für Eltern auf der Startseite sichtbar.", "✅ Su perfil está aprobado y es visible para los padres en la página de inicio.", "✅ تمت الموافقة على ملفكم وهو ظاهر لأولياء الأمور في الصفحة الرئيسية.", "✅ 您的资料已通过审核，家长可在首页看到。"],
+    "⏳ Votre profil est en attente de validation par l'équipe EDUFORCI. Il ne sera visible publiquement qu'après approbation.": ["⏳ Your profile is awaiting validation by the EDUFORCI team. It will only be publicly visible after approval.", "⏳ Ihr Profil wartet auf die Freigabe durch das EDUFORCI-Team. Es ist erst nach der Freigabe öffentlich sichtbar.", "⏳ Su perfil está pendiente de validación por el equipo de EDUFORCI. Solo será visible públicamente tras su aprobación.", "⏳ ملفكم في انتظار موافقة فريق EDUFORCI. لن يظهر للعموم إلا بعد الموافقة عليه.", "⏳ 您的资料正在等待 EDUFORCI 团队审核。审核通过后才会公开显示。"],
+    "Identifiant :": ["ID:", "Kennung:", "Identificador:", "المعرّف:", "编号："],
+    "Email :": ["Email:", "E-Mail:", "Correo electrónico:", "البريد الإلكتروني:", "电子邮箱："],
+    "Ville :": ["City:", "Stadt:", "Ciudad:", "المدينة:", "城市："],
+    "Matière :": ["Subject:", "Fach:", "Materia:", "المادة:", "科目："],
+    "Niveau :": ["Level:", "Niveau:", "Nivel:", "المستوى:", "年级："],
+    "Expérience :": ["Experience:", "Erfahrung:", "Experiencia:", "الخبرة:", "经验："],
+    "an(s)": ["year(s)", "Jahr(e)", "año(s)", "سنة", "年"],
+    "Élèves suivis": ["Students followed", "Betreute Schüler", "Alumnos atendidos", "التلاميذ الذين تتابعونهم", "辅导的学生"],
+    "Nouvelles demandes": ["New requests", "Neue Anfragen", "Nuevas solicitudes", "طلبات جديدة", "新的请求"],
+    "Note moyenne": ["Average rating", "Durchschnittsbewertung", "Valoración media", "متوسط التقييم", "平均评分"],
+    "Taux de satisfaction": ["Satisfaction rate", "Zufriedenheitsrate", "Índice de satisfacción", "نسبة الرضا", "满意度"],
+    "💼 Politique de commission": ["💼 Commission policy", "💼 Provisionsrichtlinie", "💼 Política de comisiones", "💼 سياسة العمولة", "💼 佣金政策"],
+    "Commission EDUFORCI :": ["EDUFORCI commission:", "EDUFORCI-Provision:", "Comisión de EDUFORCI:", "عمولة EDUFORCI:", "EDUFORCI 佣金："],
+    "Cette commission couvre :": ["This commission covers:", "Diese Provision deckt Folgendes ab:", "Esta comisión cubre:", "تغطّي هذه العمولة ما يلي:", "该佣金涵盖："],
+    "La recherche d'élèves.": ["Finding students.", "Die Suche nach Schülern.", "La búsqueda de alumnos.", "البحث عن التلاميذ.", "寻找学生。"],
+    "La promotion de votre profil.": ["Promoting your profile.", "Die Bewerbung Ihres Profils.", "La promoción de su perfil.", "الترويج لملفكم الشخصي.", "推广您的资料。"],
+    "La gestion des demandes.": ["Handling requests.", "Die Bearbeitung der Anfragen.", "La gestión de las solicitudes.", "إدارة الطلبات.", "处理各类请求。"],
+    "Le suivi des missions.": ["Following up on missions.", "Die Betreuung der Aufträge.", "El seguimiento de las misiones.", "متابعة المهمات.", "跟进各项任务。"],
+    "Le développement et l'amélioration continue de la plateforme.": ["The ongoing development and improvement of the platform.", "Die Weiterentwicklung und laufende Verbesserung der Plattform.", "El desarrollo y la mejora continua de la plataforma.", "التطوير والتحسين المستمر للمنصّة.", "平台的持续开发与改进。"],
+    "Aucune commission n'est prélevée si aucune mission n'est obtenue grâce à EDUFORCI.": ["No commission is charged if no mission is obtained through EDUFORCI.", "Es wird keine Provision erhoben, wenn über EDUFORCI kein Auftrag zustande kommt.", "No se cobra ninguna comisión si no se obtiene ninguna misión a través de EDUFORCI.", "لا تُقتطع أي عمولة إذا لم تحصلوا على أي مهمة عبر EDUFORCI.", "如果没有通过 EDUFORCI 获得任何任务，则不收取佣金。"],
+    "📢 Note d'information": ["📢 Information notice", "📢 Hinweis", "📢 Nota informativa", "📢 ملاحظة إعلامية", "📢 通知"],
     "Recherche de professeurs | EDUFORCI": ["Teacher search | EDUFORCI", "Lehrkräftesuche | EDUFORCI", "Búsqueda de profesores | EDUFORCI", "البحث عن معلّمين | EDUFORCI", "教师搜索 | EDUFORCI"],
     "🔍 Rechercher un professeur": ["🔍 Search for a teacher", "🔍 Lehrkraft suchen", "🔍 Buscar un profesor", "🔍 البحث عن معلّم", "🔍 搜索教师"],
     "Toutes les matières": ["All subjects", "Alle Fächer", "Todas las materias", "جميع المواد", "所有科目"],
@@ -117,7 +157,7 @@
     ],
     "Espaces": ["Areas", "Bereiche", "Espacios", "الفضاءات", "专区"],
     "Espace Établissement": ["School Area", "Schulbereich", "Espacio para centros", "فضاء المؤسسات", "学校专区"],
-    "Conditions d'utilisation": ["Terms of use", "Nutzungsbedingungen", "Condiciones de uso", "شروط الاستخدام", "使用条款"],
+     "Conditions d'utilisation": ["Terms of use", "Nutzungsbedingungen", "Condiciones de uso", "شروط الاستخدام", "使用条款"],
     "Politique de confidentialité": ["Privacy policy", "Datenschutzerklärung", "Política de privacidad", "سياسة الخصوصية", "隐私政策"],
     "EDUFORCI. Tous droits réservés.": ["EDUFORCI. All rights reserved.", "EDUFORCI. Alle Rechte vorbehalten.", "EDUFORCI. Todos los derechos reservados.", "EDUFORCI. جميع الحقوق محفوظة.", "EDUFORCI. 版权所有。"],
     "Bonjour 👋, bienvenue chez": ["Hello 👋, welcome to", "Hallo 👋, willkommen bei", "Hola 👋, bienvenido a", "مرحبًا 👋، أهلًا بكم في", "你好 👋，欢迎来到"],
@@ -548,6 +588,26 @@
     return { text: e[i], type: type };
   }
 
+
+  // Blocs à contenu mélangé (texte + balises) : clé = texte brut de l'élément, valeur = HTML traduit
+  var BLOCS = {
+    "Les missions obtenues grâce à EDUFORCI sont soumises à une commission de 20 %.": [
+      "Missions obtained through <strong>EDUFORCI</strong> are subject to a <strong>20%</strong> commission.",
+      "Für über <strong>EDUFORCI</strong> erhaltene Aufträge fällt eine Provision von <strong>20 %</strong> an.",
+      "Las misiones obtenidas a través de <strong>EDUFORCI</strong> están sujetas a una comisión del <strong>20 %</strong>.",
+      "تخضع المهمات التي تحصلون عليها عبر <strong>EDUFORCI</strong> لعمولة قدرها <strong>20%</strong>.",
+      "通过 <strong>EDUFORCI</strong> 获得的授课任务需支付 <strong>20%</strong> 的佣金。"
+    ],
+    "⚠️ Merci de ne pas renseigner votre numéro Wave pour le moment. Cette information vous sera demandée uniquement lorsque cela sera nécessaire, dans le cadre de votre collaboration avec EDUFORCI. Nous vous inviterons à ajouter votre numéro Wave au moment opportun. Merci de votre compréhension.": [
+      "<strong>⚠️ Please do not enter your Wave number for now.</strong><br><br>This information will only be requested when necessary, as part of your collaboration with <strong>EDUFORCI</strong>.<br><br>We will invite you to add your Wave number at the appropriate time.<br><br>Thank you for your understanding.",
+      "<strong>⚠️ Bitte geben Sie Ihre Wave-Nummer vorerst nicht an.</strong><br><br>Diese Information wird nur dann angefordert, wenn sie im Rahmen Ihrer Zusammenarbeit mit <strong>EDUFORCI</strong> erforderlich ist.<br><br>Wir bitten Sie zu gegebener Zeit, Ihre Wave-Nummer hinzuzufügen.<br><br>Vielen Dank für Ihr Verständnis.",
+      "<strong>⚠️ Por favor, no indique su número de Wave por el momento.</strong><br><br>Esta información solo se le pedirá cuando sea necesaria, en el marco de su colaboración con <strong>EDUFORCI</strong>.<br><br>Le invitaremos a añadir su número de Wave en el momento oportuno.<br><br>Gracias por su comprensión.",
+      "<strong>⚠️ يرجى عدم إدخال رقم Wave الخاص بكم في الوقت الحالي.</strong><br><br>لن يُطلب منكم هذا المعلومة إلا عند الحاجة، في إطار تعاونكم مع <strong>EDUFORCI</strong>.<br><br>سندعوكم إلى إضافة رقم Wave في الوقت المناسب.<br><br>شكرًا لتفهّمكم.",
+      "<strong>⚠️ 暂时请不要填写您的 Wave 号码。</strong><br><br>只有在与 <strong>EDUFORCI</strong> 合作需要时，才会请您提供这项信息。<br><br>我们会在适当的时候邀请您添加 Wave 号码。<br><br>感谢您的理解。"
+    ]
+  };
+  function blocEntree(cle) { return Object.prototype.hasOwnProperty.call(BLOCS, cle) ? BLOCS[cle] : null; }
+
   var HTML_LANG = { fr: "fr", en: "en", de: "de", es: "es", ar: "ar", zh: "zh-CN" };
   var ATTRS = ["placeholder", "alt", "title", "aria-label", "label"];
   var records = [];          // {node, attr|null, raw}
@@ -565,6 +625,10 @@
     return i < 0 ? null : (e[i] || null);
   }
   function valeur(rec) {
+    if (rec.html) {
+      var b = blocEntree(rec.cle), ib = ORDRE.indexOf(courante);
+      return (courante !== "fr" && b && ib > -1 && b[ib]) ? b[ib] : rec.raw;
+    }
     var t = traduire(norm(rec.raw), courante);
     if (t === null) return rec.raw;
     if (rec.attr) return t;
@@ -573,6 +637,7 @@
   }
   function ecrire(rec) {
     var v = valeur(rec);
+    if (rec.html) { if (rec.node.innerHTML !== v) rec.node.innerHTML = v; return; }
     if (rec.attr) { if (rec.node.getAttribute(rec.attr) !== v) rec.node.setAttribute(rec.attr, v); }
     else if (rec.node.nodeValue !== v) rec.node.nodeValue = v;
   }
@@ -600,7 +665,18 @@
         var r = { node: racine, attr: a, raw: racine.getAttribute(a) }; records.push(r); ecrire(r);
       }
     });
+    if (racine.children.length && !connu(racine, null)) {
+      var tc = racine.textContent;
+      if (tc && tc.length < 900) {
+        var cb = norm(tc);
+        if (blocEntree(cb)) {
+          var rb = { node: racine, attr: null, html: true, cle: cb, raw: racine.innerHTML };
+          records.push(rb); ecrire(rb); return;
+        }
+      }
+    }
     if (racine.nodeName === "TEXTAREA") return;
+    if (connu(racine, null)) return;
     for (var c = racine.firstChild; c; c = c.nextSibling) scanner(c);
   }
   function appliquerTout() {
@@ -634,8 +710,7 @@
       "html[dir=rtl] .hero-content,html[dir=rtl] .contact-form,html[dir=rtl] .sa-faq details p,html[dir=rtl] .sa-faq summary{text-align:right;}" +
       "#eduforci-lang{position:fixed;bottom:18px;left:18px;z-index:99990;background:#153A73;color:#fff;border-radius:30px;padding:6px 12px;display:flex;align-items:center;gap:6px;box-shadow:0 8px 20px rgba(0,0,0,.25);font-family:Poppins,sans-serif;}" +
       "#eduforci-lang select{background:transparent;color:#fff;border:none;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;outline:none;max-width:120px;}" +
-      "#eduforci-lang select option{color:#153A73;}" +
-      "html[dir=rtl] #eduforci-lang{left:auto;right:18px;}";
+      "#eduforci-lang select option{color:#153A73;}";
     document.head.appendChild(s);
   }
 
