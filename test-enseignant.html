@@ -180,6 +180,19 @@ function genererSessionId() {
     return `SESSION-${jour}-${alea}`;
 }
 
+// Matières du test : une ou plusieurs (tableau `matieres`, ou ancienne valeur « Anglais, Maths » séparée par des virgules).
+// Si l'admin a décoché « Mélanger les sujets », seule la première matière est utilisée.
+function matieresDuTest() {
+    const p = (candidature && candidature.parametresTest) || {};
+    let liste = Array.isArray(p.matieres) ? p.matieres : [];
+    if (!liste.length && p.matiere) liste = String(p.matiere).split(/[,;]+/);
+    if (!liste.length && candidature && candidature.matieres && candidature.matieres.length) liste = [candidature.matieres[0]];
+    liste = liste.map(m => String(m).trim()).filter(Boolean).filter((m, i, l) => l.indexOf(m) === i);
+    if (!liste.length) liste = ["Générale"];
+    if (p.melanger === false) liste = liste.slice(0, 1);
+    return liste;
+}
+
 function melanger(tableau) {
     const t = [...tableau];
     for (let i = t.length - 1; i > 0; i--) {
@@ -349,7 +362,7 @@ function afficherGateReprise() {
 function afficherEcranAccueil(expiration) {
 
     const nom = [candidature.personnel?.prenom, candidature.personnel?.nom].filter(Boolean).join(" ") || "";
-    const matiere = candidature.parametresTest?.matiere || (candidature.matieres && candidature.matieres[0]) || "Générale";
+    const matiere = matieresDuTest().join(", ");
     const niveau = candidature.parametresTest?.niveau || (candidature.niveaux && candidature.niveaux.join(", ")) || "-";
     const dureeMin = Math.round(DUREE_SECONDES / 60);
     const nbDisciplinaire = Math.max(0, NB_QUESTIONS - 2 * Math.round(NB_QUESTIONS / 6));
@@ -378,6 +391,7 @@ function afficherEcranAccueil(expiration) {
                 <div class="composition-ligne">• ${nbDisciplinaire} questions de connaissances disciplinaires</div>
                 <div class="composition-ligne">• ${nbPedagogie} questions de pédagogie</div>
                 <div class="composition-ligne">• ${nbEtudeCas} études de cas professionnelles</div>
+                ${matieresDuTest().length > 1 ? `<div class="composition-ligne">• Les questions mélangent vos matières : ${matiere}</div>` : ""}
                 ${NB_QUESTIONS_OUVERTES ? `<div class="composition-ligne">• ${NB_QUESTIONS_OUVERTES} questions ouvertes (rédaction)</div>` : ""}
             </div>
 
@@ -438,19 +452,24 @@ async function demarrerTest() {
 
     try {
 
-        const matiere = candidature.parametresTest?.matiere || (candidature.matieres && candidature.matieres[0]) || "Générale";
+        const matieres = matieresDuTest();
+        const matiere = matieres.join(", ");
 
-        const q = query(collection(db, "questionsRecrutement"), where("matiere", "==", matiere));
-        const snap = await getDocs(q);
+        // Une requête par matière : le test peut mélanger plusieurs matières
+        const lots = await Promise.all(matieres.map((m) =>
+            getDocs(query(collection(db, "questionsRecrutement"), where("matiere", "==", m)))
+        ));
 
-        if (snap.empty) {
+        let toutesLesQuestions = [];
+        lots.forEach((snap, i) => {
+            snap.forEach((d) => toutesLesQuestions.push({ id: d.id, ...d.data(), matiere: matieres[i] }));
+        });
+
+        if (toutesLesQuestions.length === 0) {
             window.hideLoading();
             afficherEtat("⚠️", "Banque de questions indisponible", `Aucune question n'est encore disponible pour la matière « ${matiere} ». Merci de contacter l'équipe EDUFORCI.`);
             return;
         }
-
-        let toutesLesQuestions = [];
-        snap.forEach((d) => toutesLesQuestions.push({ id: d.id, ...d.data() }));
 
         // Niveau du test choisi par l'admin : on ne garde que les questions de cette difficulté
         if (DIFFICULTE_TEST) {
@@ -477,9 +496,22 @@ async function demarrerTest() {
 
         const parCategorie = (cat) => banqueQcm.filter(q => (q.categorie || "disciplinaire") === cat);
 
+        // Pioche à tour de rôle dans chaque matière : toutes les matières sont représentées à parts égales
+        // (avec une seule matière, cela revient à un tirage au hasard simple)
+        function rotation(questions, nb) {
+            const files = melanger(matieres.map(m => melanger(questions.filter(q => q.matiere === m))).filter(f => f.length));
+            const choisies = [];
+            let i = 0;
+            while (choisies.length < nb && files.some(f => f.length)) {
+                const f = files[i % files.length];
+                if (f.length) choisies.push(f.shift());
+                i++;
+            }
+            return choisies;
+        }
+
         function piocher(cat, nb, dejaChoisiesIds) {
-            const dispo = melanger(parCategorie(cat)).filter(q => !dejaChoisiesIds.has(q.id));
-            return dispo.slice(0, nb);
+            return rotation(parCategorie(cat).filter(q => !dejaChoisiesIds.has(q.id)), nb);
         }
 
         const idsChoisis = new Set();
@@ -493,22 +525,24 @@ async function demarrerTest() {
 
         // Repli : si certaines catégories manquent de questions, on complète avec le reste de la banque QCM
         if (selection.length < Math.min(NB_QUESTIONS, banqueQcm.length)) {
-            const complement = melanger(banqueQcm.filter(q => !idsChoisis.has(q.id))).slice(0, NB_QUESTIONS - selection.length);
+            const complement = rotation(banqueQcm.filter(q => !idsChoisis.has(q.id)), NB_QUESTIONS - selection.length);
             selection = selection.concat(complement);
         }
 
         const questionsQcm = melanger(selection).slice(0, NB_QUESTIONS).map((q) => ({
             id: q.id,
             type: "qcm",
+            matiere: q.matiere,
             question: q.question,
             choix: q.choix
             // volontairement : ni reponseCorrecte, ni explication ici.
             // Elles ne seront récupérées qu'à la finalisation du test (voir finaliserTest).
         }));
 
-        const questionsOuvertes = melanger(banqueOuvertes).slice(0, NB_QUESTIONS_OUVERTES).map((q) => ({
+        const questionsOuvertes = rotation(banqueOuvertes, NB_QUESTIONS_OUVERTES).map((q) => ({
             id: q.id,
             type: "ouverte",
+            matiere: q.matiere,
             question: q.question,
             bareme: q.bareme || 5
             // le corrigé indicatif reste dans questionsRecrutement, jamais copié ici.
@@ -521,6 +555,7 @@ async function demarrerTest() {
         test = {
             candidat: { uid, nom: candidature.personnel?.nom || "", prenom: candidature.personnel?.prenom || "" },
             matiere,
+            matieres,
             sessionId: genererSessionId(),
             questions: questionsChoisies,
             reponses: {},
@@ -672,11 +707,17 @@ function afficherQuestion() {
 
     const zone = document.getElementById("zoneQuestion");
 
+    // Quand le test mélange plusieurs matières, on indique la matière de chaque question
+    const etiquetteMatiere = (test.matieres && test.matieres.length > 1 && q.matiere)
+        ? `<div style="display:inline-block;background:#f0e9fb;color:#5b21a8;font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;margin-bottom:10px;">📚 ${q.matiere}</div>`
+        : "";
+
     if (q.type === "ouverte") {
 
         const texteActuel = (reponseActuelle && reponseActuelle.texte) || "";
 
         zone.innerHTML = `
+            ${etiquetteMatiere}
             <h2>📝 ${q.question}</h2>
             <p class="consigne-ouverte">Question ouverte — répondez avec vos propres mots (${q.bareme || 5} points). Cette réponse sera corrigée manuellement par l'équipe EDUFORCI.</p>
             <textarea class="reponse-ouverte" id="zoneReponseOuverte" placeholder="Écrivez votre réponse ici...">${texteActuel}</textarea>
@@ -696,6 +737,7 @@ function afficherQuestion() {
     } else {
 
         zone.innerHTML = `
+            ${etiquetteMatiere}
             <h2>${q.question}</h2>
             ${q.choix.map((c, i) => `
                 <label class="choix ${reponseActuelle === i ? "selectionne" : ""}" data-index="${i}">
