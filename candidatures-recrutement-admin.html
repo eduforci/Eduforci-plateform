@@ -373,7 +373,12 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 
 <p id="popupAutoriserQuestion" style="color:#333;font-size:15px;margin-bottom:20px;">Voulez-vous autoriser ce candidat à passer le test ?</p>
 
-<label>Matière</label><input type="text" id="paramMatiere" style="width:100%;">
+<label>Matière(s)</label><input type="text" id="paramMatiere" style="width:100%;" placeholder="Ex. : Anglais, Mathématiques">
+<p style="font-size:12px;color:#777;margin:4px 0 8px;">Plusieurs matières : séparez-les par des virgules.</p>
+<label style="display:flex;align-items:flex-start;gap:8px;font-size:14px;margin-bottom:12px;cursor:pointer;">
+<input type="checkbox" id="paramMelanger" checked style="margin-top:3px;">
+<span>🔀 Mélanger les sujets : un seul test avec des questions de chaque matière, à parts égales. Si décoché, seule la première matière est utilisée.</span>
+</label>
 <label>Niveau d'enseignement</label><input type="text" id="paramNiveau" style="width:100%;">
 <label>Niveau du test (difficulté des questions)</label>
 <select id="paramDifficulte" style="width:100%;padding:10px;font-size:15px;border:1px solid #ccc;border-radius:8px;margin-bottom:6px;">
@@ -433,7 +438,7 @@ textarea#commentaireAdmin{width:100%;min-height:90px;padding:13px;border:1px sol
 
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-import { doc, getDoc, setDoc, collection, getDocs, updateDoc, addDoc, arrayUnion, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, collection, getDocs, updateDoc, addDoc, arrayUnion, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import { echapperHTML } from "./js/securite.js";
 import { ouvrirFichier } from "./js/fichiers-candidature.js";
 
@@ -1093,7 +1098,8 @@ function ouvrirPopupAutoriser() {
     if (!c) return;
     const nom = [c.personnel?.prenom, c.personnel?.nom].filter(Boolean).join(" ") || identifiantCourt(c.id);
     document.getElementById("popupAutoriserQuestion").textContent = `Voulez-vous autoriser ${nom} à passer le test ?`;
-    document.getElementById("paramMatiere").value = (c.matieres && c.matieres[0]) || "";
+    document.getElementById("paramMatiere").value = (c.matieres && c.matieres.join(", ")) || "";
+    document.getElementById("paramMelanger").checked = !(c.parametresTest && c.parametresTest.melanger === false);
     document.getElementById("paramNiveau").value = (c.niveaux && c.niveaux.join(", ")) || "";
     document.getElementById("paramDifficulte").value = (c.parametresTest && c.parametresTest.difficulte) || "";
     document.getElementById("paramDuree").value = 60;
@@ -1133,7 +1139,13 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
     const c = candidatures.find(x => x.id === candidatureOuverteId);
     if (!c) return;
 
-    const matiereChoisie = document.getElementById("paramMatiere").value.trim();
+    // Une ou plusieurs matières séparées par des virgules ; « Mélanger » décoché = première matière seulement
+    const matieresSaisies = document.getElementById("paramMatiere").value
+        .split(/[,;]+/).map(m => m.trim()).filter(Boolean)
+        .filter((m, i, liste) => liste.indexOf(m) === i);
+    const melangerSujets = document.getElementById("paramMelanger").checked;
+    const matieresTest = melangerSujets ? matieresSaisies : matieresSaisies.slice(0, 1);
+    const matiereChoisie = matieresTest.join(", ");
     const niveauChoisi = document.getElementById("paramNiveau").value.trim();
     const difficulteChoisie = document.getElementById("paramDifficulte").value;
     const dureeMinutes = Number(document.getElementById("paramDuree").value) || 60;
@@ -1145,6 +1157,18 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
 
     try {
 
+        // Vérifie que la banque contient des questions pour chaque matière (même orthographe exacte)
+        const sansQuestions = [];
+        for (const m of matieresTest) {
+            const snapMatiere = await getDocs(query(collection(db, "questionsRecrutement"), where("matiere", "==", m)));
+            if (snapMatiere.empty) sansQuestions.push(m);
+        }
+        if (sansQuestions.length) {
+            window.hideLoading();
+            window.notify(`Aucune question dans la banque pour : ${sansQuestions.join(", ")}. Ajoutez des questions ou corrigez l'orthographe de la matière.`, "erreur");
+            return;
+        }
+
         const idAutorisation = await genererIdAutorisation();
         const maintenant = new Date();
         const dateExpiration = new Date(maintenant.getTime() + expirationHeures * 60 * 60 * 1000);
@@ -1153,7 +1177,7 @@ document.getElementById("btnAutoriserOui").addEventListener("click", async () =>
             statut: "test_autorise",
             documentsStatut: "valides",
             autorisationTestId: idAutorisation,
-            parametresTest: { matiere: matiereChoisie, niveau: niveauChoisi, difficulte: difficulteChoisie, dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
+            parametresTest: { matiere: matiereChoisie, matieres: matieresTest, melanger: melangerSujets, niveau: niveauChoisi, difficulte: difficulteChoisie, dureeMinutes, nombreQuestions, tentativesAutorisees, expirationHeures },
             messageAdmin: document.getElementById("commentaireAdmin").value.trim() || "Félicitations, vous êtes autorisé(e) à passer le test EDUFORCI.",
             historique: arrayUnion({ date: maintenant.toISOString(), action: `Test autorisé — session ${idAutorisation}` })
         });
