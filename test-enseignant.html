@@ -611,4 +611,615 @@ function afficherEcranAccueil(expiration) {
     });
 
 }
+// ==========================================================
+// DÉMARRAGE DU TEST (création du document testsRecrutement)
+// ==========================================================
+
+async function demarrerTest() {
+
+    window.showLoading("Préparation de votre test...");
+
+    try {
+
+        const matieres = matieresDuTest();
+        const matiere = matieres.join(", ");
+
+        // Une requête par matière : le test peut mélanger plusieurs matières
+        const lots = await Promise.all(matieres.map((m) =>
+            getDocs(query(collection(db, "questionsRecrutement"), where("matiere", "==", m)))
+        ));
+
+        let toutesLesQuestions = [];
+        lots.forEach((snap, i) => {
+            snap.forEach((d) => toutesLesQuestions.push({ id: d.id, ...d.data(), matiere: matieres[i] }));
+        });
+
+        if (toutesLesQuestions.length === 0) {
+            window.hideLoading();
+            afficherEtat("⚠️", "Banque de questions indisponible", `Aucune question n'est encore disponible pour la matière « ${matiere} ». Merci de contacter l'équipe EDUFORCI.`);
+            return;
+        }
+
+        // Niveau du test choisi par l'admin : on ne garde que les questions de cette difficulté
+        if (DIFFICULTE_TEST) {
+            toutesLesQuestions = toutesLesQuestions.filter(q => q.difficulte === DIFFICULTE_TEST);
+            if (toutesLesQuestions.length === 0) {
+                window.hideLoading();
+                afficherEtat("⚠️", "Banque de questions indisponible", `Aucune question de niveau « ${DIFFICULTE_TEST} » n'est encore disponible pour la matière « ${matiere} ». Merci de contacter l'équipe EDUFORCI.`);
+                return;
+            }
+        }
+
+        const banqueQcm = toutesLesQuestions.filter(q => q.type !== "ouverte");
+        const banqueOuvertes = toutesLesQuestions.filter(q => q.type === "ouverte");
+
+        if (banqueQcm.length === 0) {
+            window.hideLoading();
+            afficherEtat("⚠️", "Banque de questions indisponible", `Aucune question à choix multiples n'est encore disponible pour la matière « ${matiere} ». Merci de contacter l'équipe EDUFORCI.`);
+            return;
+        }
+
+        const nbPedagogieCible = Math.round(NB_QUESTIONS / 6);
+        const nbEtudeCasCible = Math.round(NB_QUESTIONS / 6);
+        const nbDisciplinaireCible = NB_QUESTIONS - nbPedagogieCible - nbEtudeCasCible;
+
+        const parCategorie = (cat) => banqueQcm.filter(q => (q.categorie || "disciplinaire") === cat);
+
+        // Pioche à tour de rôle dans chaque matière : toutes les matières sont représentées à parts égales
+        // (avec une seule matière, cela revient à un tirage au hasard simple)
+        function rotation(questions, nb) {
+            const files = melanger(matieres.map(m => melanger(questions.filter(q => q.matiere === m))).filter(f => f.length));
+            const choisies = [];
+            let i = 0;
+            while (choisies.length < nb && files.some(f => f.length)) {
+                const f = files[i % files.length];
+                if (f.length) choisies.push(f.shift());
+                i++;
+            }
+            return choisies;
+        }
+
+        function piocher(cat, nb, dejaChoisiesIds) {
+            return rotation(parCategorie(cat).filter(q => !dejaChoisiesIds.has(q.id)), nb);
+        }
+
+        const idsChoisis = new Set();
+        let selection = [];
+
+        [["disciplinaire", nbDisciplinaireCible], ["pedagogie", nbPedagogieCible], ["etude_de_cas", nbEtudeCasCible]].forEach(([cat, nb]) => {
+            const choisies = piocher(cat, nb, idsChoisis);
+            choisies.forEach(q => idsChoisis.add(q.id));
+            selection = selection.concat(choisies);
+        });
+
+        // Repli : si certaines catégories manquent de questions, on complète avec le reste de la banque QCM
+        if (selection.length < Math.min(NB_QUESTIONS, banqueQcm.length)) {
+            const complement = rotation(banqueQcm.filter(q => !idsChoisis.has(q.id)), NB_QUESTIONS - selection.length);
+            selection = selection.concat(complement);
+        }
+
+        const questionsQcm = melanger(selection).slice(0, NB_QUESTIONS).map((q) => ({
+            id: q.id,
+            type: "qcm",
+            matiere: q.matiere,
+            question: q.question,
+            choix: q.choix
+            // volontairement : ni reponseCorrecte, ni explication ici.
+            // Elles ne seront récupérées qu'à la finalisation du test (voir finaliserTest).
+        }));
+
+        const questionsOuvertes = rotation(banqueOuvertes, NB_QUESTIONS_OUVERTES).map((q) => ({
+            id: q.id,
+            type: "ouverte",
+            matiere: q.matiere,
+            question: q.question,
+            bareme: q.bareme || 5
+            // le corrigé indicatif reste dans questionsRecrutement, jamais copié ici.
+        }));
+
+        const questionsChoisies = [...questionsQcm, ...questionsOuvertes];
+
+        const maintenant = new Date().toISOString();
+
+        test = {
+            candidat: { uid, nom: candidature.personnel?.nom || "", prenom: candidature.personnel?.prenom || "" },
+            matiere,
+            matieres,
+            sessionId: genererSessionId(),
+            questions: questionsChoisies,
+            reponses: {},
+            marquees: {},
+            statut: "en_cours",
+            debut: maintenant,
+            fin: null,
+            dureeSecondes: DUREE_SECONDES,
+            tempsUtiliseSecondes: null,
+            score: null,
+            pourcentage: null,
+            avertissements: 0,
+            journalAntiTriche: [],
+            tentativeNumero: prochaineTentative,
+            questionActuelle: 1,
+            actualisations: 0,
+            deconnexions: 0,
+            terminé: false
+        };
+
+        await setDoc(doc(db, "testsRecrutement", uid), test);
+
+        // Trace dans l'historique de la candidature
+        await updateDoc(doc(db, "candidaturesRecrutement", uid), {
+            historique: arrayUnion({ date: maintenant, action: `Test démarré — session ${test.sessionId}` })
+        });
+
+        window.hideLoading();
+        avertissements = 0;
+        demarrerEcranTest();
+
+    } catch (error) {
+        window.hideLoading();
+        window.notify("Erreur au démarrage du test : " + error.message, "erreur");
+    }
+
+}
+
+// ==========================================================
+// ÉCRAN DE TEST
+// ==========================================================
+
+function demarrerEcranTest() {
+
+    indexActuel = Object.keys(test.reponses || {}).length
+        ? test.questions.findIndex(q => !(q.id in test.reponses))
+        : 0;
+    if (indexActuel === -1) indexActuel = test.questions.length - 1;
+
+    carte.innerHTML = `
+        <div class="entete-test">
+            <div class="logo">EDUFORCI</div>
+            <div class="entete-droite">
+                <div class="compteur-avertissements" id="compteurAvertissements">⚠️ ${avertissements}/${MAX_AVERTISSEMENTS}</div>
+                <div class="chrono" id="chrono">--:--</div>
+            </div>
+        </div>
+        <div class="progression-zone">
+            <div class="progression-txt"><span id="labelQuestion">Question 1 / ${test.questions.length}</span></div>
+            <div class="barre-progression"><div class="barre-progression-remplie" id="barreProgression" style="width:0%;"></div></div>
+        </div>
+
+        <div class="panneau-questions">
+            <div class="panneau-titre">Navigation rapide</div>
+            <div class="grille-questions" id="grilleQuestions"></div>
+            <div class="legende-questions">
+                <span><span class="legende-puce" style="background:#e6f7ec;border:2px solid #28a745;"></span>Répondue</span>
+                <span><span class="legende-puce" style="background:#eaf1ff;border:2px solid #0B63F6;"></span>Actuelle</span>
+                <span><span class="legende-puce" style="background:white;border:2px solid #eee;"></span>À faire</span>
+                <span>🚩 Marquée</span>
+                <span><span class="legende-puce" style="background:white;border:2px dashed #999;"></span>Rédaction</span>
+            </div>
+        </div>
+
+        <div class="zone-question" id="zoneQuestion"></div>
+        <div class="nav-test">
+            <button class="btn-precedent" id="btnPrecedent">◀ Précédent</button>
+            <button class="btn-suivant" id="btnSuivant">Suivant ▶</button>
+        </div>
+        <div class="nav-test-secondaire">
+            <button class="btn-marquer" id="btnMarquer">🚩 Marquer pour revenir</button>
+            <button class="btn-terminer" id="btnTerminer">✅ Terminer le test</button>
+        </div>
+    `;
+
+    document.getElementById("btnPrecedent").addEventListener("click", () => { if (indexActuel > 0) { indexActuel--; afficherQuestion(); } });
+    document.getElementById("btnSuivant").addEventListener("click", () => { if (indexActuel < test.questions.length - 1) { indexActuel++; afficherQuestion(); } });
+    document.getElementById("btnMarquer").addEventListener("click", basculerMarquage);
+    document.getElementById("btnTerminer").addEventListener("click", () => {
+        const nbReponses = Object.keys(test.reponses).length;
+        const nbTotal = test.questions.length;
+        const confirmation = nbReponses < nbTotal
+            ? confirm(`Il vous reste ${nbTotal - nbReponses} question(s) sans réponse. Voulez-vous vraiment terminer le test maintenant ? Cette action est définitive.`)
+            : confirm("Voulez-vous vraiment terminer et envoyer votre test ? Cette action est définitive.");
+        if (confirmation) finaliserTest("Test terminé par le candidat");
+    });
+
+    afficherQuestion();
+    demarrerChrono();
+    surveillerAntiTriche();
+    sauvegarderLocal();
+    majBandeauReseau();
+    setInterval(() => { if (!document.hidden && test && !test.terminé && !finDemandee) sauvegarderLocal(); }, 5000);
+    window.addEventListener("beforeunload", (e) => { if (test && !test.terminé) { e.preventDefault(); e.returnValue = ""; } });
+
+}
+
+function estRepondue(q) {
+    const r = test.reponses[q.id];
+    if (r === undefined) return false;
+    if (q.type === "ouverte") return !!(r.texte && r.texte.trim());
+    return true;
+}
+
+function construireGrilleQuestions() {
+    return test.questions.map((q, i) => {
+        let classe = "";
+        if (i === indexActuel) classe = "chip-actuel";
+        else if (estRepondue(q)) classe = "chip-repondue";
+        if (test.marquees && test.marquees[q.id]) classe += " chip-marquee";
+        if (q.type === "ouverte") classe += " chip-ouverte";
+        return `<div class="chip-question ${classe}" data-index="${i}">${i + 1}</div>`;
+    }).join("");
+}
+
+async function basculerMarquage() {
+    const q = test.questions[indexActuel];
+    if (!test.marquees) test.marquees = {};
+    const nouvelEtat = !test.marquees[q.id];
+    test.marquees[q.id] = nouvelEtat;
+    sauvegarderLocal();
+    afficherQuestion();
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), { [`marquees.${q.id}`]: nouvelEtat });
+    } catch (error) {
+        console.warn("Échec de la sauvegarde du marquage :", error.message);
+    }
+}
+
+function afficherQuestion() {
+
+    const q = test.questions[indexActuel];
+    const reponseActuelle = test.reponses[q.id];
+
+    document.getElementById("labelQuestion").textContent = `Question ${indexActuel + 1} / ${test.questions.length}`;
+    document.getElementById("barreProgression").style.width = `${((indexActuel + 1) / test.questions.length) * 100}%`;
+    document.getElementById("grilleQuestions").innerHTML = construireGrilleQuestions();
+    document.querySelectorAll(".chip-question").forEach((chip) => {
+        chip.addEventListener("click", () => { indexActuel = Number(chip.dataset.index); afficherQuestion(); });
+    });
+
+    test.questionActuelle = indexActuel + 1; sauvegarderLocal();
+    updateDoc(doc(db, "testsRecrutement", uid), { questionActuelle: indexActuel + 1 }).catch(() => {});
+
+    const zone = document.getElementById("zoneQuestion");
+
+    // Quand le test mélange plusieurs matières, on indique la matière de chaque question
+    const etiquetteMatiere = (test.matieres && test.matieres.length > 1 && q.matiere)
+        ? `<div style="display:inline-block;background:#f0e9fb;color:#5b21a8;font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;margin-bottom:10px;">📚 ${q.matiere}</div>`
+        : "";
+
+    if (q.type === "ouverte") {
+
+        const texteActuel = (reponseActuelle && reponseActuelle.texte) || "";
+
+        zone.innerHTML = `
+            ${etiquetteMatiere}
+            <h2>📝 ${q.question}</h2>
+            <p class="consigne-ouverte">Question ouverte — répondez avec vos propres mots (${q.bareme || 5} points). Cette réponse sera corrigée manuellement par l'équipe EDUFORCI.</p>
+            <textarea class="reponse-ouverte" id="zoneReponseOuverte" placeholder="Écrivez votre réponse ici...">${texteActuel}</textarea>
+        `;
+
+        const zoneTexte = document.getElementById("zoneReponseOuverte");
+        let delaiSauvegarde = null;
+        zoneTexte.addEventListener("input", () => {
+            test.reponses[q.id] = { texte: zoneTexte.value };
+            sauvegarderLocal();
+            clearTimeout(delaiSauvegarde);
+            delaiSauvegarde = setTimeout(() => enregistrerReponseOuverte(q.id, zoneTexte.value), 800);
+        });
+        zoneTexte.addEventListener("blur", () => {
+            clearTimeout(delaiSauvegarde);
+            enregistrerReponseOuverte(q.id, zoneTexte.value);
+        });
+
+    } else {
+
+        zone.innerHTML = `
+            ${etiquetteMatiere}
+            <h2>${q.question}</h2>
+            ${q.choix.map((c, i) => `
+                <label class="choix ${reponseActuelle === i ? "selectionne" : ""}" data-index="${i}">
+                    <input type="radio" name="reponse" value="${i}" ${reponseActuelle === i ? "checked" : ""}>
+                    ${c}
+                </label>
+            `).join("")}
+        `;
+
+        zone.querySelectorAll(".choix").forEach((label) => {
+            label.addEventListener("click", () => enregistrerReponse(q.id, Number(label.dataset.index)));
+        });
+
+    }
+
+    document.getElementById("btnPrecedent").disabled = indexActuel === 0;
+    document.getElementById("btnSuivant").disabled = indexActuel === test.questions.length - 1;
+
+    const estMarquee = !!(test.marquees && test.marquees[q.id]);
+    const btnMarquer = document.getElementById("btnMarquer");
+    btnMarquer.textContent = estMarquee ? "🚩 Retirer le marquage" : "🚩 Marquer pour revenir";
+    btnMarquer.classList.toggle("actif", estMarquee);
+
+}
+
+async function enregistrerReponseOuverte(questionId, texte) {
+    test.reponses[questionId] = { texte };
+    sauvegarderLocal();
+    document.getElementById("grilleQuestions").innerHTML = construireGrilleQuestions();
+    document.querySelectorAll(".chip-question").forEach((chip) => {
+        chip.addEventListener("click", () => { indexActuel = Number(chip.dataset.index); afficherQuestion(); });
+    });
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), { [`reponses.${questionId}`]: { texte } });
+    } catch (error) {
+        console.warn("Échec de la sauvegarde automatique :", error.message);
+    }
+}
+
+async function enregistrerReponse(questionId, choixIndex) {
+
+    test.reponses[questionId] = choixIndex;
+    sauvegarderLocal();
+    afficherQuestion();
+
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), { [`reponses.${questionId}`]: choixIndex });
+    } catch (error) {
+        console.warn("Échec de la sauvegarde automatique :", error.message);
+    }
+
+}
+// ==========================================================
+// CHRONOMÈTRE
+// ==========================================================
+
+function demarrerChrono() {
+
+    if (intervalChrono) clearInterval(intervalChrono);
+
+    intervalChrono = setInterval(() => {
+
+        if (document.hidden && MODE_TOLERANT) return;   // page quittée : le chrono attend
+
+        const debutMs = new Date(test.debut).getTime();
+        const ecouleSec = Math.floor((Date.now() - debutMs) / 1000) - (test.pauseTotaleSec || 0);
+        const restantSec = test.dureeSecondes - ecouleSec;
+
+        if (restantSec <= 0) {
+            clearInterval(intervalChrono);
+            finaliserTest("Temps écoulé", "temps");
+            return;
+        }
+
+        const min = Math.floor(restantSec / 60).toString().padStart(2, "0");
+        const sec = (restantSec % 60).toString().padStart(2, "0");
+        const chronoEl = document.getElementById("chrono");
+        if (chronoEl) {
+            chronoEl.textContent = `⏳ ${min}:${sec}`;
+            chronoEl.classList.toggle("urgent", restantSec < 300);
+        }
+
+    }, 1000);
+
+}
+
+// ==========================================================
+// ANTI-TRICHE (changements d'onglet + sortie du plein écran)
+// avertissements progressifs : 1, 2, puis fin automatique au 3e
+// ==========================================================
+
+function surveillerAntiTriche() {
+
+    let sortieDebut = null;
+    document.addEventListener("visibilitychange", () => {
+        if (!test || test.terminé || finalisationEnCours) return;
+        if (!MODE_TOLERANT) {
+            // ordinateur : règle stricte, comme avant
+            if (document.hidden) {
+                declencherAvertissement("changement_onglet", "Vous avez changé d'onglet ou quitté la fenêtre.\nVeuillez revenir immédiatement.");
+            }
+            return;
+        }
+        // téléphone : appel, notification, retour à l'écran d'accueil
+        if (document.hidden) {
+            sortieDebut = Date.now();
+            sauvegarderLocal();
+        } else if (sortieDebut) {
+            const trop = crediterInterruption(sortieDebut, "page_masquee");
+            sortieDebut = null;
+            if (trop) declencherAvertissement("interruptions_repetees", "Vous avez quitté la page trop souvent pendant le test.");
+        }
+    });
+
+    if (pleinEcranDisponible() && !MODE_TOLERANT) {
+        document.addEventListener("fullscreenchange", () => {
+            if (!document.fullscreenElement && test && !test.terminé && !finalisationEnCours && !enPause) {
+                declencherAvertissement("sortie_plein_ecran", "Vous avez quitté le mode plein écran.");
+            }
+        });
+    }
+
+    window.addEventListener("offline", () => {
+        if (test && !test.terminé) {
+            updateDoc(doc(db, "testsRecrutement", uid), { deconnexions: (test.deconnexions || 0) + 1 }).catch(() => {});
+            if (test) test.deconnexions = (test.deconnexions || 0) + 1;
+            sauvegarderLocal();
+        }
+    });
+
+}
+
+const LIBELLES_ORDRE = { 1: "Premier avertissement.", 2: "Deuxième avertissement." };
+
+async function declencherAvertissement(type, message) {
+
+    if (!test || test.terminé || finalisationEnCours || enPause) return;
+
+    avertissements++;
+    sauvegarderLocal();
+    enPause = true;
+
+    const entree = { date: new Date().toISOString(), type, message };
+
+    try {
+        await updateDoc(doc(db, "testsRecrutement", uid), {
+            avertissements,
+            journalAntiTriche: arrayUnion(entree)
+        });
+    } catch (error) {
+        console.warn("Erreur de suivi anti-triche :", error.message);
+    }
+
+    const compteurEl = document.getElementById("compteurAvertissements");
+    if (compteurEl) {
+        compteurEl.textContent = `⚠️ ${avertissements}/${MAX_AVERTISSEMENTS}`;
+        compteurEl.classList.add("actif");
+    }
+
+    if (avertissements >= MAX_AVERTISSEMENTS) {
+        finaliserTest("Nombre d'avertissements dépassé", "fraude");
+        return;
+    }
+
+    document.getElementById("avertissementTitre").textContent = LIBELLES_ORDRE[avertissements] || "Avertissement.";
+    document.getElementById("avertissementTexte").textContent = message;
+    document.getElementById("avertissementCompteur").textContent = `Avertissement ${avertissements}/${MAX_AVERTISSEMENTS}`;
+    document.getElementById("overlayAvertissement").classList.add("visible");
+
+}
+
+document.getElementById("btnRevenirTest").addEventListener("click", async () => {
+    document.getElementById("overlayAvertissement").classList.remove("visible");
+    enPause = false;
+    if (pleinEcranDisponible() && !document.fullscreenElement && test && !test.terminé) {
+        await entrerPleinEcran();
+    }
+});
+
+// ==========================================================
+// FINALISATION / CORRECTION AUTOMATIQUE
+// (fonctionne aussi sans réseau : la fin est gardée sur le téléphone
+//  puis envoyée automatiquement au retour de la connexion)
+// ==========================================================
+
+async function finaliserTest(motif, type = "normal") {
+
+    if (finalisationEnCours || (test && test.terminé)) return;
+    finalisationEnCours = true;
+
+    if (intervalChrono) clearInterval(intervalChrono);
+    document.getElementById("overlayAvertissement").classList.remove("visible");
+    sortirPleinEcran();
+
+    // La fin est figée et gardée sur le téléphone AVANT toute tentative d'envoi
+    finDemandee = { motif, type, fin: new Date().toISOString(), tempsUtiliseSecondes: calculerTempsUtilise() };
+    sauvegarderLocal();
+
+    await envoyerFinalisation(false);
+
+}
+
+async function envoyerFinalisation(silencieux = false) {
+
+    if (envoiEnCours || !finDemandee) return;
+    envoiEnCours = true;
+
+    const { motif, type, fin, tempsUtiliseSecondes } = finDemandee;
+    if (!silencieux) window.showLoading("Correction en cours...");
+
+    try {
+
+        if (!navigator.onLine) throw new Error("offline");
+
+        // Les bonnes réponses ne sont récupérées qu'ici, à la toute fin du test,
+        // jamais envoyées au navigateur pendant que le candidat répond.
+        const questionsQcm = test.questions.filter(q => q.type !== "ouverte");
+        const questionsOuvertes = test.questions.filter(q => q.type === "ouverte");
+
+        const correctionsSnap = await avecDelai(Promise.all(
+            questionsQcm.map((q) => getDoc(doc(db, "questionsRecrutement", q.id)))
+        ));
+
+        let bonnesReponses = 0;
+        let sansReponse = 0;
+        const detailReponses = questionsQcm.map((q, i) => {
+            const correction = correctionsSnap[i].exists() ? correctionsSnap[i].data() : null;
+            const reponseDonnee = test.reponses[q.id];
+            const aRepondu = reponseDonnee !== undefined && reponseDonnee !== null;
+            const correcte = aRepondu && correction && reponseDonnee === correction.reponseCorrecte;
+            if (correcte) bonnesReponses++;
+            if (!aRepondu) sansReponse++;
+            return {
+                id: q.id,
+                question: q.question,
+                choix: q.choix,
+                reponseDonneeIndex: aRepondu ? reponseDonnee : null,
+                reponseCorrecteIndex: correction ? correction.reponseCorrecte : null,
+                correcte: !!correcte
+            };
+        });
+        const mauvaisesReponses = questionsQcm.length - bonnesReponses - sansReponse;
+
+        const total = questionsQcm.length;
+        const pourcentage = total ? Math.round((bonnesReponses / total) * 100) : 0;
+        const scoreSur20 = total ? Math.round((bonnesReponses / total) * 20 * 10) / 10 : 0;
+
+        await avecDelai(updateDoc(doc(db, "testsRecrutement", uid), {
+            statut: "termine",
+            terminé: true,
+            fin,
+            motifFin: motif,
+            typeFin: type,
+            tempsUtiliseSecondes,
+            score: type === "fraude" ? 0 : scoreSur20,
+            pourcentage: type === "fraude" ? 0 : pourcentage,
+            bonnesReponsesQcm: bonnesReponses,
+            mauvaisesReponsesQcm: mauvaisesReponses,
+            sansReponseQcm: sansReponse,
+            totalQcm: total,
+            detailReponses,
+            statutCorrectionOuvertes: questionsOuvertes.length ? "en_attente" : null,
+            avertissements,
+            // on renvoie aussi les réponses du téléphone, au cas où certaines n'auraient jamais atteint le serveur
+            reponses: test.reponses,
+            marquees: test.marquees || {},
+            pauseTotaleSec: test.pauseTotaleSec || 0,
+            interruptions: test.interruptions || 0,
+            deconnexions: test.deconnexions || 0
+        }));
+
+        await avecDelai(updateDoc(doc(db, "candidaturesRecrutement", uid), {
+            historique: arrayUnion({ date: fin, action: `Test terminé (${motif}) — session ${test.sessionId}` })
+        }));
+
+        effacerLocal();
+        finDemandee = null;
+        test.terminé = true;
+        if (!silencieux) window.hideLoading();
+        afficherEcranFin(type, motif);
+
+    } catch (error) {
+
+        if (!silencieux) window.hideLoading();
+
+        if (erreurReseau(error)) {
+            // pas de réseau : le test reste « terminé » sur le téléphone, l'envoi sera réessayé tout seul
+            const b = document.getElementById("bandeauReseau");
+            if (b) b.style.display = "block";
+            afficherFinHorsLigne();
+        } else {
+            console.error("Erreur de finalisation :", error);
+            window.notify("Erreur lors de la finalisation : " + error.message, "erreur");
+            finalisationEnCours = false;
+            finDemandee = null;
+            sauvegarderLocal();
+        }
+
+    } finally {
+        envoiEnCours = false;
+    }
+
+}
+
+</script>
+
+</body>
+</html>
 
